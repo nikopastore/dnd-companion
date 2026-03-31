@@ -1,0 +1,255 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
+import { ABILITIES, getAbilityModifier, formatModifier, SKILLS } from "@dnd-companion/shared";
+import type { ConditionKey } from "@dnd-companion/shared";
+import { AttributeOrb } from "@/components/ui/attribute-orb";
+import { CombatStats } from "@/components/character/combat-stats";
+import { ConditionManager } from "@/components/character/condition-manager";
+import { RestButtons } from "@/components/character/rest-buttons";
+import { DiceRoller } from "@/components/character/dice-roller";
+import { InventoryPanel } from "@/components/character/inventory-panel";
+
+interface CharacterData {
+  id: string;
+  name: string;
+  level: number;
+  currentHP: number;
+  maxHP: number;
+  tempHP: number;
+  armorClass: number;
+  initiative: number;
+  speed: number;
+  proficiencyBonus: number;
+  strength: number;
+  dexterity: number;
+  constitution: number;
+  intelligence: number;
+  wisdom: number;
+  charisma: number;
+  saveProficiencies: string[];
+  skillProficiencies: string[];
+  skillExpertise: string[];
+  deathSaveSuccesses: number;
+  deathSaveFailures: number;
+  exhaustionLevel: number;
+  hitDiceRemaining: number;
+  hitDiceTotal: number;
+  classResources: Record<string, unknown> | null;
+  concentrationSpell: string | null;
+  copperPieces: number;
+  silverPieces: number;
+  electrumPieces: number;
+  goldPieces: number;
+  platinumPieces: number;
+  race: { name: string };
+  class: { name: string; hitDie: number };
+  background: { name: string };
+  items: Array<{ id: string; name: string; quantity: number; weight: number | null; isEquipped: boolean; isAttuned: boolean; notes: string | null }>;
+  conditions: Array<{ condition: ConditionKey }>;
+}
+
+export default function CharacterSheetPage() {
+  const { id } = useParams<{ id: string }>();
+  const [char, setChar] = useState<CharacterData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"sheet" | "inventory" | "dice">("sheet");
+
+  useEffect(() => {
+    fetch(`/api/characters/${id}`)
+      .then((res) => res.json())
+      .then((data) => { setChar(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [id]);
+
+  const updateField = useCallback(async (field: string, value: unknown) => {
+    if (!char) return;
+    setChar((prev) => prev ? { ...prev, [field]: value } : prev);
+    await fetch(`/api/characters/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value }),
+    });
+  }, [char, id]);
+
+  const toggleCondition = useCallback(async (condition: ConditionKey) => {
+    if (!char) return;
+    const current = char.conditions.map((c) => c.condition);
+    // Optimistic update
+    if (current.includes(condition)) {
+      setChar((prev) => prev ? {
+        ...prev,
+        conditions: prev.conditions.filter((c) => c.condition !== condition),
+      } : prev);
+    } else {
+      setChar((prev) => prev ? {
+        ...prev,
+        conditions: [...prev.conditions, { condition }],
+      } : prev);
+    }
+    // TODO: API call to toggle condition
+  }, [char]);
+
+  const handleShortRest = useCallback(() => {
+    if (!char) return;
+    // Reset death saves
+    updateField("deathSaveSuccesses", 0);
+    updateField("deathSaveFailures", 0);
+    // Class-specific resets would go here
+  }, [char, updateField]);
+
+  const handleLongRest = useCallback(() => {
+    if (!char) return;
+    updateField("currentHP", char.maxHP);
+    updateField("tempHP", 0);
+    updateField("deathSaveSuccesses", 0);
+    updateField("deathSaveFailures", 0);
+    updateField("hitDiceRemaining", char.hitDiceTotal);
+    // Reset exhaustion by 1 level
+    if (char.exhaustionLevel > 0) {
+      updateField("exhaustionLevel", char.exhaustionLevel - 1);
+    }
+  }, [char, updateField]);
+
+  if (loading) {
+    return (
+      <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto">
+        <p className="text-center text-on-surface-variant animate-pulse py-12">Loading character...</p>
+      </main>
+    );
+  }
+
+  if (!char) {
+    return (
+      <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto">
+        <p className="text-center text-error py-12">Character not found</p>
+      </main>
+    );
+  }
+
+  const activeConditions = char.conditions.map((c) => c.condition);
+
+  return (
+    <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto space-y-8">
+      {/* Character Header */}
+      <div className="flex items-end gap-4">
+        <div>
+          <h1 className="font-headline text-3xl text-on-background">{char.name}</h1>
+          <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
+            Level {char.level} {char.race.name} {char.class.name} · {char.background.name}
+          </p>
+        </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="flex gap-2">
+        {(["sheet", "inventory", "dice"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 rounded-sm font-label text-xs uppercase tracking-widest transition-all ${
+              tab === t
+                ? "bg-primary-container text-on-primary-container"
+                : "bg-surface-container-high text-on-surface-variant hover:bg-surface-bright"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {tab === "sheet" && (
+        <>
+          {/* Combat Stats */}
+          <CombatStats
+            currentHP={char.currentHP}
+            maxHP={char.maxHP}
+            tempHP={char.tempHP}
+            armorClass={char.armorClass}
+            initiative={char.initiative}
+            speed={char.speed}
+            onUpdate={updateField}
+          />
+
+          {/* Ability Score Orbs */}
+          <section className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {ABILITIES.map((ability) => {
+              const score = char[ability.key as keyof typeof char] as number;
+              return (
+                <AttributeOrb
+                  key={ability.key}
+                  abbreviation={ability.abbreviation}
+                  score={score}
+                  isPrimary={score >= 14}
+                />
+              );
+            })}
+          </section>
+
+          {/* Skills */}
+          <section className="bg-surface-container-low p-6 rounded-sm">
+            <span className="font-headline text-secondary uppercase tracking-widest text-xs block mb-4">
+              Skills
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+              {SKILLS.map((skill) => {
+                const abilityScore = char[skill.ability as keyof typeof char] as number;
+                const mod = getAbilityModifier(abilityScore);
+                const isProficient = char.skillProficiencies.includes(skill.key);
+                const isExpert = char.skillExpertise.includes(skill.key);
+                const bonus = mod + (isProficient ? char.proficiencyBonus : 0) + (isExpert ? char.proficiencyBonus : 0);
+
+                return (
+                  <div key={skill.key} className="flex items-center gap-2 py-1.5 px-2 rounded-sm hover:bg-surface-container transition-colors">
+                    <div className={`w-2 h-2 rounded-full ${isExpert ? "bg-secondary" : isProficient ? "bg-primary" : "bg-surface-container-highest"}`} />
+                    <span className="font-body text-sm text-on-surface flex-1">{skill.name}</span>
+                    <span className="font-label text-[10px] text-on-surface/30 uppercase">{skill.ability.slice(0, 3)}</span>
+                    <span className={`font-headline text-sm w-8 text-right ${isProficient ? "text-primary" : "text-on-surface/60"}`}>
+                      {formatModifier(bonus)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Conditions & Death Saves */}
+          <ConditionManager
+            activeConditions={activeConditions}
+            deathSaveSuccesses={char.deathSaveSuccesses}
+            deathSaveFailures={char.deathSaveFailures}
+            exhaustionLevel={char.exhaustionLevel}
+            onToggleCondition={toggleCondition}
+            onUpdate={updateField}
+          />
+
+          {/* Rest Buttons */}
+          <RestButtons onShortRest={handleShortRest} onLongRest={handleLongRest} />
+        </>
+      )}
+
+      {tab === "inventory" && (
+        <InventoryPanel
+          items={char.items}
+          currency={{
+            cp: char.copperPieces,
+            sp: char.silverPieces,
+            ep: char.electrumPieces,
+            gp: char.goldPieces,
+            pp: char.platinumPieces,
+          }}
+          onUpdateCurrency={(c) => {
+            updateField("copperPieces", c.cp);
+            updateField("silverPieces", c.sp);
+            updateField("electrumPieces", c.ep);
+            updateField("goldPieces", c.gp);
+            updateField("platinumPieces", c.pp);
+          }}
+        />
+      )}
+
+      {tab === "dice" && <DiceRoller />}
+    </main>
+  );
+}

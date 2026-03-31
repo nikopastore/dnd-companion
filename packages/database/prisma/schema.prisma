@@ -1,0 +1,379 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── NextAuth Models ─────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core Models ─────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+
+  accounts    Account[]
+  sessions    Session[]
+  characters  Character[]
+  campaigns   Campaign[]       @relation("DungeonMaster")
+  memberships CampaignMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  inviteCode  String         @unique
+  status      CampaignStatus @default(LOBBY)
+
+  dmId String
+  dm   User   @relation("DungeonMaster", fields: [dmId], references: [id])
+
+  members      CampaignMember[]
+  npcs         NPC[]
+  sessionItems SessionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CampaignStatus {
+  LOBBY
+  ACTIVE
+  ARCHIVED
+}
+
+model CampaignMember {
+  id   String     @id @default(cuid())
+  role MemberRole @default(PLAYER)
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  campaignId  String
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  characterId String?   @unique
+  character   Character? @relation(fields: [characterId], references: [id])
+
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, campaignId])
+}
+
+enum MemberRole {
+  PLAYER
+  DM
+}
+
+// ─── Character Models ────────────────────────────────────────────
+
+model Character {
+  id               String @id @default(cuid())
+  name             String
+  level            Int    @default(1)
+  experiencePoints Int    @default(0)
+
+  // Vitality
+  currentHP Int
+  maxHP     Int
+  tempHP    Int @default(0)
+
+  // Combat
+  armorClass      Int
+  initiative      Int
+  speed           Int
+  proficiencyBonus Int @default(2)
+
+  // Ability Scores
+  strength     Int
+  dexterity    Int
+  constitution Int
+  intelligence Int
+  wisdom       Int
+  charisma     Int
+
+  // Proficiencies
+  saveProficiencies  String[]
+  skillProficiencies String[]
+  skillExpertise     String[]
+
+  // SRD References
+  raceId       String
+  race         Race           @relation(fields: [raceId], references: [id])
+  subraceId    String?
+  subrace      Subrace?       @relation(fields: [subraceId], references: [id])
+  classId      String
+  class        CharacterClass @relation(fields: [classId], references: [id])
+  subclassId   String?
+  backgroundId String
+  background   Background     @relation(fields: [backgroundId], references: [id])
+
+  // Tracking
+  deathSaveSuccesses Int @default(0)
+  deathSaveFailures  Int @default(0)
+  exhaustionLevel    Int @default(0)
+  hitDiceRemaining   Int
+  hitDiceTotal       Int
+
+  // Flexible class resources (ki, rages, sorcery points, etc.)
+  classResources     Json?
+  concentrationSpell String?
+
+  // Currency
+  copperPieces   Int @default(0)
+  silverPieces   Int @default(0)
+  electrumPieces Int @default(0)
+  goldPieces     Int @default(0)
+  platinumPieces Int @default(0)
+
+  // Relationships
+  userId         String
+  user           User               @relation(fields: [userId], references: [id])
+  campaignMember CampaignMember?
+  items          CharacterItem[]
+  spells         CharacterSpell[]
+  features       CharacterFeature[]
+  conditions     CharacterCondition[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CharacterItem {
+  id          String  @id @default(cuid())
+  name        String
+  quantity    Int     @default(1)
+  weight      Float?
+  isEquipped  Boolean @default(false)
+  isAttuned   Boolean @default(false)
+  notes       String?
+
+  characterId String
+  character   Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  equipmentId String?
+  equipment   Equipment? @relation(fields: [equipmentId], references: [id])
+}
+
+model CharacterSpell {
+  id         String  @id @default(cuid())
+  isPrepared Boolean @default(false)
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  spellId     String
+  spell       Spell     @relation(fields: [spellId], references: [id])
+
+  @@unique([characterId, spellId])
+}
+
+model CharacterFeature {
+  id          String @id @default(cuid())
+  name        String
+  description String @db.Text
+  source      String // "Race", "Class", "Background", "Feat"
+  level       Int
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model CharacterCondition {
+  id        String    @id @default(cuid())
+  condition Condition
+  appliedAt DateTime  @default(now())
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, condition])
+}
+
+enum Condition {
+  BLINDED
+  CHARMED
+  DEAFENED
+  EXHAUSTION
+  FRIGHTENED
+  GRAPPLED
+  INCAPACITATED
+  INVISIBLE
+  PARALYZED
+  PETRIFIED
+  POISONED
+  PRONE
+  RESTRAINED
+  STUNNED
+}
+
+// ─── SRD Reference Tables ────────────────────────────────────────
+
+model Race {
+  id             String    @id @default(cuid())
+  name           String    @unique
+  speed          Int
+  abilityBonuses Json      // { "strength": 2, "constitution": 1 }
+  traits         Json      // [{ name, description }]
+  languages      String[]
+  size           String
+
+  subraces   Subrace[]
+  characters Character[]
+}
+
+model Subrace {
+  id             String @id @default(cuid())
+  name           String
+  abilityBonuses Json
+  traits         Json
+
+  raceId     String
+  race       Race        @relation(fields: [raceId], references: [id])
+  characters Character[]
+
+  @@unique([raceId, name])
+}
+
+model CharacterClass {
+  id              String @id @default(cuid())
+  name            String @unique
+  hitDie          Int
+  primaryAbility  String
+  savingThrows    String[]
+  skillChoices    String[]
+  numSkillChoices Int
+  proficiencies   Json   // { armor: [], weapons: [], tools: [] }
+  startingEquipment Json
+
+  levels     ClassLevel[]
+  characters Character[]
+}
+
+model ClassLevel {
+  id        String @id @default(cuid())
+  level     Int
+  features  Json   // [{ name, description }]
+  spellSlots Json? // { "1": 2, "2": 1 }
+  resources  Json? // { kiPoints: 5, rages: 3 }
+
+  classId String
+  class   CharacterClass @relation(fields: [classId], references: [id])
+
+  @@unique([classId, level])
+}
+
+model Background {
+  id                 String   @id @default(cuid())
+  name               String   @unique
+  skillProficiencies String[]
+  toolProficiencies  String[]
+  languages          Int      @default(0)
+  equipment          Json
+  feature            Json     // { name, description }
+
+  characters Character[]
+}
+
+model Spell {
+  id            String  @id @default(cuid())
+  name          String  @unique
+  level         Int     // 0 = cantrip
+  school        String
+  castingTime   String
+  range         String
+  components    String
+  duration      String
+  concentration Boolean @default(false)
+  ritual        Boolean @default(false)
+  description   String  @db.Text
+  higherLevels  String? @db.Text
+  classes       String[]
+
+  characterSpells CharacterSpell[]
+}
+
+model Equipment {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  category    String
+  cost        String
+  weight      Float?
+  properties  Json?
+  description String? @db.Text
+
+  items CharacterItem[]
+}
+
+// ─── DM Session Tracking ─────────────────────────────────────────
+
+model NPC {
+  id          String  @id @default(cuid())
+  name        String
+  description String? @db.Text
+  statBlock   Json?
+  isEnemy     Boolean @default(false)
+  notes       String? @db.Text
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model SessionItem {
+  id          String  @id @default(cuid())
+  name        String
+  description String? @db.Text
+  location    String?
+  isHidden    Boolean @default(true)
+  claimedById String?
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
