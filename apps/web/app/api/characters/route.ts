@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       skillExpertise: [],
       hitDiceRemaining: 1,
       hitDiceTotal: 1,
-      classResources: classLevel1?.resources || null,
+      classResources: classLevel1?.resources ?? undefined,
     },
     include: {
       race: { select: { name: true } },
