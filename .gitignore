@@ -36,3 +36,5 @@ packages/database/prisma/migrations/dev/
 
 # Coverage
 coverage/
+
+.vercel
