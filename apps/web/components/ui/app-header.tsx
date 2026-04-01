@@ -8,34 +8,44 @@ export function AppHeader() {
   const { data: session } = useSession();
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-surface-container-low">
+    <header className="fixed top-0 w-full z-50 glass-heavy">
       <div className="flex justify-between items-center px-6 h-16 w-full">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-sm bg-surface-container-high flex items-center justify-center border border-secondary/20">
-              <Icon name="auto_stories" size={16} className="text-secondary" />
-            </div>
-            <h1 className="text-xl font-headline text-secondary tracking-widest uppercase">
-              The Digital Tome
-            </h1>
-          </Link>
-        </div>
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-9 h-9 rounded-sm bg-surface-container-high flex items-center justify-center border border-secondary/20 group-hover:border-secondary/50 group-hover:glow-gold transition-all duration-500">
+            <Icon name="auto_stories" size={18} className="text-secondary" />
+          </div>
+          <h1 className="text-lg font-headline text-secondary tracking-[0.2em] uppercase group-hover:text-secondary transition-colors">
+            The Digital Tome
+          </h1>
+        </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           {session?.user && (
             <>
-              <Link href="/campaigns" className="hidden md:block">
-                <span className="font-label text-xs uppercase tracking-widest text-on-surface/60 hover:text-on-surface transition-colors">
-                  Campaigns
-                </span>
-              </Link>
+              <nav className="hidden md:flex items-center gap-1 mr-2">
+                {[
+                  { href: "/campaigns", label: "Campaigns", icon: "groups" },
+                  { href: "/builder", label: "Create", icon: "person_add" },
+                  { href: "/dashboard", label: "DM", icon: "auto_stories" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm font-label text-[10px] uppercase tracking-[0.15em] text-on-surface/50 hover:text-on-surface hover:bg-surface-container-high/60 transition-all duration-300"
+                  >
+                    <Icon name={link.icon} size={14} />
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-primary/70 hover:bg-surface-container-high transition-colors duration-300 p-2 rounded-sm"
+                className="text-primary/50 hover:text-primary hover:bg-surface-container-high/60 transition-all duration-300 p-2 rounded-sm"
+                title="Sign out"
               >
-                <Icon name="logout" size={20} />
+                <Icon name="logout" size={18} />
               </button>
-              <div className="w-8 h-8 rounded-full bg-surface-container-highest border border-secondary/30 flex items-center justify-center overflow-hidden">
+              <div className="w-9 h-9 rounded-full bg-surface-container-highest border border-outline-variant/20 hover:border-secondary/30 flex items-center justify-center overflow-hidden transition-all duration-300">
                 {session.user.image ? (
                   <img
                     src={session.user.image}
@@ -43,7 +53,7 @@ export function AppHeader() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="font-headline text-sm text-on-surface">
+                  <span className="font-headline text-sm text-secondary">
                     {session.user.name?.[0]?.toUpperCase() || "?"}
                   </span>
                 )}
@@ -52,6 +62,8 @@ export function AppHeader() {
           )}
         </div>
       </div>
+      {/* Decorative gradient line */}
+      <div className="h-[1px] bg-gradient-to-r from-transparent via-secondary/15 to-transparent" />
     </header>
   );
 }

@@ -45,12 +45,12 @@ export function RaceSelection({ builder }: Props) {
   }
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="mb-12 text-center md:text-left">
-        <h2 className="font-headline text-4xl md:text-5xl text-primary mb-2 tracking-tight">
+        <h2 className="font-headline text-4xl md:text-5xl text-primary mb-2 tracking-tight animate-fade-in-up">
           Origin & Heritage
         </h2>
-        <p className="font-body text-on-surface-variant text-lg max-w-2xl italic">
+        <p className="font-body text-on-surface-variant text-lg max-w-2xl italic animate-fade-in-up" style={{ animationDelay: "80ms" }}>
           Select the foundational bloodline that defines your physical form and innate magical affinity.
         </p>
       </div>
@@ -63,38 +63,38 @@ export function RaceSelection({ builder }: Props) {
         {loading ? (
           <p className="text-on-surface-variant animate-pulse">Loading races...</p>
         ) : (
-          <div className="flex gap-6 overflow-x-auto pb-6 snap-x">
+          <div className="flex gap-6 overflow-x-auto pb-6 snap-x custom-scrollbar stagger-children">
             {races.map((race) => {
               const isSelected = state.raceId === race.id;
               return (
                 <button
                   key={race.id}
                   onClick={() => selectRace(race)}
-                  className={`snap-start flex-none w-40 h-52 rounded-sm p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all group ${
+                  className={`snap-start flex-none w-40 h-52 rounded-sm p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 interactive-glow animate-fade-in-up group ${
                     isSelected
-                      ? "bg-surface-container border border-secondary/60 relative overflow-hidden"
+                      ? "bg-surface-container border border-secondary/60 relative overflow-hidden animate-border-glow shadow-elevated"
                       : "bg-surface-container-low border border-outline-variant/10 hover:bg-surface-container-high hover:border-secondary/40"
                   }`}
                 >
                   {isSelected && <div className="absolute inset-0 bg-primary-container/5 pointer-events-none" />}
                   <div
-                    className={`w-20 h-20 mb-4 rounded-full flex items-center justify-center transition-transform ${
+                    className={`w-20 h-20 mb-4 rounded-full flex items-center justify-center transition-all duration-500 ${
                       isSelected
-                        ? "bg-primary-container/20 scale-110 border border-secondary/30"
-                        : "bg-surface-container-highest group-hover:scale-110"
+                        ? "bg-primary-container/20 scale-110 border border-secondary/30 glow-gold"
+                        : "bg-surface-container-highest group-hover:scale-110 group-hover:bg-surface-container-high"
                     }`}
                   >
                     <Icon
                       name={RACE_ICONS[race.name] || "person"}
                       size={36}
                       filled={isSelected}
-                      className={isSelected ? "text-secondary" : "text-on-surface-variant group-hover:text-secondary"}
+                      className={`transition-colors duration-500 ${isSelected ? "text-secondary" : "text-on-surface-variant group-hover:text-secondary"}`}
                     />
                   </div>
-                  <span className={`font-headline text-lg ${isSelected ? "text-secondary" : "text-on-surface"}`}>
+                  <span className={`font-headline text-lg transition-colors duration-500 ${isSelected ? "text-secondary" : "text-on-surface"}`}>
                     {race.name}
                   </span>
-                  <span className={`font-label text-[10px] uppercase tracking-tighter ${isSelected ? "text-secondary/70" : "text-on-surface-variant"}`}>
+                  <span className={`font-label text-[10px] uppercase tracking-tighter transition-colors duration-500 ${isSelected ? "text-secondary/70" : "text-on-surface-variant"}`}>
                     Speed {race.speed}ft
                   </span>
                   {isSelected && <div className="absolute bottom-0 left-0 w-full h-1 bg-secondary" />}
@@ -107,9 +107,9 @@ export function RaceSelection({ builder }: Props) {
 
       {/* Selected Race Details */}
       {selectedRace && (
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in-up">
           <div className="lg:col-span-5 space-y-6">
-            <div className="p-6 bg-surface-container-low rounded-sm relative border-l-2 border-primary">
+            <div className="p-6 bg-surface-container-low rounded-sm relative border-l-2 border-primary animate-slide-in-left shadow-whisper">
               <h3 className="font-headline text-2xl text-on-surface mb-2">{selectedRace.name}</h3>
               <div className="space-y-1 font-body text-sm text-on-surface-variant">
                 <p>Size: {selectedRace.size}</p>
@@ -120,7 +120,7 @@ export function RaceSelection({ builder }: Props) {
 
             {/* Subraces */}
             {selectedRace.subraces.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-3 animate-fade-in" style={{ animationDelay: "150ms" }}>
                 <span className="font-label text-xs uppercase tracking-widest text-secondary font-bold">
                   Subraces
                 </span>
@@ -128,9 +128,9 @@ export function RaceSelection({ builder }: Props) {
                   <button
                     key={sub.id}
                     onClick={() => update({ subraceId: sub.id })}
-                    className={`w-full p-4 rounded-sm text-left transition-all ${
+                    className={`w-full p-4 rounded-sm text-left transition-all duration-500 interactive-glow ${
                       state.subraceId === sub.id
-                        ? "bg-surface-container border border-secondary/40"
+                        ? "bg-surface-container border border-secondary/40 shadow-whisper"
                         : "bg-surface-container-low border border-outline-variant/10 hover:border-secondary/20"
                     }`}
                   >
@@ -150,16 +150,18 @@ export function RaceSelection({ builder }: Props) {
 
           <div className="lg:col-span-7 space-y-8">
             {/* Ability Bonuses */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 stagger-children">
               {Object.entries(selectedRace.abilityBonuses).map(([ability, bonus]) => (
                 <div
                   key={ability}
-                  className="bg-surface-container-high p-4 rounded-sm border border-outline-variant/10 text-center relative overflow-hidden"
+                  className="bg-surface-container-high p-4 rounded-sm border border-outline-variant/8 text-center relative overflow-hidden interactive-lift animate-fade-in-up"
                 >
-                  <div className="absolute -right-2 -top-2 w-12 h-12 bg-secondary-container/20 rounded-full blur-xl" />
-                  <div className="text-secondary font-headline text-2xl mb-1">+{bonus as number}</div>
-                  <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-                    {ability}
+                  <div className="decorative-orb w-16 h-16 bg-secondary -right-2 -top-2" />
+                  <div className="relative z-10">
+                    <div className="text-secondary font-headline text-2xl mb-1">+{bonus as number}</div>
+                    <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
+                      {ability}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -170,14 +172,16 @@ export function RaceSelection({ builder }: Props) {
               <span className="font-label text-xs uppercase tracking-widest text-secondary font-bold">
                 Racial Traits
               </span>
-              {(selectedRace.traits as Array<{ name: string; description: string }>).map((trait, i) => (
-                <div key={i} className="bg-surface-container-low p-4 rounded-sm border-l border-primary/20">
-                  <h4 className="font-headline text-lg text-primary mb-1">{trait.name}</h4>
-                  <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-                    {trait.description}
-                  </p>
-                </div>
-              ))}
+              <div className="stagger-children space-y-4">
+                {(selectedRace.traits as Array<{ name: string; description: string }>).map((trait, i) => (
+                  <div key={i} className="bg-surface-container-low p-4 rounded-sm border-l-2 border-primary/20 animate-fade-in-up interactive-lift shadow-whisper">
+                    <h4 className="font-headline text-lg text-primary mb-1">{trait.name}</h4>
+                    <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                      {trait.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>

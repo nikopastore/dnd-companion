@@ -1,9 +1,12 @@
+"use client";
+
 import { getAbilityModifier, formatModifier } from "@dnd-companion/shared";
 
 interface AttributeOrbProps {
   abbreviation: string;
   score: number;
   isPrimary?: boolean;
+  size?: "sm" | "md" | "lg";
   onClick?: () => void;
 }
 
@@ -11,9 +14,22 @@ export function AttributeOrb({
   abbreviation,
   score,
   isPrimary = false,
+  size = "md",
   onClick,
 }: AttributeOrbProps) {
   const modifier = getAbilityModifier(score);
+
+  const sizeClasses = {
+    sm: "w-14 h-14",
+    md: "w-20 h-20",
+    lg: "w-24 h-24",
+  }[size];
+
+  const scoreSizes = {
+    sm: "text-lg",
+    md: "text-2xl",
+    lg: "text-3xl",
+  }[size];
 
   return (
     <div
@@ -22,27 +38,30 @@ export function AttributeOrb({
     >
       <div
         className={`
-          w-20 h-20 rounded-full flex flex-col items-center justify-center
-          transition-transform group-active:scale-95
+          ${sizeClasses} rounded-full flex flex-col items-center justify-center
+          transition-all duration-500 ease-out
+          group-hover:scale-110 group-active:scale-95
           ${
             isPrimary
-              ? "bg-secondary-container/20 border-2 border-secondary glow-gold"
-              : "bg-surface-container-highest border border-outline-variant/30"
+              ? "bg-secondary-container/15 border-2 border-secondary/60 animate-pulse-glow"
+              : "bg-surface-container-highest border border-outline-variant/25 group-hover:border-secondary/30 group-hover:bg-surface-container-high"
           }
         `}
       >
         <span
-          className={`font-label text-[10px] font-bold uppercase ${
-            isPrimary ? "text-secondary" : "text-on-surface/50"
-          }`}
+          className={`font-label text-[10px] font-bold uppercase tracking-wider ${
+            isPrimary ? "text-secondary" : "text-on-surface/40 group-hover:text-secondary/70"
+          } transition-colors duration-300`}
         >
           {abbreviation}
         </span>
-        <span className="font-headline text-2xl text-on-surface">{score}</span>
+        <span className={`font-headline ${scoreSizes} text-on-surface leading-none`}>
+          {score}
+        </span>
         <span
           className={`font-body text-xs font-bold ${
-            isPrimary ? "text-secondary/70" : "text-on-surface/30"
-          }`}
+            isPrimary ? "text-secondary/80" : "text-on-surface/25 group-hover:text-on-surface/50"
+          } transition-colors duration-300`}
         >
           {formatModifier(modifier)}
         </span>

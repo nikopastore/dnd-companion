@@ -72,7 +72,7 @@ export default function DMCampaignPage() {
   }
 
   return (
-    <main className="pt-20 pb-24 px-4 md:px-8 max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main className="pt-20 pb-24 px-4 md:px-8 max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in-up">
       {/* Left: Party Overview */}
       <section className="lg:col-span-8 space-y-6">
         <PartyOverview
@@ -88,7 +88,7 @@ export default function DMCampaignPage() {
       {/* Right: DM Tools Sidebar */}
       <aside className="lg:col-span-4 space-y-6">
         {/* Invite Code */}
-        <div className="bg-surface-container-low p-6 rounded-sm">
+        <div className="bg-surface-container-low p-6 rounded-sm border border-secondary/10">
           <span className="font-label text-[10px] uppercase tracking-widest text-on-surface/40 block mb-2">
             Invite Code
           </span>
@@ -97,8 +97,11 @@ export default function DMCampaignPage() {
           </p>
         </div>
 
+        {/* Decorative separator */}
+        <div className="decorative-line" />
+
         {/* NPCs */}
-        <div className="bg-surface-container-low p-6 rounded-sm">
+        <div className="bg-surface-container-low p-6 rounded-sm border border-secondary/5">
           <NPCTracker
             npcs={campaign.npcs}
             campaignId={campaign.id}
@@ -106,14 +109,20 @@ export default function DMCampaignPage() {
           />
         </div>
 
+        {/* Decorative separator */}
+        <div className="decorative-line" />
+
         {/* Session Items */}
-        <div className="bg-surface-container-low p-6 rounded-sm">
+        <div className="bg-surface-container-low p-6 rounded-sm border border-secondary/5">
           <SessionItemTracker
             items={campaign.sessionItems}
             campaignId={campaign.id}
             onAdd={handleAddItem}
           />
         </div>
+
+        {/* Decorative separator */}
+        <div className="decorative-line" />
 
         {/* Live Activity Feed */}
         <LiveActivityFeed campaignId={campaign.id} />

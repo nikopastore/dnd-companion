@@ -38,7 +38,7 @@ export function PartyOverview({ campaignName, members, onViewCharacter }: Props)
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
         {withCharacters.map((member) => {
           const char = member.character!;
           const hpPercent = char.maxHP > 0 ? (char.currentHP / char.maxHP) * 100 : 0;
@@ -48,10 +48,10 @@ export function PartyOverview({ campaignName, members, onViewCharacter }: Props)
             <button
               key={member.id}
               onClick={() => onViewCharacter(char.id)}
-              className="bg-surface-container-low p-5 relative overflow-hidden group text-left hover:bg-surface-container transition-colors"
+              className={`bg-surface-container-low p-5 relative overflow-hidden group text-left interactive-lift paper-texture transition-all duration-300 ${
+                isLowHP ? "border border-error/20 glow-danger" : "border border-transparent"
+              }`}
             >
-              <div className="absolute inset-0 paper-texture" />
-
               <div className="flex justify-between items-start relative z-10">
                 <div>
                   <p className="font-label text-[10px] uppercase tracking-tighter text-secondary mb-1">
@@ -62,7 +62,7 @@ export function PartyOverview({ campaignName, members, onViewCharacter }: Props)
                   </h3>
                 </div>
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full border-2 border-secondary bg-surface-container-highest flex items-center justify-center glow-gold">
+                  <div className="w-12 h-12 rounded-full border-2 border-secondary bg-surface-container-highest flex items-center justify-center animate-pulse-glow">
                     <span className="font-headline text-xl font-bold text-secondary">
                       {char.armorClass}
                     </span>
@@ -73,14 +73,8 @@ export function PartyOverview({ campaignName, members, onViewCharacter }: Props)
                 </div>
               </div>
 
-              <div className="mt-6 space-y-4 relative z-10">
-                <HealthBar current={char.currentHP} max={char.maxHP} />
-                <div className="flex justify-between font-label text-xs">
-                  <span className="text-on-surface/60">Hit Points</span>
-                  <span className={`font-bold ${isLowHP ? "text-error" : "text-primary"}`}>
-                    {char.currentHP} / {char.maxHP}
-                  </span>
-                </div>
+              <div className="mt-6 space-y-1 relative z-10">
+                <HealthBar current={char.currentHP} max={char.maxHP} showLabel />
               </div>
 
               <div className="mt-6 grid grid-cols-3 gap-2 relative z-10">

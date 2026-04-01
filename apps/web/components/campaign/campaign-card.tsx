@@ -21,11 +21,15 @@ export function CampaignCard({
   return (
     <Link
       href={`/lobby/${id}`}
-      className="bg-surface-container-low group cursor-pointer border border-transparent hover:border-secondary/20 transition-all duration-300 block"
+      className="bg-surface-container-low group cursor-pointer border border-transparent hover:border-secondary/20 transition-all duration-300 block interactive-lift relative overflow-hidden"
     >
-      {/* Placeholder cover gradient */}
+      {/* Decorative orb behind card */}
+      <div className="decorative-orb absolute -top-16 -right-16 w-40 h-40 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+      {/* Cover gradient with enhanced overlay */}
       <div className="relative h-32 overflow-hidden bg-gradient-to-br from-primary-container/30 to-surface-container-lowest">
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
 
       <div className="p-6 -mt-8 relative z-10 space-y-4">
@@ -33,7 +37,10 @@ export function CampaignCard({
           <div className="flex items-center gap-2">
             <h4 className="font-headline text-xl text-primary">{name}</h4>
             {status === "ACTIVE" && (
-              <span className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
             )}
           </div>
           <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter">
@@ -46,13 +53,13 @@ export function CampaignCard({
             {members.slice(0, 4).map((member, i) => (
               <div
                 key={i}
-                className="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant font-bold"
+                className="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant font-bold shadow-whisper group-hover:border-secondary/20 transition-colors duration-300"
               >
                 {member.name?.[0]?.toUpperCase() || "?"}
               </div>
             ))}
             {memberCount > 4 && (
-              <div className="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant">
+              <div className="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant shadow-whisper">
                 +{memberCount - 4}
               </div>
             )}
@@ -60,7 +67,7 @@ export function CampaignCard({
           <Icon
             name="arrow_forward"
             size={20}
-            className="text-secondary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="text-secondary opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1"
           />
         </div>
       </div>

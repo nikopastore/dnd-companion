@@ -33,7 +33,7 @@ export default function CampaignsPage() {
 
   return (
     <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-10">
-      <section className="flex justify-between items-end">
+      <section className="flex justify-between items-end animate-fade-in-up">
         <div>
           <h1 className="font-headline text-3xl text-on-background">
             Your Campaigns
@@ -63,20 +63,22 @@ export default function CampaignsPage() {
           Loading campaigns...
         </p>
       ) : campaigns.length === 0 ? (
-        <section className="text-center py-16 space-y-4">
+        <section className="text-center py-16 space-y-4 relative">
+          {/* Decorative orb behind empty state */}
+          <div className="decorative-orb absolute inset-0 m-auto w-48 h-48" />
           <Icon
             name="auto_stories"
             size={60}
-            className="text-on-surface/10 mx-auto"
+            className="text-on-surface/10 mx-auto animate-float relative z-10"
           />
-          <h3 className="font-headline text-xl text-on-surface-variant">
+          <h3 className="font-headline text-xl text-on-surface-variant relative z-10">
             No campaigns yet
           </h3>
-          <p className="font-body text-sm text-on-surface/40 max-w-sm mx-auto">
+          <p className="font-body text-sm text-on-surface/40 max-w-sm mx-auto relative z-10">
             Join an existing campaign with an invite code or create your own as
             a Dungeon Master.
           </p>
-          <div className="flex gap-4 justify-center pt-4">
+          <div className="flex gap-4 justify-center pt-4 relative z-10">
             <Link href="/join">
               <Button variant="secondary">Join a Campaign</Button>
             </Link>
@@ -86,7 +88,7 @@ export default function CampaignsPage() {
           </div>
         </section>
       ) : (
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
           {campaigns.map((campaign) => (
             <CampaignCard
               key={campaign.id}

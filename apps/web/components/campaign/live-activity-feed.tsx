@@ -15,6 +15,20 @@ interface Props {
   campaignId: string;
 }
 
+const typeIcons: Record<Activity["type"], string> = {
+  join: "login", leave: "logout", hp: "favorite",
+  condition: "warning", dice: "casino", item: "inventory_2",
+};
+
+const typeColors: Record<Activity["type"], string> = {
+  join: "text-green-400",
+  leave: "text-on-surface/40",
+  hp: "text-primary",
+  condition: "text-amber-400",
+  dice: "text-secondary",
+  item: "text-secondary",
+};
+
 export function LiveActivityFeed({ campaignId }: Props) {
   const { connected, emit, on } = useSocket();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -65,15 +79,15 @@ export function LiveActivityFeed({ campaignId }: Props) {
     ]);
   }
 
-  const typeIcons: Record<Activity["type"], string> = {
-    join: "login", leave: "logout", hp: "favorite",
-    condition: "warning", dice: "casino", item: "inventory_2",
-  };
-
   return (
-    <div className="bg-surface-container-low p-6 rounded-sm">
+    <div className="glass p-6 rounded-sm border border-secondary/5">
       <div className="flex items-center gap-2 mb-4">
-        <div className={`w-2 h-2 rounded-full ${connected ? "bg-green-400" : "bg-error"}`} />
+        <div className="relative">
+          <div className={`w-2 h-2 rounded-full ${connected ? "bg-green-400" : "bg-error"}`} />
+          {connected && (
+            <div className="absolute inset-0 w-2 h-2 rounded-full bg-green-400 animate-ping opacity-75" />
+          )}
+        </div>
         <span className="font-headline text-secondary uppercase tracking-widest text-xs">
           Live Activity
         </span>
@@ -84,10 +98,14 @@ export function LiveActivityFeed({ campaignId }: Props) {
           {connected ? "Waiting for activity..." : "Connecting..."}
         </p>
       ) : (
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
           {activities.map((activity) => (
-            <div key={activity.id} className="flex items-start gap-2 text-sm">
-              <Icon name={typeIcons[activity.type]} size={14} className="text-on-surface/30 mt-0.5 flex-shrink-0" />
+            <div key={activity.id} className="flex items-start gap-2 text-sm animate-fade-in-up">
+              <Icon
+                name={typeIcons[activity.type]}
+                size={14}
+                className={`${typeColors[activity.type]} mt-0.5 flex-shrink-0`}
+              />
               <span className="font-body text-on-surface-variant">{activity.message}</span>
             </div>
           ))}

@@ -51,21 +51,21 @@ export function NPCTracker({ npcs, campaignId, onAdd }: Props) {
         <span className="font-headline text-secondary uppercase tracking-widest text-xs">
           NPCs & Enemies ({npcs.length})
         </span>
-        <Button variant="ghost" size="sm" onClick={() => setShowForm(!showForm)}>
+        <Button variant="ghost" size="sm" onClick={() => setShowForm(!showForm)} className="interactive-glow">
           <Icon name={showForm ? "close" : "add"} size={14} />
           {showForm ? "Cancel" : "Add"}
         </Button>
       </div>
 
       {showForm && (
-        <div className="bg-surface-container p-4 rounded-sm space-y-3">
+        <div className="bg-surface-container p-4 rounded-sm space-y-3 animate-fade-in-up border border-secondary/10">
           <Input id="npc-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Goblin Chief..." />
           <Input id="npc-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short description..." />
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={isEnemy} onChange={(e) => setIsEnemy(e.target.checked)} className="accent-error" />
             <span className="font-label text-xs uppercase text-error">Enemy</span>
           </label>
-          <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()}>
+          <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()} className="glow-gold">
             {loading ? "Adding..." : "Add NPC"}
           </Button>
         </div>
@@ -75,8 +75,10 @@ export function NPCTracker({ npcs, campaignId, onAdd }: Props) {
         {npcs.map((npc) => (
           <div
             key={npc.id}
-            className={`p-4 rounded-sm flex items-center gap-3 ${
-              npc.isEnemy ? "bg-error-container/10 border-l-2 border-error" : "bg-surface-container-low border-l-2 border-secondary/30"
+            className={`p-4 rounded-sm flex items-center gap-3 transition-all duration-300 ${
+              npc.isEnemy
+                ? "bg-error-container/10 border-l-2 border-error hover:glow-danger interactive-glow"
+                : "bg-surface-container-low border-l-2 border-secondary/30 interactive-glow"
             }`}
           >
             <Icon name={npc.isEnemy ? "swords" : "person"} size={20} className={npc.isEnemy ? "text-error" : "text-secondary"} />

@@ -30,7 +30,7 @@ export default function DMDashboardPage() {
 
   return (
     <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-10">
-      <section className="flex justify-between items-end">
+      <section className="flex justify-between items-end animate-fade-in-up">
         <div>
           <h1 className="font-headline text-3xl text-on-background">DM Command Center</h1>
           <p className="font-body text-sm text-on-surface-variant mt-1">
@@ -48,18 +48,21 @@ export default function DMDashboardPage() {
       {loading ? (
         <p className="text-center text-on-surface-variant animate-pulse py-12">Loading...</p>
       ) : campaigns.length === 0 ? (
-        <div className="text-center py-16 space-y-4">
-          <Icon name="auto_stories" size={60} className="text-on-surface/10 mx-auto" />
-          <h3 className="font-headline text-xl text-on-surface-variant">No campaigns yet</h3>
-          <Link href="/create"><Button>Create Your First Campaign</Button></Link>
+        <div className="text-center py-16 space-y-4 relative">
+          <div className="decorative-orb absolute inset-0 m-auto w-48 h-48" />
+          <Icon name="auto_stories" size={60} className="text-on-surface/10 mx-auto animate-float relative z-10" />
+          <h3 className="font-headline text-xl text-on-surface-variant relative z-10">No campaigns yet</h3>
+          <Link href="/create" className="relative z-10 inline-block">
+            <Button>Create Your First Campaign</Button>
+          </Link>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 stagger-children">
           {campaigns.map((c) => (
             <Link
               key={c.id}
               href={`/campaign/${c.id}`}
-              className="block bg-surface-container-low p-6 rounded-sm hover:bg-surface-container transition-colors border border-transparent hover:border-secondary/20"
+              className="block bg-surface-container-low p-6 rounded-sm hover:bg-surface-container transition-all duration-300 border border-transparent hover:border-secondary/20 interactive-glow"
             >
               <div className="flex justify-between items-center">
                 <div>
@@ -74,7 +77,7 @@ export default function DMDashboardPage() {
                   }`}>
                     {c.status}
                   </span>
-                  <Icon name="arrow_forward" size={20} className="text-secondary/60" />
+                  <Icon name="arrow_forward" size={20} className="text-secondary/60 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
               </div>
             </Link>

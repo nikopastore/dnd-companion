@@ -71,7 +71,7 @@ export default function CampaignLobbyPage() {
   return (
     <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-10">
       {/* Campaign Header */}
-      <section className="text-center space-y-4">
+      <section className="text-center space-y-4 animate-fade-in-up">
         <h1 className="font-headline text-4xl text-primary">{campaign.name}</h1>
         {campaign.description && (
           <p className="font-body text-on-surface-variant max-w-lg mx-auto">
@@ -84,7 +84,7 @@ export default function CampaignLobbyPage() {
       </section>
 
       {/* Invite Code Banner */}
-      <section className="bg-surface-container-low rounded-sm p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-secondary/10">
+      <section className="bg-surface-container-low rounded-sm p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-secondary/10 animate-border-glow animate-fade-in-up" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
         <div className="space-y-1 text-center md:text-left">
           <p className="font-label text-xs uppercase tracking-widest text-on-surface/40">
             Invite Code
@@ -93,14 +93,19 @@ export default function CampaignLobbyPage() {
             {campaign.inviteCode.slice(0, 3)}-{campaign.inviteCode.slice(3)}
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={copyInviteCode}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={copyInviteCode}
+          className={`transition-all duration-300 ${copied ? "glow-gold border-secondary/40" : ""}`}
+        >
           <Icon name={copied ? "check" : "content_copy"} size={16} />
           {copied ? "Copied!" : "Copy Code"}
         </Button>
       </section>
 
       {/* Party Members */}
-      <section className="space-y-6">
+      <section className="space-y-6 animate-fade-in-up" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
         <div className="flex justify-between items-end border-b border-outline-variant/20 pb-2">
           <h3 className="font-headline text-xl text-on-surface">Party Members</h3>
           <span className="font-label text-[10px] uppercase tracking-widest text-secondary/60">
@@ -108,10 +113,10 @@ export default function CampaignLobbyPage() {
           </span>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-children">
           {/* DM */}
-          <div className="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 border-l-2 border-secondary">
-            <div className="w-12 h-12 rounded-full bg-secondary-container/20 border border-secondary/30 flex items-center justify-center">
+          <div className="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 border-l-2 border-secondary interactive-glow">
+            <div className="w-12 h-12 rounded-full bg-secondary-container/20 border border-secondary/30 flex items-center justify-center glow-gold">
               <Icon name="auto_stories" size={20} className="text-secondary" />
             </div>
             <div className="flex-1">
@@ -128,7 +133,7 @@ export default function CampaignLobbyPage() {
           {players.map((member) => (
             <div
               key={member.id}
-              className="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 border-l-2 border-primary/30"
+              className="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 border-l-2 border-primary/30 interactive-glow"
             >
               <div className="w-12 h-12 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center">
                 <span className="font-headline text-lg text-on-surface">
@@ -159,9 +164,10 @@ export default function CampaignLobbyPage() {
           ))}
 
           {players.length === 0 && (
-            <div className="text-center py-8 text-on-surface-variant">
-              <Icon name="group" size={40} className="opacity-30 mb-2" />
-              <p className="font-body text-sm">
+            <div className="text-center py-8 text-on-surface-variant relative">
+              <div className="decorative-orb absolute inset-0 m-auto w-32 h-32" />
+              <Icon name="group" size={40} className="opacity-30 mb-2 animate-float relative z-10" />
+              <p className="font-body text-sm relative z-10">
                 No players yet. Share the invite code to gather your party.
               </p>
             </div>

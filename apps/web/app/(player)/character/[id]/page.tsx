@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ABILITIES, getAbilityModifier, formatModifier, SKILLS } from "@dnd-companion/shared";
 import type { ConditionKey } from "@dnd-companion/shared";
 import { AttributeOrb } from "@/components/ui/attribute-orb";
+import { Icon } from "@/components/ui/icon";
 import { CombatStats } from "@/components/character/combat-stats";
 import { ConditionManager } from "@/components/character/condition-manager";
 import { RestButtons } from "@/components/character/rest-buttons";
@@ -49,6 +50,12 @@ interface CharacterData {
   items: Array<{ id: string; name: string; quantity: number; weight: number | null; isEquipped: boolean; isAttuned: boolean; notes: string | null }>;
   conditions: Array<{ condition: ConditionKey }>;
 }
+
+const TAB_ICONS: Record<string, string> = {
+  sheet: "description",
+  inventory: "inventory_2",
+  dice: "casino",
+};
 
 export default function CharacterSheetPage() {
   const { id } = useParams<{ id: string }>();
@@ -115,7 +122,10 @@ export default function CharacterSheetPage() {
   if (loading) {
     return (
       <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto">
-        <p className="text-center text-on-surface-variant animate-pulse py-12">Loading character...</p>
+        <div className="text-center py-20 animate-pulse">
+          <Icon name="auto_stories" size={48} className="text-secondary/20 mx-auto mb-4" />
+          <p className="text-on-surface-variant font-body">Loading character...</p>
+        </div>
       </main>
     );
   }
@@ -123,7 +133,10 @@ export default function CharacterSheetPage() {
   if (!char) {
     return (
       <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto">
-        <p className="text-center text-error py-12">Character not found</p>
+        <div className="text-center py-20">
+          <Icon name="error" size={48} className="text-error/40 mx-auto mb-4" />
+          <p className="text-error font-body">Character not found</p>
+        </div>
       </main>
     );
   }
@@ -133,34 +146,47 @@ export default function CharacterSheetPage() {
   return (
     <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto space-y-8">
       {/* Character Header */}
-      <div className="flex items-end gap-4">
-        <div>
-          <h1 className="font-headline text-3xl text-on-background">{char.name}</h1>
-          <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
-            Level {char.level} {char.race.name} {char.class.name} · {char.background.name}
-          </p>
+      <div className="animate-fade-in-up">
+        <div className="flex items-end gap-4">
+          <div>
+            <h1 className="font-headline text-4xl text-on-background tracking-tight">{char.name}</h1>
+            <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mt-1">
+              Level {char.level} {char.race.name} {char.class.name} · {char.background.name}
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="px-3 py-1.5 bg-secondary-container/15 border border-secondary/20 rounded-sm">
+              <span className="font-label text-[10px] text-secondary/70 uppercase tracking-wider">Prof</span>
+              <span className="font-headline text-sm text-secondary ml-1.5">+{char.proficiencyBonus}</span>
+            </div>
+          </div>
         </div>
+        <div className="decorative-line mt-4" />
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 animate-fade-in">
         {(["sheet", "inventory", "dice"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-sm font-label text-xs uppercase tracking-widest transition-all ${
+            className={`relative px-5 py-2.5 rounded-sm font-label text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
               tab === t
-                ? "bg-primary-container text-on-primary-container"
-                : "bg-surface-container-high text-on-surface-variant hover:bg-surface-bright"
+                ? "bg-primary-container text-on-primary-container shadow-whisper"
+                : "bg-surface-container-high text-on-surface-variant hover:bg-surface-bright hover:text-on-surface"
             }`}
           >
+            <Icon name={TAB_ICONS[t]} size={16} filled={tab === t} />
             {t}
+            {tab === t && (
+              <span className="absolute -bottom-0.5 left-2 right-2 h-0.5 bg-primary rounded-full animate-scale-in" />
+            )}
           </button>
         ))}
       </div>
 
       {tab === "sheet" && (
-        <>
+        <div className="space-y-8">
           {/* Combat Stats */}
           <CombatStats
             currentHP={char.currentHP}
@@ -173,26 +199,65 @@ export default function CharacterSheetPage() {
           />
 
           {/* Ability Score Orbs */}
-          <section className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {ABILITIES.map((ability) => {
-              const score = char[ability.key as keyof typeof char] as number;
-              return (
-                <AttributeOrb
-                  key={ability.key}
-                  abbreviation={ability.abbreviation}
-                  score={score}
-                  isPrimary={score >= 14}
-                />
-              );
-            })}
+          <section className="animate-fade-in-up">
+            <span className="font-headline text-secondary uppercase tracking-widest text-xs block mb-4">
+              Abilities
+            </span>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 stagger-children">
+              {ABILITIES.map((ability) => {
+                const score = char[ability.key as keyof typeof char] as number;
+                return (
+                  <div key={ability.key} className="animate-fade-in-up">
+                    <AttributeOrb
+                      abbreviation={ability.abbreviation}
+                      score={score}
+                      isPrimary={score >= 14}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Saving Throws */}
+          <section className="bg-surface-container-low p-6 rounded-sm shadow-whisper animate-fade-in-up">
+            <span className="font-headline text-secondary uppercase tracking-widest text-xs block mb-4">
+              Saving Throws
+            </span>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {ABILITIES.map((ability) => {
+                const score = char[ability.key as keyof typeof char] as number;
+                const mod = getAbilityModifier(score);
+                const isProficient = char.saveProficiencies.includes(ability.key);
+                const bonus = mod + (isProficient ? char.proficiencyBonus : 0);
+                return (
+                  <div
+                    key={ability.key}
+                    className={`flex items-center gap-2 py-2 px-3 rounded-sm transition-all duration-300 ${
+                      isProficient
+                        ? "bg-primary-container/10 border border-primary/10"
+                        : "hover:bg-surface-container"
+                    }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full transition-colors ${
+                      isProficient ? "bg-primary" : "bg-surface-container-highest"
+                    }`} />
+                    <span className="font-body text-sm text-on-surface flex-1">{ability.abbreviation}</span>
+                    <span className={`font-headline text-sm ${isProficient ? "text-primary" : "text-on-surface/60"}`}>
+                      {formatModifier(bonus)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </section>
 
           {/* Skills */}
-          <section className="bg-surface-container-low p-6 rounded-sm">
+          <section className="bg-surface-container-low p-6 rounded-sm shadow-whisper animate-fade-in-up">
             <span className="font-headline text-secondary uppercase tracking-widest text-xs block mb-4">
               Skills
             </span>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 stagger-children">
               {SKILLS.map((skill) => {
                 const abilityScore = char[skill.ability as keyof typeof char] as number;
                 const mod = getAbilityModifier(abilityScore);
@@ -201,11 +266,36 @@ export default function CharacterSheetPage() {
                 const bonus = mod + (isProficient ? char.proficiencyBonus : 0) + (isExpert ? char.proficiencyBonus : 0);
 
                 return (
-                  <div key={skill.key} className="flex items-center gap-2 py-1.5 px-2 rounded-sm hover:bg-surface-container transition-colors">
-                    <div className={`w-2 h-2 rounded-full ${isExpert ? "bg-secondary" : isProficient ? "bg-primary" : "bg-surface-container-highest"}`} />
-                    <span className="font-body text-sm text-on-surface flex-1">{skill.name}</span>
-                    <span className="font-label text-[10px] text-on-surface/30 uppercase">{skill.ability.slice(0, 3)}</span>
-                    <span className={`font-headline text-sm w-8 text-right ${isProficient ? "text-primary" : "text-on-surface/60"}`}>
+                  <div
+                    key={skill.key}
+                    className={`flex items-center gap-2 py-1.5 px-2 rounded-sm transition-all duration-300 group ${
+                      isExpert
+                        ? "hover:bg-secondary-container/10"
+                        : isProficient
+                          ? "hover:bg-primary-container/10"
+                          : "hover:bg-surface-container"
+                    }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      isExpert
+                        ? "bg-secondary shadow-[0_0_6px_rgba(233,195,73,0.4)]"
+                        : isProficient
+                          ? "bg-primary"
+                          : "bg-surface-container-highest group-hover:bg-surface-bright"
+                    }`} />
+                    <span className="font-body text-sm text-on-surface flex-1 group-hover:text-on-background transition-colors">
+                      {skill.name}
+                    </span>
+                    <span className="font-label text-[10px] text-on-surface/30 uppercase tracking-wider">
+                      {skill.ability.slice(0, 3)}
+                    </span>
+                    <span className={`font-headline text-sm w-8 text-right transition-colors ${
+                      isExpert
+                        ? "text-secondary"
+                        : isProficient
+                          ? "text-primary"
+                          : "text-on-surface/60 group-hover:text-on-surface/80"
+                    }`}>
                       {formatModifier(bonus)}
                     </span>
                   </div>
@@ -226,7 +316,7 @@ export default function CharacterSheetPage() {
 
           {/* Rest Buttons */}
           <RestButtons onShortRest={handleShortRest} onLongRest={handleLongRest} />
-        </>
+        </div>
       )}
 
       {tab === "inventory" && (

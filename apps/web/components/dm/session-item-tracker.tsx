@@ -55,18 +55,18 @@ export function SessionItemTracker({ items, campaignId, onAdd }: Props) {
         <span className="font-headline text-secondary uppercase tracking-widest text-xs">
           Session Items ({items.length})
         </span>
-        <Button variant="ghost" size="sm" onClick={() => setShowForm(!showForm)}>
+        <Button variant="ghost" size="sm" onClick={() => setShowForm(!showForm)} className="interactive-glow">
           <Icon name={showForm ? "close" : "add"} size={14} />
           {showForm ? "Cancel" : "Add"}
         </Button>
       </div>
 
       {showForm && (
-        <div className="bg-surface-container p-4 rounded-sm space-y-3">
+        <div className="bg-surface-container p-4 rounded-sm space-y-3 animate-fade-in-up border border-secondary/10">
           <Input id="item-name" label="Item Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Sword of Flame..." />
           <Input id="item-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A magical weapon..." />
           <Input id="item-loc" label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Hidden in chest..." />
-          <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()}>
+          <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()} className="glow-gold">
             {loading ? "Adding..." : "Add Item"}
           </Button>
         </div>
@@ -76,7 +76,7 @@ export function SessionItemTracker({ items, campaignId, onAdd }: Props) {
         <div className="space-y-2">
           <span className="font-label text-[10px] uppercase tracking-widest text-on-surface/40">Hidden</span>
           {hidden.map((item) => (
-            <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-outline-variant/30">
+            <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-outline-variant/30 interactive-glow animate-shimmer">
               <Icon name="visibility_off" size={16} className="text-on-surface/30" />
               <div className="flex-1">
                 <span className="font-body text-sm text-on-surface">{item.name}</span>
@@ -91,7 +91,7 @@ export function SessionItemTracker({ items, campaignId, onAdd }: Props) {
         <div className="space-y-2">
           <span className="font-label text-[10px] uppercase tracking-widest text-secondary/60">Revealed</span>
           {revealed.map((item) => (
-            <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-secondary/30">
+            <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-secondary/30 interactive-glow glow-gold">
               <Icon name="visibility" size={16} className="text-secondary" />
               <div className="flex-1">
                 <span className="font-body text-sm text-on-surface">{item.name}</span>

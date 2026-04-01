@@ -9,7 +9,10 @@ interface InviteCodeInputProps {
 
 export function InviteCodeInput({ onComplete, disabled = false }: InviteCodeInputProps) {
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const allFilled = digits.every((d) => d !== "");
 
   function handleChange(index: number, value: string) {
     const char = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -84,9 +87,28 @@ export function InviteCodeInput({ onComplete, disabled = false }: InviteCodeInpu
             disabled={disabled}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
+            onFocus={() => setFocusedIndex(i)}
+            onBlur={() => setFocusedIndex(null)}
             onPaste={handlePaste}
             placeholder="•"
-            className="w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl bg-surface-container-highest border-none rounded-sm focus:ring-1 focus:ring-secondary/40 text-secondary placeholder-secondary/10 disabled:opacity-50"
+            className={`
+              w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl
+              bg-surface-container-highest border rounded-sm
+              text-secondary placeholder-secondary/10
+              disabled:opacity-50
+              animate-scale-in
+              transition-all duration-500 ease-out
+              ${digit
+                ? allFilled
+                  ? "border-secondary/60 glow-gold-strong shadow-elevated"
+                  : "border-secondary/40 glow-gold shadow-whisper"
+                : focusedIndex === i
+                  ? "border-secondary/50 animate-pulse-glow shadow-elevated"
+                  : "border-outline-variant/10"
+              }
+              focus:ring-1 focus:ring-secondary/50 focus:border-secondary/50 focus:shadow-elevated
+            `}
+            style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}
           />
         </span>
       ))}

@@ -69,8 +69,13 @@ export default function JoinCampaignPage() {
       {/* Join Ritual Section */}
       <section className="relative p-8 md:p-12 bg-surface-container-low rounded-sm overflow-hidden border border-secondary/5">
         <div className="absolute inset-0 paper-texture opacity-5 pointer-events-none" />
+
+        {/* Decorative orbs */}
+        <div className="decorative-orb absolute -top-20 -left-20 w-60 h-60" />
+        <div className="decorative-orb absolute -bottom-16 -right-16 w-48 h-48" />
+
         <div className="relative z-10 text-center space-y-8">
-          <div className="space-y-2">
+          <div className="space-y-2 animate-fade-in-up">
             <h2 className="font-headline text-3xl md:text-4xl text-secondary tracking-tight">
               Enter the Fray
             </h2>
@@ -81,14 +86,17 @@ export default function JoinCampaignPage() {
           </div>
 
           <div className="flex flex-col items-center gap-8">
-            <InviteCodeInput onComplete={handleCodeComplete} disabled={loading} />
+            {/* Glass background on code input section */}
+            <div className="glass rounded-sm p-6 md:p-8">
+              <InviteCodeInput onComplete={handleCodeComplete} disabled={loading} />
+            </div>
 
             {error && (
-              <p className="text-error text-sm font-body">{error}</p>
+              <p className="text-error text-sm font-body animate-fade-in">{error}</p>
             )}
 
             {campaign && (
-              <div className="bg-surface-container rounded-sm p-6 w-full max-w-sm space-y-4">
+              <div className="bg-surface-container rounded-sm p-6 w-full max-w-sm space-y-4 animate-scale-in border border-secondary/10 shadow-elevated">
                 <div className="text-center space-y-1">
                   <h3 className="font-headline text-xl text-primary">
                     {campaign.name}
@@ -97,7 +105,7 @@ export default function JoinCampaignPage() {
                     DM: {campaign.dm.name} · {campaign.memberCount} members
                   </p>
                 </div>
-                <Button onClick={handleJoin} className="w-full" disabled={loading}>
+                <Button onClick={handleJoin} className="w-full glow-gold-strong" disabled={loading}>
                   <span className="flex items-center gap-3">
                     Join Campaign
                     <Icon name="auto_awesome" size={16} />
@@ -113,9 +121,6 @@ export default function JoinCampaignPage() {
             )}
           </div>
         </div>
-
-        {/* Decorative glow */}
-        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary/5 rounded-full blur-3xl" />
       </section>
     </main>
   );
