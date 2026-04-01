@@ -1,0 +1,78 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@dnd-companion/database";
+import { auth } from "@/lib/auth";
+
+// GET /api/campaigns/:id/locations — list all locations with nested children
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id: campaignId } = await params;
+
+  // Verify user is DM of this campaign
+  const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
+  if (!campaign || campaign.dmId !== session.user.id) {
+    return NextResponse.json({ error: "Not the DM of this campaign" }, { status: 403 });
+  }
+
+  const locations = await prisma.location.findMany({
+    where: { campaignId },
+    include: {
+      children: {
+        include: {
+          children: true,
+        },
+        orderBy: { name: "asc" },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return NextResponse.json(locations);
+}
+
+// POST /api/campaigns/:id/locations — create a new location
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id: campaignId } = await params;
+
+  // Verify user is DM of this campaign
+  const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
+  if (!campaign || campaign.dmId !== session.user.id) {
+    return NextResponse.json({ error: "Not the DM of this campaign" }, { status: 403 });
+  }
+
+  const { name, type, description, notes, parentId } = await request.json();
+
+  if (!name || !type) {
+    return NextResponse.json({ error: "Name and type are required" }, { status: 400 });
+  }
+
+  const location = await prisma.location.create({
+    data: {
+      campaignId,
+      name,
+      type,
+      description,
+      notes,
+      parentId,
+    },
+    include: {
+      children: true,
+    },
+  });
+
+  return NextResponse.json(location, { status: 201 });
+}

@@ -75,9 +75,14 @@ model Campaign {
   dmId String
   dm   User   @relation("DungeonMaster", fields: [dmId], references: [id])
 
-  members      CampaignMember[]
-  npcs         NPC[]
-  sessionItems SessionItem[]
+  members       CampaignMember[]
+  npcs          NPC[]
+  sessionItems  SessionItem[]
+  gameSessions  GameSession[]
+  locations     Location[]
+  quests        Quest[]
+  encounters    Encounter[]
+  campaignNotes CampaignNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -351,12 +356,25 @@ model Equipment {
 // ─── DM Session Tracking ─────────────────────────────────────────
 
 model NPC {
-  id          String  @id @default(cuid())
-  name        String
-  description String? @db.Text
-  statBlock   Json?
-  isEnemy     Boolean @default(false)
-  notes       String? @db.Text
+  id           String  @id @default(cuid())
+  name         String
+  description  String? @db.Text
+  statBlock    Json?
+  isEnemy      Boolean @default(false)
+  notes        String? @db.Text
+
+  // Enhanced NPC fields
+  race         String?
+  npcClass     String?  // "class" is reserved
+  alignment    String?
+  personality  String?  @db.Text
+  appearance   String?  @db.Text
+  voice        String?  // Voice/accent notes
+  faction      String?
+  locationName String?  // Where they can be found
+  relationship String?  // ally, enemy, neutral, patron, rival
+  isAlive      Boolean  @default(true)
+  cr           String?  // Challenge rating
 
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
@@ -371,9 +389,108 @@ model SessionItem {
   location    String?
   isHidden    Boolean @default(true)
   claimedById String?
+  rarity      String? // "common", "uncommon", "rare", "very rare", "legendary"
+  value       String? // e.g. "500 gp"
 
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+// ─── DM Session Planning ─────────────────────────────────────────
+
+model GameSession {
+  id          String        @id @default(cuid())
+  number      Int
+  title       String?
+  date        DateTime?
+  status      SessionStatus @default(PLANNED)
+
+  strongStart    String? @db.Text
+  scenes         Json?   // [{ title, description, type }]
+  secretsAndClues Json?  // [{ secret, discovered }]
+  summary        String? @db.Text
+  notes          String? @db.Text
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SessionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Location {
+  id          String    @id @default(cuid())
+  name        String
+  type        String    // city, dungeon, wilderness, building, region, tavern
+  description String?   @db.Text
+  notes       String?   @db.Text
+  parentId    String?
+  parent      Location? @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children    Location[] @relation("LocationHierarchy")
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Quest {
+  id          String      @id @default(cuid())
+  title       String
+  description String?     @db.Text
+  status      QuestStatus @default(ACTIVE)
+  priority    String      @default("normal")
+  notes       String?     @db.Text
+  giverNpcId  String?
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum QuestStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  ON_HOLD
+}
+
+model Encounter {
+  id          String  @id @default(cuid())
+  name        String
+  description String? @db.Text
+  difficulty  String? // easy, medium, hard, deadly
+  monsters    Json    // [{ name, cr, count, hp, ac, notes }]
+  loot        Json?   // [{ name, quantity, description }]
+  notes       String? @db.Text
+  status      String  @default("prepared") // prepared, active, completed
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model CampaignNote {
+  id       String  @id @default(cuid())
+  title    String
+  content  String  @db.Text
+  category String  @default("general") // general, lore, rules, faction, plot
+  isPinned Boolean @default(false)
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

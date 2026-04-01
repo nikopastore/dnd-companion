@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { LiveActivityFeed } from "@/components/campaign/live-activity-feed";
-import { NPCTracker } from "@/components/dm/npc-tracker";
-import { SessionItemTracker } from "@/components/dm/session-item-tracker";
+import { DMTabs } from "@/components/dm/dm-tabs";
+import { OverviewTab } from "@/components/dm/overview-tab";
+import { SessionsTab } from "@/components/dm/sessions-tab";
+import { NPCsTab } from "@/components/dm/npcs-tab";
+import { QuestsTab } from "@/components/dm/quests-tab";
+import { LocationsTab } from "@/components/dm/locations-tab";
+import { EncountersTab } from "@/components/dm/encounters-tab";
+import { LootTab } from "@/components/dm/loot-tab";
 
 interface CampaignData {
   id: string;
@@ -25,11 +31,53 @@ interface CampaignData {
       id: string;
       name: string;
       level: number;
+      currentHP: number;
+      maxHP: number;
+      armorClass: number;
     } | null;
   }>;
-  npcs: Array<{ id: string; name: string; description: string | null; isEnemy: boolean; notes: string | null }>;
-  sessionItems: Array<{ id: string; name: string; description: string | null; location: string | null; isHidden: boolean; claimedById: string | null }>;
+  npcs: Array<{
+    id: string; name: string; description: string | null; isEnemy: boolean;
+    notes: string | null; race: string | null; npcClass: string | null;
+    alignment: string | null; personality: string | null; appearance: string | null;
+    voice: string | null; faction: string | null; locationName: string | null;
+    relationship: string | null; isAlive: boolean; cr: string | null;
+    statBlock: unknown;
+  }>;
+  sessionItems: Array<{
+    id: string; name: string; description: string | null; location: string | null;
+    isHidden: boolean; claimedById: string | null; rarity: string | null; value: string | null;
+  }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gameSessions: any[];
+  locations: Array<{
+    id: string; name: string; type: string; description: string | null;
+    notes: string | null; parentId: string | null;
+    children: Array<{ id: string; name: string; type: string }>;
+  }>;
+  quests: Array<{
+    id: string; title: string; description: string | null; status: string;
+    priority: string; notes: string | null; giverNpcId: string | null;
+  }>;
+  encounters: Array<{
+    id: string; name: string; description: string | null; difficulty: string | null;
+    monsters: unknown; loot: unknown; notes: string | null; status: string;
+  }>;
+  campaignNotes: Array<{
+    id: string; title: string; content: string; category: string;
+    isPinned: boolean;
+  }>;
 }
+
+const DM_TABS = [
+  { id: "overview", label: "Overview", icon: "dashboard" },
+  { id: "sessions", label: "Sessions", icon: "event_note" },
+  { id: "npcs", label: "NPCs", icon: "groups" },
+  { id: "quests", label: "Quests", icon: "assignment" },
+  { id: "locations", label: "Locations", icon: "map" },
+  { id: "encounters", label: "Encounters", icon: "swords" },
+  { id: "loot", label: "Loot & Items", icon: "inventory_2" },
+];
 
 export default function CampaignLobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,18 +85,21 @@ export default function CampaignLobbyPage() {
   const [campaign, setCampaign] = useState<CampaignData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [statusLoading, setStatusLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const isDM = session?.user?.id === campaign?.dm?.id;
 
   useEffect(() => {
     fetch(`/api/campaigns/${id}`)
       .then((res) => res.json())
-      .then((data) => {
-        setCampaign(data);
-        setLoading(false);
-      })
+      .then((data) => { setCampaign(data); setLoading(false); })
       .catch(() => setLoading(false));
+  }, [id]);
+
+  const refreshCampaign = useCallback(() => {
+    fetch(`/api/campaigns/${id}`)
+      .then((res) => res.json())
+      .then((data) => setCampaign(data));
   }, [id]);
 
   function copyInviteCode() {
@@ -60,35 +111,23 @@ export default function CampaignLobbyPage() {
 
   async function updateStatus(newStatus: string) {
     if (!campaign) return;
-    setStatusLoading(true);
-    const res = await fetch(`/api/campaigns/${campaign.id}/status`, {
+    await fetch(`/api/campaigns/${campaign.id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
     });
-    setStatusLoading(false);
-    if (res.ok) {
-      setCampaign((prev) => prev ? { ...prev, status: newStatus } : prev);
-    }
-  }
-
-  function handleAddNPC(npc: CampaignData["npcs"][0]) {
-    setCampaign((prev) => prev ? { ...prev, npcs: [...prev.npcs, npc] } : prev);
-  }
-
-  function handleAddItem(item: CampaignData["sessionItems"][0]) {
-    setCampaign((prev) => prev ? { ...prev, sessionItems: [...prev.sessionItems, item] } : prev);
+    setCampaign((prev) => prev ? { ...prev, status: newStatus } : prev);
   }
 
   if (loading) {
     return (
-      <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto">
+      <main className="pt-24 pb-32 px-6 max-w-7xl mx-auto">
         <div className="space-y-4 animate-pulse">
-          <div className="h-8 w-48 bg-surface-container-high rounded-sm mx-auto" />
-          <div className="h-4 w-32 bg-surface-container-high/60 rounded-sm mx-auto" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
-            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
+          <div className="h-10 w-64 bg-surface-container-high rounded-sm mx-auto" />
+          <div className="h-4 w-40 bg-surface-container-high/60 rounded-sm mx-auto" />
+          <div className="h-12 bg-surface-container-high/30 rounded-sm mt-8" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-surface-container-high/20 rounded-sm" />)}
           </div>
         </div>
       </main>
@@ -97,240 +136,177 @@ export default function CampaignLobbyPage() {
 
   if (!campaign) {
     return (
-      <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto">
-        <p className="text-center text-error">Campaign not found</p>
+      <main className="pt-24 pb-32 px-6 max-w-7xl mx-auto">
+        <div className="text-center py-20">
+          <Icon name="error" size={48} className="text-error/40 mx-auto mb-4" />
+          <p className="text-error font-body">Campaign not found</p>
+        </div>
       </main>
     );
   }
 
-  const players = campaign.members.filter((m) => m.role === "PLAYER");
   const statusColors: Record<string, string> = {
     LOBBY: "bg-secondary-container/20 text-secondary border-secondary/20",
     ACTIVE: "bg-green-900/30 text-green-400 border-green-500/20",
     ARCHIVED: "bg-surface-container-high text-on-surface/40 border-outline-variant/20",
   };
 
-  return (
-    <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto space-y-8">
-      {/* Campaign Header */}
-      <section className="text-center space-y-4 animate-fade-in-up">
-        <div className="flex items-center justify-center gap-3">
-          <h1 className="font-headline text-4xl text-primary">{campaign.name}</h1>
-          <span className={`px-2.5 py-1 rounded-sm font-label text-[10px] uppercase tracking-widest border ${statusColors[campaign.status] || ""}`}>
-            {campaign.status}
-          </span>
-        </div>
-        {campaign.description && (
-          <p className="font-body text-on-surface-variant max-w-lg mx-auto">
-            {campaign.description}
-          </p>
-        )}
-        <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter">
-          Dungeon Master: {campaign.dm.name}
-          {isDM && <span className="text-secondary ml-2">(You)</span>}
-        </p>
-      </section>
-
-      {/* DM Controls */}
-      {isDM && (
-        <section className="glass rounded-sm p-6 space-y-5 animate-fade-in-up border border-secondary/10" style={{ animationDelay: "80ms" }}>
-          <div className="flex items-center gap-2">
-            <Icon name="shield_person" size={20} className="text-secondary" />
-            <h3 className="font-headline text-lg text-secondary uppercase tracking-widest text-xs">
-              DM Controls
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {campaign.status === "LOBBY" && (
-              <Button
-                onClick={() => updateStatus("ACTIVE")}
-                loading={statusLoading}
-                className="glow-gold"
-              >
-                <Icon name="play_arrow" size={18} />
-                Start Campaign
-              </Button>
-            )}
-            {campaign.status === "ACTIVE" && (
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => updateStatus("LOBBY")}
-                  loading={statusLoading}
-                >
-                  <Icon name="pause" size={18} />
-                  Pause Campaign
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => updateStatus("ARCHIVED")}
-                  loading={statusLoading}
-                >
-                  <Icon name="archive" size={18} />
-                  Archive
-                </Button>
-              </>
-            )}
-            {campaign.status === "ARCHIVED" && (
-              <Button
-                variant="secondary"
-                onClick={() => updateStatus("ACTIVE")}
-                loading={statusLoading}
-              >
-                <Icon name="unarchive" size={18} />
-                Reactivate
-              </Button>
-            )}
-            <Link href={`/builder?campaignId=${campaign.id}`}>
-              <Button variant="secondary" className="w-full">
-                <Icon name="person_add" size={18} />
-                Create NPC Character
-              </Button>
-            </Link>
-          </div>
-
-          <div className="decorative-line" />
-
-          {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="font-headline text-2xl text-on-surface">{players.length}</div>
-              <div className="font-label text-[10px] uppercase text-on-surface/40">Players</div>
-            </div>
-            <div className="text-center">
-              <div className="font-headline text-2xl text-on-surface">{campaign.npcs?.length || 0}</div>
-              <div className="font-label text-[10px] uppercase text-on-surface/40">NPCs</div>
-            </div>
-            <div className="text-center">
-              <div className="font-headline text-2xl text-on-surface">{campaign.sessionItems?.length || 0}</div>
-              <div className="font-label text-[10px] uppercase text-on-surface/40">Items</div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Invite Code Banner */}
-      <section className="bg-surface-container-low rounded-sm p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-secondary/10 animate-fade-in-up" style={{ animationDelay: "120ms" }}>
-        <div className="space-y-1 text-center md:text-left">
-          <p className="font-label text-xs uppercase tracking-widest text-on-surface/40">
-            Invite Code
-          </p>
-          <p className="font-headline text-3xl text-secondary tracking-[0.3em] tabular-nums">
-            {campaign.inviteCode.slice(0, 3)}-{campaign.inviteCode.slice(3)}
-          </p>
-        </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={copyInviteCode}
-          className={`transition-all duration-300 ${copied ? "glow-gold border-secondary/40" : ""}`}
-          aria-label="Copy invite code to clipboard"
-        >
-          <Icon name={copied ? "check" : "content_copy"} size={16} />
-          {copied ? "Copied!" : "Copy Code"}
-        </Button>
-      </section>
-
-      <div className={`grid grid-cols-1 ${isDM ? "lg:grid-cols-12" : ""} gap-8`}>
-        {/* Party Members (left column for DM, full width for players) */}
-        <section className={`space-y-6 animate-fade-in-up ${isDM ? "lg:col-span-7" : ""}`} style={{ animationDelay: "200ms" }}>
-          <div className="flex justify-between items-end border-b border-outline-variant/20 pb-2">
-            <h3 className="font-headline text-xl text-on-surface">Party Members</h3>
-            <span className="font-label text-[10px] uppercase tracking-widest text-secondary/60">
-              {campaign.members.length} Soul{campaign.members.length !== 1 ? "s" : ""} Bound
+  // Player view (non-DM)
+  if (!isDM) {
+    return (
+      <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-8">
+        <section className="text-center space-y-4 animate-fade-in-up">
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="font-headline text-4xl text-primary">{campaign.name}</h1>
+            <span className={`px-2.5 py-1 rounded-sm font-label text-[10px] uppercase tracking-widest border ${statusColors[campaign.status]}`}>
+              {campaign.status}
             </span>
           </div>
-
-          <div className="space-y-3 stagger-children">
-            {/* DM */}
-            <div className="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 border-l-2 border-secondary interactive-glow">
-              <div className="w-12 h-12 rounded-full bg-secondary-container/20 border border-secondary/30 flex items-center justify-center glow-gold">
-                <Icon name="auto_stories" size={20} className="text-secondary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-body font-semibold text-on-surface">
-                  {campaign.dm.name}
-                </p>
-                <p className="font-label text-[10px] uppercase tracking-widest text-secondary">
-                  Dungeon Master
-                </p>
-              </div>
-            </div>
-
-            {/* Players */}
-            {players.map((member) => (
-              <div
-                key={member.id}
-                className="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 border-l-2 border-primary/30 interactive-glow"
-              >
-                <div className="w-12 h-12 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center">
-                  <span className="font-headline text-lg text-on-surface">
-                    {member.user.name?.[0]?.toUpperCase() || "?"}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <p className="font-body font-semibold text-on-surface">
-                    {member.user.name}
-                  </p>
-                  {member.character ? (
-                    <p className="font-label text-[10px] uppercase tracking-widest text-primary/60">
-                      {member.character.name} · Level {member.character.level}
-                    </p>
-                  ) : (
-                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface/40">
-                      No character assigned
-                    </p>
-                  )}
-                </div>
-                {!member.character && (
-                  <Link href={`/builder?campaignId=${campaign.id}`}>
-                    <Button variant="ghost" size="sm" aria-label={`Assign character for ${member.user.name}`}>
-                      <Icon name="person_add" size={16} />
-                      Assign
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            ))}
-
-            {players.length === 0 && (
-              <div className="text-center py-8 text-on-surface-variant relative">
-                <div className="decorative-orb absolute inset-0 m-auto w-32 h-32" />
-                <Icon name="group" size={40} className="opacity-30 mb-2 animate-float relative z-10" />
-                <p className="font-body text-sm relative z-10">
-                  No players yet. Share the invite code to gather your party.
-                </p>
-              </div>
-            )}
-          </div>
+          {campaign.description && (
+            <p className="font-body text-on-surface-variant max-w-lg mx-auto">{campaign.description}</p>
+          )}
+          <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter">
+            DM: {campaign.dm.name}
+          </p>
         </section>
 
-        {/* DM Sidebar: NPCs & Items */}
-        {isDM && (
-          <aside className="lg:col-span-5 space-y-6 animate-fade-in-up" style={{ animationDelay: "280ms" }}>
-            <div className="bg-surface-container-low p-6 rounded-sm border border-secondary/5">
-              <NPCTracker
-                npcs={campaign.npcs || []}
-                campaignId={campaign.id}
-                onAdd={handleAddNPC}
-              />
-            </div>
+        <section className="bg-surface-container-low rounded-sm p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-secondary/10">
+          <div className="space-y-1 text-center md:text-left">
+            <p className="font-label text-xs uppercase tracking-widest text-on-surface/40">Invite Code</p>
+            <p className="font-headline text-3xl text-secondary tracking-[0.3em] tabular-nums">
+              {campaign.inviteCode.slice(0, 3)}-{campaign.inviteCode.slice(3)}
+            </p>
+          </div>
+          <Button variant="secondary" size="sm" onClick={copyInviteCode} aria-label="Copy invite code">
+            <Icon name={copied ? "check" : "content_copy"} size={16} />
+            {copied ? "Copied!" : "Copy Code"}
+          </Button>
+        </section>
 
-            <div className="decorative-line" />
-
-            <div className="bg-surface-container-low p-6 rounded-sm border border-secondary/5">
-              <SessionItemTracker
-                items={campaign.sessionItems || []}
-                campaignId={campaign.id}
-                onAdd={handleAddItem}
-              />
+        <section className="space-y-3 stagger-children">
+          <h3 className="font-headline text-xl text-on-surface mb-4">Party Members</h3>
+          {campaign.members.map((member) => (
+            <div key={member.id} className="bg-surface-container-low p-4 rounded-sm flex items-center gap-4 border-l-2 border-primary/30 interactive-glow">
+              <div className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
+                <span className="font-headline text-sm">{member.user.name?.[0]?.toUpperCase() || "?"}</span>
+              </div>
+              <div>
+                <p className="font-body font-semibold text-on-surface">{member.user.name}</p>
+                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface/40">
+                  {member.role === "DM" ? "Dungeon Master" : member.character?.name || "No character"}
+                </p>
+              </div>
             </div>
-          </aside>
+          ))}
+        </section>
+
+        <LiveActivityFeed campaignId={campaign.id} />
+      </main>
+    );
+  }
+
+  // DM Command Center
+  const tabsWithCounts = DM_TABS.map((tab) => ({
+    ...tab,
+    count:
+      tab.id === "npcs" ? campaign.npcs?.length :
+      tab.id === "sessions" ? campaign.gameSessions?.length :
+      tab.id === "quests" ? campaign.quests?.length :
+      tab.id === "locations" ? campaign.locations?.length :
+      tab.id === "encounters" ? campaign.encounters?.length :
+      tab.id === "loot" ? campaign.sessionItems?.length :
+      undefined,
+  }));
+
+  return (
+    <main className="pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto space-y-6">
+      {/* Campaign Header */}
+      <section className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="font-headline text-3xl md:text-4xl text-primary">{campaign.name}</h1>
+            <span className={`px-2.5 py-1 rounded-sm font-label text-[10px] uppercase tracking-widest border ${statusColors[campaign.status]}`}>
+              {campaign.status}
+            </span>
+          </div>
+          <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter mt-1">
+            DM: {campaign.dm.name} (You) · {campaign.members.length} members
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="bg-surface-container-low px-4 py-2 rounded-sm border border-secondary/10 flex items-center gap-2">
+            <span className="font-label text-[10px] uppercase text-on-surface/40">Code:</span>
+            <span className="font-headline text-lg text-secondary tracking-widest tabular-nums">
+              {campaign.inviteCode.slice(0, 3)}-{campaign.inviteCode.slice(3)}
+            </span>
+            <button onClick={copyInviteCode} className="p-1 hover:text-secondary transition-colors" aria-label="Copy invite code">
+              <Icon name={copied ? "check" : "content_copy"} size={14} className={copied ? "text-secondary" : "text-on-surface/40"} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div className="decorative-line" />
+
+      {/* DM Tab Navigation */}
+      <DMTabs tabs={tabsWithCounts} activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Tab Content */}
+      <div className="animate-fade-in" key={activeTab}>
+        {activeTab === "overview" && (
+          <OverviewTab
+            campaign={campaign as any}
+            onStatusChange={updateStatus}
+          />
+        )}
+        {activeTab === "sessions" && (
+          <SessionsTab
+            sessions={campaign.gameSessions || []}
+            campaignId={campaign.id}
+            onAdd={() => refreshCampaign()}
+          />
+        )}
+        {activeTab === "npcs" && (
+          <NPCsTab
+            npcs={campaign.npcs as any[] || []}
+            campaignId={campaign.id}
+            onAdd={() => refreshCampaign()}
+            onUpdate={() => refreshCampaign()}
+          />
+        )}
+        {activeTab === "quests" && (
+          <QuestsTab
+            quests={campaign.quests || []}
+            npcs={campaign.npcs || []}
+            campaignId={campaign.id}
+            onAdd={() => refreshCampaign()}
+            onUpdate={() => refreshCampaign()}
+          />
+        )}
+        {activeTab === "locations" && (
+          <LocationsTab
+            locations={campaign.locations || []}
+            campaignId={campaign.id}
+            onAdd={() => refreshCampaign()}
+          />
+        )}
+        {activeTab === "encounters" && (
+          <EncountersTab
+            encounters={campaign.encounters || []}
+            campaignId={campaign.id}
+            onAdd={() => refreshCampaign()}
+          />
+        )}
+        {activeTab === "loot" && (
+          <LootTab
+            sessionItems={campaign.sessionItems || []}
+            campaignId={campaign.id}
+            onAddItem={() => refreshCampaign()}
+          />
         )}
       </div>
 
-      {/* Live Activity Feed */}
+      {/* Activity Feed (always visible) */}
       <LiveActivityFeed campaignId={campaign.id} />
     </main>
   );
