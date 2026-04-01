@@ -91,6 +91,7 @@ export function InviteCodeInput({ onComplete, disabled = false }: InviteCodeInpu
             onBlur={() => setFocusedIndex(null)}
             onPaste={handlePaste}
             placeholder="•"
+            aria-label={`Invite code digit ${i + 1}`}
             className={`
               w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl
               bg-surface-container-highest border rounded-sm

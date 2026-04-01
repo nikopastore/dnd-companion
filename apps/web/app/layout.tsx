@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Serif, Inter } from "next/font/google";
 import { SessionProvider } from "@/components/auth/session-provider";
 import "./globals.css";
@@ -23,6 +23,12 @@ export const metadata: Metadata = {
     "A premium companion app for Dungeons & Dragons 5th Edition. Create characters, manage campaigns, and track your adventures.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -36,8 +42,14 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background text-on-surface font-body antialiased min-h-screen">
-        <SessionProvider>{children}</SessionProvider>
+      <body className="bg-background text-on-surface font-body antialiased min-h-dvh">
+        {/* Skip link for keyboard navigation (CRITICAL a11y) */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        <SessionProvider>
+          <div id="main-content">{children}</div>
+        </SessionProvider>
       </body>
     </html>
   );

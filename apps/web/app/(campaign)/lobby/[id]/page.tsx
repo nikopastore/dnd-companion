@@ -51,9 +51,18 @@ export default function CampaignLobbyPage() {
   if (loading) {
     return (
       <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto">
-        <p className="text-center text-on-surface-variant animate-pulse">
-          Loading campaign...
-        </p>
+        <div className="space-y-4 animate-pulse">
+          <div className="h-8 w-48 bg-surface-container-high rounded-sm mx-auto" />
+          <div className="h-4 w-32 bg-surface-container-high/60 rounded-sm mx-auto" />
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
+            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
+          </div>
+          <div className="space-y-3 mt-4">
+            <div className="h-16 bg-surface-container-high/30 rounded-sm" />
+            <div className="h-16 bg-surface-container-high/30 rounded-sm" />
+          </div>
+        </div>
       </main>
     );
   }

@@ -122,9 +122,18 @@ export default function CharacterSheetPage() {
   if (loading) {
     return (
       <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto">
-        <div className="text-center py-20 animate-pulse">
-          <Icon name="auto_stories" size={48} className="text-secondary/20 mx-auto mb-4" />
-          <p className="text-on-surface-variant font-body">Loading character...</p>
+        <div className="space-y-4 animate-pulse">
+          <div className="h-8 w-48 bg-surface-container-high rounded-sm" />
+          <div className="h-4 w-32 bg-surface-container-high/60 rounded-sm" />
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
+            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
+          </div>
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="h-24 bg-surface-container-high/30 rounded-sm" />
+            <div className="h-24 bg-surface-container-high/30 rounded-sm" />
+            <div className="h-24 bg-surface-container-high/30 rounded-sm" />
+          </div>
         </div>
       </main>
     );

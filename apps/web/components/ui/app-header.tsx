@@ -42,6 +42,7 @@ export function AppHeader() {
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="text-primary/50 hover:text-primary hover:bg-surface-container-high/60 transition-all duration-300 p-2 rounded-sm"
                 title="Sign out"
+                aria-label="Sign out"
               >
                 <Icon name="logout" size={18} />
               </button>

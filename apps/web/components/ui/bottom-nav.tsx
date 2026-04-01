@@ -24,7 +24,8 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex flex-col items-center justify-center pt-1 w-16 transition-all duration-300 active:scale-90 ${
+              aria-label={`Navigate to ${item.label}`}
+              className={`relative flex flex-col items-center justify-center pt-1 min-w-[44px] min-h-[44px] w-16 transition-all duration-300 active:scale-90 ${
                 isActive ? "text-primary" : "text-on-surface/30 hover:text-on-surface/60"
               }`}
             >

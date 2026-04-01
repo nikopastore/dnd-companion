@@ -89,14 +89,16 @@ export function DiceRoller() {
         <div className="flex items-center gap-1 bg-surface-container rounded-sm p-1">
           <button
             onClick={() => setNumDice(Math.max(1, numDice - 1))}
-            className="w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
+            aria-label="Decrease number of dice"
+            className="min-w-[44px] min-h-[44px] w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
           >
             <Icon name="remove" size={14} />
           </button>
           <span className="font-headline text-lg text-on-surface w-6 text-center">{numDice}</span>
           <button
             onClick={() => setNumDice(Math.min(10, numDice + 1))}
-            className="w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
+            aria-label="Increase number of dice"
+            className="min-w-[44px] min-h-[44px] w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
           >
             <Icon name="add" size={14} />
           </button>
@@ -110,7 +112,8 @@ export function DiceRoller() {
             <button
               key={d}
               onClick={() => roll(d)}
-              className={`px-3 py-2 rounded-sm font-headline text-sm border border-transparent transition-all duration-300 interactive-lift ${
+              aria-label={`Roll d${d}`}
+              className={`px-3 py-2 min-h-[44px] rounded-sm font-headline text-sm border border-transparent transition-all duration-300 interactive-lift ${
                 lastDie === d && result
                   ? DICE_ACTIVE_COLORS[d]
                   : `bg-surface-container-highest text-on-surface ${DICE_COLORS[d]}`
@@ -125,7 +128,8 @@ export function DiceRoller() {
         <div className="flex items-center gap-1 bg-surface-container rounded-sm p-1">
           <button
             onClick={() => setModifier(modifier - 1)}
-            className="w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
+            aria-label="Decrease modifier"
+            className="min-w-[44px] min-h-[44px] w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
           >
             <Icon name="remove" size={14} />
           </button>
@@ -136,7 +140,8 @@ export function DiceRoller() {
           </span>
           <button
             onClick={() => setModifier(modifier + 1)}
-            className="w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
+            aria-label="Increase modifier"
+            className="min-w-[44px] min-h-[44px] w-7 h-7 rounded-sm bg-surface-container-highest flex items-center justify-center text-on-surface/60 hover:text-on-surface hover:bg-surface-bright transition-colors"
           >
             <Icon name="add" size={14} />
           </button>

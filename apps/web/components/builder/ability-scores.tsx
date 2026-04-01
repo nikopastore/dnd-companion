@@ -137,7 +137,8 @@ export function AbilityScores({ builder }: Props) {
                     <button
                       onClick={() => adjustScore(ability.key, -1)}
                       disabled={score <= 8}
-                      className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface disabled:opacity-30 hover:bg-surface-bright transition-all duration-300 hover:scale-110"
+                      aria-label={`Decrease ${ability.abbreviation}`}
+                      className="min-w-[44px] min-h-[44px] w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface disabled:opacity-30 hover:bg-surface-bright transition-all duration-300 hover:scale-110"
                     >
                       <Icon name="remove" size={16} />
                     </button>
@@ -152,7 +153,8 @@ export function AbilityScores({ builder }: Props) {
                     <button
                       onClick={() => adjustScore(ability.key, 1)}
                       disabled={score >= 15 || pointsRemaining <= 0}
-                      className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface disabled:opacity-30 hover:bg-surface-bright transition-all duration-300 hover:scale-110"
+                      aria-label={`Increase ${ability.abbreviation}`}
+                      className="min-w-[44px] min-h-[44px] w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface disabled:opacity-30 hover:bg-surface-bright transition-all duration-300 hover:scale-110"
                     >
                       <Icon name="add" size={16} />
                     </button>

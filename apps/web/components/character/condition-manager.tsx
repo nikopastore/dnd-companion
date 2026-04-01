@@ -53,7 +53,8 @@ export function ConditionManager({
                   <button
                     key={i}
                     onClick={() => onUpdate("deathSaveSuccesses", i < deathSaveSuccesses ? i : i + 1)}
-                    className={`w-9 h-9 rounded-full border-2 transition-all duration-300 ${
+                    aria-label={`Death save success ${i + 1}${i < deathSaveSuccesses ? ", filled" : ", empty"}`}
+                    className={`min-w-[44px] min-h-[44px] w-9 h-9 rounded-full border-2 transition-all duration-300 ${
                       filled
                         ? "bg-green-400 border-green-400 shadow-[0_0_12px_rgba(74,222,128,0.5)] scale-110"
                         : "border-green-400/30 hover:border-green-400/60 hover:shadow-[0_0_8px_rgba(74,222,128,0.2)]"
@@ -83,7 +84,8 @@ export function ConditionManager({
                   <button
                     key={i}
                     onClick={() => onUpdate("deathSaveFailures", i < deathSaveFailures ? i : i + 1)}
-                    className={`w-9 h-9 rounded-full border-2 transition-all duration-300 ${
+                    aria-label={`Death save failure ${i + 1}${i < deathSaveFailures ? ", filled" : ", empty"}`}
+                    className={`min-w-[44px] min-h-[44px] w-9 h-9 rounded-full border-2 transition-all duration-300 ${
                       filled
                         ? "bg-error border-error shadow-[0_0_12px_rgba(255,77,77,0.5)] scale-110"
                         : "border-error/30 hover:border-error/60 hover:shadow-[0_0_8px_rgba(255,77,77,0.2)]"
@@ -134,7 +136,8 @@ export function ConditionManager({
               <button
                 key={level}
                 onClick={() => onUpdate("exhaustionLevel", exhaustionLevel === level ? level - 1 : level)}
-                className={`w-11 h-11 rounded-sm flex items-center justify-center font-headline text-lg border transition-all duration-300 interactive-lift ${
+                aria-label={`Exhaustion level ${level}${level <= exhaustionLevel ? ", active" : ""}`}
+                className={`min-w-[44px] min-h-[44px] w-11 h-11 rounded-sm flex items-center justify-center font-headline text-lg border transition-all duration-300 interactive-lift ${
                   isActive
                     ? EXHAUSTION_COLORS[level]
                     : EXHAUSTION_INACTIVE

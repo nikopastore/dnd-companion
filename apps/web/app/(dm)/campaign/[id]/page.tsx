@@ -58,7 +58,19 @@ export default function DMCampaignPage() {
   if (loading) {
     return (
       <main className="pt-20 pb-24 px-4 max-w-[1600px] mx-auto">
-        <p className="text-center text-on-surface-variant animate-pulse py-12">Loading campaign...</p>
+        <div className="space-y-4 animate-pulse">
+          <div className="h-8 w-48 bg-surface-container-high rounded-sm" />
+          <div className="h-4 w-32 bg-surface-container-high/60 rounded-sm" />
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
+            <div className="h-40 bg-surface-container-high/40 rounded-sm" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+            <div className="h-32 bg-surface-container-high/30 rounded-sm" />
+            <div className="h-32 bg-surface-container-high/30 rounded-sm" />
+            <div className="h-32 bg-surface-container-high/30 rounded-sm" />
+          </div>
+        </div>
       </main>
     );
   }
