@@ -48,5 +48,22 @@ export async function GET(
     return NextResponse.json({ error: "Not a member of this campaign" }, { status: 403 });
   }
 
-  return NextResponse.json(campaign);
+  // Filter DM-only data for non-DM members
+  const isDM = campaign.dm.id === session.user.id;
+
+  const filteredNpcs = isDM
+    ? campaign.npcs
+    : campaign.npcs
+        .filter((npc) => !npc.isEnemy) // Players only see non-enemy NPCs
+        .map(({ notes, isEnemy, ...rest }) => rest);
+
+  const filteredSessionItems = isDM
+    ? campaign.sessionItems
+    : campaign.sessionItems.filter((item) => !item.isHidden);
+
+  return NextResponse.json({
+    ...campaign,
+    npcs: filteredNpcs,
+    sessionItems: filteredSessionItems,
+  });
 }

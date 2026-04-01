@@ -44,6 +44,8 @@ export default function JoinCampaignPage() {
 
     const res = await fetch(`/api/campaigns/${campaign.id}/join`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inviteCode: code }),
     });
 
     setLoading(false);
