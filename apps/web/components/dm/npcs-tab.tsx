@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
 
@@ -274,12 +277,14 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
 
       {/* Create NPC Form */}
       {showForm && (
-        <div className="bg-surface-container-low p-6 rounded-sm border border-secondary/15 space-y-5 animate-fade-in-up">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="glass rounded-sm p-6 border border-secondary/10 space-y-5 animate-fade-in-up shadow-whisper relative overflow-hidden">
+          <div className="decorative-orb absolute -top-10 -right-10 w-32 h-32" />
+          <div className="flex items-center gap-2 mb-1 relative z-10">
             <Icon name="person_add" size={20} className="text-secondary" />
             <h3 className="font-headline text-base text-secondary">
               New NPC
             </h3>
+            <div className="decorative-line flex-1 ml-2" />
           </div>
 
           {/* Row 1: Name, Race, Class */}
@@ -310,27 +315,20 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
 
           {/* Row 2: Alignment, Faction, Location */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <label
-                htmlFor="npc-alignment"
-                className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold block"
-              >
-                Alignment
-              </label>
-              <select
-                id="npc-alignment"
-                value={formAlignment}
-                onChange={(e) => setFormAlignment(e.target.value)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300 appearance-none"
-              >
-                <option value="">Select alignment...</option>
-                {alignments.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              id="npc-alignment"
+              label="Alignment"
+              icon="balance"
+              value={formAlignment}
+              onChange={(e) => setFormAlignment(e.target.value)}
+            >
+              <option value="">Select alignment...</option>
+              {alignments.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </Select>
             <Input
               id="npc-faction"
               label="Faction"
@@ -351,27 +349,20 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
 
           {/* Row 3: Relationship, CR, Enemy */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <label
-                htmlFor="npc-relationship"
-                className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold block"
-              >
-                Relationship
-              </label>
-              <select
-                id="npc-relationship"
-                value={formRelationship}
-                onChange={(e) => setFormRelationship(e.target.value)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300 appearance-none"
-              >
-                <option value="">Select relationship...</option>
-                {relationships.map((r) => (
-                  <option key={r} value={r}>
-                    {relationshipConfig[r].label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              id="npc-relationship"
+              label="Relationship"
+              icon="handshake"
+              value={formRelationship}
+              onChange={(e) => setFormRelationship(e.target.value)}
+            >
+              <option value="">Select relationship...</option>
+              {relationships.map((r) => (
+                <option key={r} value={r}>
+                  {relationshipConfig[r].label}
+                </option>
+              ))}
+            </Select>
             <Input
               id="npc-cr"
               label="Challenge Rating"
@@ -399,32 +390,22 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
 
           {/* Personality & Appearance */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
-                <Icon name="psychology" size={14} className="text-secondary" />
-                Personality
-              </label>
-              <textarea
-                value={formPersonality}
-                onChange={(e) => setFormPersonality(e.target.value)}
-                rows={3}
-                placeholder="Personality traits, mannerisms, motivations..."
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300 resize-y"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
-                <Icon name="face" size={14} className="text-secondary" />
-                Appearance
-              </label>
-              <textarea
-                value={formAppearance}
-                onChange={(e) => setFormAppearance(e.target.value)}
-                rows={3}
-                placeholder="Physical description, distinguishing features..."
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300 resize-y"
-              />
-            </div>
+            <Textarea
+              id="npc-personality"
+              label="Personality"
+              value={formPersonality}
+              onChange={(e) => setFormPersonality(e.target.value)}
+              rows={3}
+              placeholder="Personality traits, mannerisms, motivations..."
+            />
+            <Textarea
+              id="npc-appearance"
+              label="Appearance"
+              value={formAppearance}
+              onChange={(e) => setFormAppearance(e.target.value)}
+              rows={3}
+              placeholder="Physical description, distinguishing features..."
+            />
           </div>
 
           {/* Voice & Description */}
@@ -447,19 +428,14 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
           </div>
 
           {/* Notes */}
-          <div className="space-y-1.5">
-            <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
-              <Icon name="note" size={14} className="text-secondary" />
-              DM Notes
-            </label>
-            <textarea
-              value={formNotes}
-              onChange={(e) => setFormNotes(e.target.value)}
-              rows={3}
-              placeholder="Secret motivations, plot hooks, combat tactics..."
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300 resize-y"
-            />
-          </div>
+          <Textarea
+            id="npc-notes"
+            label="DM Notes"
+            value={formNotes}
+            onChange={(e) => setFormNotes(e.target.value)}
+            rows={3}
+            placeholder="Secret motivations, plot hooks, combat tactics..."
+          />
 
           {/* Submit */}
           <div className="flex justify-end pt-2">
@@ -488,7 +464,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
             return (
               <div
                 key={npc.id}
-                className={`bg-surface-container-low rounded-sm border overflow-hidden transition-all duration-300 ${
+                className={`bg-surface-container-low rounded-sm border overflow-hidden transition-all duration-300 shadow-whisper ${
                   isExpanded
                     ? "sm:col-span-2 lg:col-span-3 border-secondary/20"
                     : npc.isEnemy
@@ -690,35 +666,30 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
         </div>
       ) : (
         !showForm && (
-          <div className="text-center py-16 bg-surface-container-low/40 rounded-sm border border-dashed border-outline-variant/10">
-            <Icon
-              name="person_search"
-              size={48}
-              className="text-on-surface/10 mx-auto mb-3"
-            />
-            {hasActiveFilters ? (
-              <>
-                <p className="font-headline text-lg text-on-surface-variant/40 mb-1">
-                  No NPCs match your filters
-                </p>
-                <p className="font-body text-sm text-on-surface-variant/25 mb-4">
-                  Try adjusting or clearing your filters
-                </p>
+          hasActiveFilters ? (
+            <EmptyState
+              icon="person_search"
+              title="No NPCs match your filters"
+              description="Try adjusting or clearing your filters"
+              action={
                 <Button variant="ghost" size="sm" onClick={clearFilters}>
                   Clear Filters
                 </Button>
-              </>
-            ) : (
-              <>
-                <p className="font-headline text-lg text-on-surface-variant/40 mb-1">
-                  No NPCs yet
-                </p>
-                <p className="font-body text-sm text-on-surface-variant/25">
-                  Create your first NPC to populate the world
-                </p>
-              </>
-            )}
-          </div>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon="person_search"
+              title="No NPCs yet"
+              description="Create your first NPC to populate the world"
+              action={
+                <Button variant="primary" size="sm" onClick={() => setShowForm(true)} className="glow-gold">
+                  <Icon name="person_add" size={16} />
+                  Create NPC
+                </Button>
+              }
+            />
+          )
         )
       )}
     </div>

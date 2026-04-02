@@ -3,8 +3,11 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type EncounterStatus = "active" | "prepared" | "completed";
 type Difficulty = "easy" | "medium" | "hard" | "deadly";
@@ -101,7 +104,7 @@ function EncounterCard({ encounter }: { encounter: Encounter }) {
 
   return (
     <div
-      className={`bg-surface-container-low rounded-sm border border-outline-variant/8 transition-all duration-300 cursor-pointer interactive-glow ${
+      className={`bg-surface-container-low rounded-sm border border-outline-variant/8 transition-all duration-300 cursor-pointer interactive-glow shadow-whisper ${
         expanded ? "border-secondary/20" : "hover:border-secondary/15"
       }`}
       onClick={() => setExpanded(!expanded)}
@@ -314,8 +317,9 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
 
       {/* Build Encounter Form */}
       {showForm && (
-        <div className="bg-surface-container p-5 rounded-sm space-y-4 animate-fade-in-up border border-secondary/10">
-          <p className="font-headline text-sm text-secondary uppercase tracking-wider">Build Encounter</p>
+        <div className="glass rounded-sm p-6 border border-secondary/10 space-y-4 animate-fade-in-up relative overflow-hidden">
+          <div className="decorative-orb absolute -top-16 -right-16 w-48 h-48" />
+          <p className="font-headline text-sm text-secondary uppercase tracking-wider relative z-10">Build Encounter</p>
 
           <Input id="enc-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ambush at the Bridge..." />
           <Input id="enc-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="The party is ambushed while crossing..." />
@@ -347,7 +351,7 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
           </div>
 
           {/* XP Budget Calculator */}
-          <div className="bg-surface-container-lowest p-3 rounded-sm border border-outline-variant/5 flex items-center justify-between">
+          <div className={`bg-surface-container-lowest p-3 rounded-sm border flex items-center justify-between transition-all duration-500 ${formTotalXP > xpBudget ? "border-error/30 glow-danger" : "border-secondary/15 glow-gold"}`}>
             <div className="flex items-center gap-4">
               <div>
                 <span className="font-label text-[9px] uppercase text-on-surface/30 block">XP Budget</span>
@@ -382,54 +386,58 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
             {monsters.map((monster, i) => (
               <div key={i} className="grid grid-cols-12 gap-2 items-end animate-fade-in-up">
                 <div className="col-span-4">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">Name</span>}
-                  <input
+                  <Input
+                    id={`monster-name-${i}`}
+                    label={i === 0 ? "Name" : undefined}
+                    icon="pest_control"
                     value={monster.name}
                     onChange={(e) => updateMonster(i, "name", e.target.value)}
                     placeholder="Goblin..."
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-3 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25"
                   />
                 </div>
                 <div className="col-span-2">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">CR</span>}
-                  <select
+                  <Select
+                    id={`monster-cr-${i}`}
+                    label={i === 0 ? "CR" : undefined}
                     value={monster.cr}
                     onChange={(e) => updateMonster(i, "cr", e.target.value)}
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-2 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
                   >
                     {Object.keys(CR_XP).map((cr) => (
                       <option key={cr} value={cr}>CR {cr}</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
                 <div className="col-span-1">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">Qty</span>}
-                  <input
+                  <Input
+                    id={`monster-qty-${i}`}
+                    label={i === 0 ? "Qty" : undefined}
                     type="number"
                     min={1}
                     value={monster.count}
                     onChange={(e) => updateMonster(i, "count", parseInt(e.target.value) || 1)}
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-2 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 text-center"
+                    className="text-center"
                   />
                 </div>
                 <div className="col-span-2">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">HP</span>}
-                  <input
+                  <Input
+                    id={`monster-hp-${i}`}
+                    label={i === 0 ? "HP" : undefined}
                     type="number"
                     min={1}
                     value={monster.hp}
                     onChange={(e) => updateMonster(i, "hp", parseInt(e.target.value) || 1)}
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-2 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 text-center"
+                    className="text-center"
                   />
                 </div>
                 <div className="col-span-2">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">AC</span>}
-                  <input
+                  <Input
+                    id={`monster-ac-${i}`}
+                    label={i === 0 ? "AC" : undefined}
                     type="number"
                     min={1}
                     value={monster.ac}
                     onChange={(e) => updateMonster(i, "ac", parseInt(e.target.value) || 1)}
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-2 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 text-center"
+                    className="text-center"
                   />
                 </div>
                 <div className="col-span-1 flex justify-center">
@@ -456,31 +464,33 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
             {loot.map((item, i) => (
               <div key={i} className="grid grid-cols-12 gap-2 items-end animate-fade-in-up">
                 <div className="col-span-4">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">Name</span>}
-                  <input
+                  <Input
+                    id={`loot-name-${i}`}
+                    label={i === 0 ? "Name" : undefined}
+                    icon="deployed_code"
                     value={item.name}
                     onChange={(e) => updateLootItem(i, "name", e.target.value)}
                     placeholder="Gold coins..."
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-3 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25"
                   />
                 </div>
                 <div className="col-span-2">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">Qty</span>}
-                  <input
+                  <Input
+                    id={`loot-qty-${i}`}
+                    label={i === 0 ? "Qty" : undefined}
                     type="number"
                     min={1}
                     value={item.quantity}
                     onChange={(e) => updateLootItem(i, "quantity", parseInt(e.target.value) || 1)}
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-2 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 text-center"
+                    className="text-center"
                   />
                 </div>
                 <div className="col-span-5">
-                  {i === 0 && <span className="font-label text-[9px] uppercase text-on-surface/30 block mb-1">Description</span>}
-                  <input
+                  <Input
+                    id={`loot-desc-${i}`}
+                    label={i === 0 ? "Description" : undefined}
                     value={item.description}
                     onChange={(e) => updateLootItem(i, "description", e.target.value)}
                     placeholder="A pouch of gold..."
-                    className="w-full bg-surface-container-highest/80 rounded-sm px-3 py-2 font-body text-sm text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25"
                   />
                 </div>
                 <div className="col-span-1 flex justify-center">
@@ -491,24 +501,23 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
               </div>
             ))}
             {loot.length === 0 && (
-              <p className="font-body text-xs text-on-surface/20 italic pl-1">No loot items. Click &quot;Add Loot&quot; to include treasure.</p>
+              <EmptyState
+                icon="deployed_code"
+                title="No loot items"
+                description='Click "Add Loot" to include treasure'
+              />
             )}
           </div>
 
           {/* Notes */}
-          <div className="space-y-1.5">
-            <label htmlFor="enc-notes" className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-              DM Notes
-            </label>
-            <textarea
-              id="enc-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Tactical notes, terrain features, traps..."
-              rows={3}
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25 resize-none"
-            />
-          </div>
+          <Textarea
+            id="enc-notes"
+            label="DM Notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Tactical notes, terrain features, traps..."
+            rows={3}
+          />
 
           <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()} className="glow-gold">
             {loading ? "Creating..." : "Create Encounter"}
@@ -548,11 +557,16 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
 
       {/* Empty State */}
       {encounters.length === 0 && !showForm && (
-        <div className="text-center py-12">
-          <Icon name="swords" size={48} className="text-on-surface/10 mx-auto mb-3" />
-          <p className="text-on-surface-variant font-body">No encounters created yet</p>
-          <p className="text-on-surface/30 font-body text-xs mt-1">Build encounters with monsters, difficulty, and loot</p>
-        </div>
+        <EmptyState
+          icon="swords"
+          title="No encounters created yet"
+          description="Build encounters with monsters, difficulty, and loot"
+          action={
+            <Button variant="ghost" size="sm" onClick={() => setShowForm(true)} className="glow-gold">
+              <Icon name="add" size={14} /> Build Encounter
+            </Button>
+          }
+        />
       )}
     </div>
   );

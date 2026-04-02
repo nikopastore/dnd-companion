@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 
 type LocationType = "region" | "city" | "dungeon" | "wilderness" | "building" | "tavern" | "temple";
@@ -204,8 +207,12 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
 
       {/* Add Location Form */}
       {showForm && (
-        <div className="bg-surface-container p-5 rounded-sm space-y-3 animate-fade-in-up border border-secondary/10">
-          <p className="font-headline text-sm text-secondary uppercase tracking-wider mb-2">New Location</p>
+        <div className="glass rounded-sm p-6 border border-secondary/10 space-y-3 animate-fade-in-up shadow-whisper relative overflow-hidden">
+          <div className="decorative-orb absolute -top-10 -right-10 w-32 h-32" />
+          <div className="flex items-center gap-2 mb-2 relative z-10">
+            <p className="font-headline text-sm text-secondary uppercase tracking-wider">New Location</p>
+            <div className="decorative-line flex-1 ml-2" />
+          </div>
           <Input id="loc-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="The Whispering Peaks..." />
 
           <div className="grid grid-cols-2 gap-3">

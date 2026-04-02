@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 
 interface Scene {
@@ -198,12 +200,14 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
 
       {/* Create Session Form (Lazy DM / Sly Flourish Method) */}
       {showForm && (
-        <div className="bg-surface-container-low p-6 rounded-sm border border-secondary/15 space-y-5 animate-fade-in-up">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="glass rounded-sm p-6 border border-secondary/10 space-y-5 animate-fade-in-up shadow-whisper relative overflow-hidden">
+          <div className="decorative-orb absolute -top-10 -right-10 w-32 h-32" />
+          <div className="flex items-center gap-2 mb-1 relative z-10">
             <Icon name="auto_stories" size={20} className="text-secondary" />
             <h3 className="font-headline text-base text-secondary">
               Lazy DM Session Prep
             </h3>
+            <div className="decorative-line flex-1 ml-2" />
           </div>
 
           {/* Title & Date */}
@@ -216,37 +220,25 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
               placeholder="The Mines of Phandelver..."
               icon="title"
             />
-            <div className="space-y-1.5">
-              <label
-                htmlFor="session-date"
-                className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold block"
-              >
-                Date
-              </label>
-              <input
-                id="session-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300"
-              />
-            </div>
+            <Input
+              id="session-date"
+              label="Date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              icon="calendar_month"
+            />
           </div>
 
           {/* Strong Start */}
-          <div className="space-y-1.5">
-            <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
-              <Icon name="bolt" size={14} className="text-secondary" />
-              Strong Start
-            </label>
-            <textarea
-              value={strongStart}
-              onChange={(e) => setStrongStart(e.target.value)}
-              rows={3}
-              placeholder="Start the session with action, danger, or drama..."
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300 resize-y"
-            />
-          </div>
+          <Textarea
+            id="session-strong-start"
+            label="Strong Start"
+            value={strongStart}
+            onChange={(e) => setStrongStart(e.target.value)}
+            rows={3}
+            placeholder="Start the session with action, danger, or drama..."
+          />
 
           {/* Scenes */}
           <div className="space-y-3">
@@ -285,11 +277,12 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
 
             <div className="flex gap-2">
               <div className="flex-1 space-y-2">
-                <input
+                <Input
+                  id="new-scene-title"
                   value={newSceneTitle}
                   onChange={(e) => setNewSceneTitle(e.target.value)}
                   placeholder="Scene title..."
-                  className="w-full bg-surface-container-highest/80 rounded-sm px-3 py-2 font-body text-sm text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
+                  icon="movie"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -297,11 +290,11 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
                     }
                   }}
                 />
-                <input
+                <Input
+                  id="new-scene-desc"
                   value={newSceneDesc}
                   onChange={(e) => setNewSceneDesc(e.target.value)}
                   placeholder="Brief description (optional)..."
-                  className="w-full bg-surface-container-highest/80 rounded-sm px-3 py-2 font-body text-xs text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -356,24 +349,27 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
             )}
 
             <div className="flex gap-2">
-              <input
-                value={newSecret}
-                onChange={(e) => setNewSecret(e.target.value)}
-                placeholder="Add a secret or clue..."
-                className="flex-1 bg-surface-container-highest/80 rounded-sm px-3 py-2 font-body text-sm text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addSecret();
-                  }
-                }}
-              />
+              <div className="flex-1">
+                <Input
+                  id="new-secret"
+                  value={newSecret}
+                  onChange={(e) => setNewSecret(e.target.value)}
+                  placeholder="Add a secret or clue..."
+                  icon="key"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addSecret();
+                    }
+                  }}
+                />
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={addSecret}
                 disabled={!newSecret.trim()}
-                className="shrink-0"
+                className="shrink-0 self-end"
               >
                 <Icon name="add" size={16} />
               </Button>
@@ -381,19 +377,14 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
           </div>
 
           {/* Notes */}
-          <div className="space-y-1.5">
-            <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
-              <Icon name="note" size={14} className="text-secondary" />
-              Notes
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              placeholder="Additional notes, reminders, or ideas..."
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/25 border border-outline-variant/10 outline-none focus:border-secondary/40 focus:bg-surface-container-highest focus:shadow-[0_0_0_1px_rgba(233,195,73,0.15)] transition-all duration-300 resize-y"
-            />
-          </div>
+          <Textarea
+            id="session-notes"
+            label="Notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            placeholder="Additional notes, reminders, or ideas..."
+          />
 
           {/* Submit */}
           <div className="flex justify-end pt-2">
@@ -428,6 +419,7 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
                   <span className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/50 font-bold">
                     {cfg.label} ({group.items.length})
                   </span>
+                  <div className="decorative-line flex-1" />
                 </div>
 
                 <div className="space-y-2 stagger-children">
@@ -439,7 +431,7 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
                     return (
                       <div
                         key={session.id}
-                        className="bg-surface-container-low rounded-sm border border-outline-variant/8 overflow-hidden transition-all duration-300"
+                        className="bg-surface-container-low rounded-sm border border-outline-variant/8 overflow-hidden transition-all duration-300 shadow-whisper"
                       >
                         {/* Session Card Header */}
                         <button
@@ -625,19 +617,17 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
         </div>
       ) : (
         !showForm && (
-          <div className="text-center py-16 bg-surface-container-low/40 rounded-sm border border-dashed border-outline-variant/10">
-            <Icon
-              name="auto_stories"
-              size={48}
-              className="text-on-surface/10 mx-auto mb-3"
-            />
-            <p className="font-headline text-lg text-on-surface-variant/40 mb-1">
-              No sessions yet
-            </p>
-            <p className="font-body text-sm text-on-surface-variant/25">
-              Plan your first session using the Lazy DM method
-            </p>
-          </div>
+          <EmptyState
+            icon="auto_stories"
+            title="No sessions yet"
+            description="Plan your first session using the Lazy DM method"
+            action={
+              <Button variant="primary" size="sm" onClick={() => setShowForm(true)} className="glow-gold">
+                <Icon name="add" size={16} />
+                New Session
+              </Button>
+            }
+          />
         )
       )}
     </div>

@@ -20,9 +20,14 @@ export default function CharacterBuilderPage() {
   ];
 
   return (
-    <main className="pt-24 pb-32 px-6 max-w-7xl mx-auto min-h-screen">
+    <main className="pt-24 pb-32 px-6 max-w-7xl mx-auto min-h-screen relative overflow-hidden">
+      {/* Background decorative orbs */}
+      <div className="decorative-orb w-[600px] h-[600px] bg-primary-container -top-48 -right-48 fixed opacity-40" />
+      <div className="decorative-orb w-[400px] h-[400px] bg-secondary -bottom-32 -left-32 fixed opacity-30" />
+      <div className="decorative-orb w-[300px] h-[300px] bg-tertiary top-1/2 left-1/2 fixed opacity-20" />
+
       {/* Step Progress */}
-      <div className="mb-8">
+      <div className="mb-8 relative z-10">
         <div className="flex items-center gap-2 justify-center mb-6">
           {BUILDER_STEPS.map((label, i) => (
             <div key={label} className="flex items-center gap-2">
@@ -55,7 +60,9 @@ export default function CharacterBuilderPage() {
       </div>
 
       {/* Current Step */}
-      {steps[state.step]}
+      <div key={state.step} className="animate-fade-in-up relative z-10">
+        {steps[state.step]}
+      </div>
     </main>
   );
 }

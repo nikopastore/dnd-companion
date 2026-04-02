@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
 
@@ -177,56 +180,49 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
 
       {/* New Quest Form */}
       {showForm && (
-        <div className="bg-surface-container p-5 rounded-sm space-y-3 animate-fade-in-up border border-secondary/10">
-          <p className="font-headline text-sm text-secondary uppercase tracking-wider mb-2">New Quest</p>
+        <div className="glass rounded-sm p-6 border border-secondary/10 space-y-3 animate-fade-in-up shadow-whisper relative overflow-hidden">
+          <div className="decorative-orb absolute -top-10 -right-10 w-32 h-32" />
+          <div className="flex items-center gap-2 mb-2 relative z-10">
+            <p className="font-headline text-sm text-secondary uppercase tracking-wider">New Quest</p>
+            <div className="decorative-line flex-1 ml-2" />
+          </div>
           <Input id="quest-title" label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Retrieve the Lost Amulet..." />
           <Input id="quest-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A mysterious artifact has been stolen..." />
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-                Priority
-              </label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as QuestPriority)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-              >
-                <option value="urgent">Urgent</option>
-                <option value="normal">Normal</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-                Quest Giver
-              </label>
-              <select
-                value={giverNpcId}
-                onChange={(e) => setGiverNpcId(e.target.value)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-              >
-                <option value="">None</option>
-                {npcs.filter((n) => !n.isEnemy).map((npc) => (
-                  <option key={npc.id} value={npc.id}>{npc.name}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              id="quest-priority"
+              label="Priority"
+              icon="priority_high"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as QuestPriority)}
+            >
+              <option value="urgent">Urgent</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
+            </Select>
+            <Select
+              id="quest-giver"
+              label="Quest Giver"
+              icon="person"
+              value={giverNpcId}
+              onChange={(e) => setGiverNpcId(e.target.value)}
+            >
+              <option value="">None</option>
+              {npcs.filter((n) => !n.isEnemy).map((npc) => (
+                <option key={npc.id} value={npc.id}>{npc.name}</option>
+              ))}
+            </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="quest-notes" className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-              DM Notes
-            </label>
-            <textarea
-              id="quest-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Private notes for the DM..."
-              rows={3}
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25 resize-none"
-            />
-          </div>
+          <Textarea
+            id="quest-notes"
+            label="DM Notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Private notes for the DM..."
+            rows={3}
+          />
 
           <Button size="sm" onClick={handleAdd} disabled={loading || !title.trim()} className="glow-gold">
             {loading ? "Creating..." : "Create Quest"}
@@ -236,72 +232,60 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
 
       {/* Edit Quest Modal */}
       {editingQuest && (
-        <div className="bg-surface-container p-5 rounded-sm space-y-3 animate-fade-in-up border border-primary/20">
-          <div className="flex justify-between items-center">
-            <p className="font-headline text-sm text-primary uppercase tracking-wider">
-              Edit: {editingQuest.title}
-            </p>
+        <div className="glass rounded-sm p-6 border border-primary/20 space-y-3 animate-fade-in-up shadow-whisper relative overflow-hidden">
+          <div className="decorative-orb absolute -bottom-10 -left-10 w-28 h-28" />
+          <div className="flex justify-between items-center relative z-10">
+            <div className="flex items-center gap-2">
+              <p className="font-headline text-sm text-primary uppercase tracking-wider">
+                Edit: {editingQuest.title}
+              </p>
+              <div className="decorative-line flex-1 ml-2" />
+            </div>
             <Button variant="ghost" size="sm" onClick={() => setEditingQuest(null)}>
               <Icon name="close" size={14} />
             </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-                Status
-              </label>
-              <select
-                value={editStatus}
-                onChange={(e) => setEditStatus(e.target.value as QuestStatus)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-              >
-                {STATUS_ORDER.map((s) => (
-                  <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-                Priority
-              </label>
-              <select
-                value={editPriority}
-                onChange={(e) => setEditPriority(e.target.value as QuestPriority)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-              >
-                <option value="urgent">Urgent</option>
-                <option value="normal">Normal</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
+            <Select
+              id="edit-status"
+              label="Status"
+              icon="flag"
+              value={editStatus}
+              onChange={(e) => setEditStatus(e.target.value as QuestStatus)}
+            >
+              {STATUS_ORDER.map((s) => (
+                <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+              ))}
+            </Select>
+            <Select
+              id="edit-priority"
+              label="Priority"
+              icon="priority_high"
+              value={editPriority}
+              onChange={(e) => setEditPriority(e.target.value as QuestPriority)}
+            >
+              <option value="urgent">Urgent</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
+            </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="edit-desc" className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-              Description
-            </label>
-            <textarea
-              id="edit-desc"
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              rows={2}
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25 resize-none"
-            />
-          </div>
+          <Textarea
+            id="edit-desc"
+            label="Description"
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            rows={2}
+          />
 
-          <div className="space-y-1.5">
-            <label htmlFor="edit-notes" className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-              DM Notes
-            </label>
-            <textarea
-              id="edit-notes"
-              value={editNotes}
-              onChange={(e) => setEditNotes(e.target.value)}
-              rows={2}
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25 resize-none"
-            />
-          </div>
+          <Textarea
+            id="edit-notes"
+            label="DM Notes"
+            value={editNotes}
+            onChange={(e) => setEditNotes(e.target.value)}
+            rows={2}
+          />
 
           <Button size="sm" onClick={handleUpdate} disabled={loading} className="glow-gold">
             {loading ? "Saving..." : "Save Changes"}
@@ -318,14 +302,15 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
           return (
             <div key={status} className="space-y-3">
               {/* Column Header */}
-              <div className="flex items-center gap-2 border-b border-outline-variant/10 pb-2">
+              <div className="flex items-center gap-2 pb-2">
                 <Icon name={config.icon} size={16} className={config.color} />
                 <span className="font-label text-[10px] uppercase tracking-widest text-on-surface/60 font-bold">
                   {config.label}
                 </span>
-                <span className={`font-label text-[10px] ml-auto ${config.color}`}>
+                <span className={`font-label text-[10px] ${config.color}`}>
                   {statusQuests.length}
                 </span>
+                <div className="decorative-line flex-1" />
               </div>
 
               {/* Quest Cards */}
@@ -333,7 +318,7 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
                 {statusQuests.map((quest) => (
                   <div
                     key={quest.id}
-                    className="bg-surface-container-low p-4 rounded-sm border border-outline-variant/8 interactive-glow cursor-pointer transition-all duration-300 hover:border-secondary/20"
+                    className="bg-surface-container-low p-4 rounded-sm border border-outline-variant/8 interactive-glow cursor-pointer transition-all duration-300 hover:border-secondary/20 shadow-whisper"
                     onClick={() => openEdit(quest)}
                   >
                     {/* Title + Priority */}
@@ -383,10 +368,10 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
                 ))}
 
                 {statusQuests.length === 0 && (
-                  <div className="py-6 text-center">
-                    <Icon name="inbox" size={24} className="text-on-surface/10 mx-auto mb-1" />
-                    <p className="font-body text-[10px] text-on-surface/20">No quests</p>
-                  </div>
+                  <EmptyState
+                    icon="inbox"
+                    title={`No ${config.label.toLowerCase()} quests`}
+                  />
                 )}
               </div>
             </div>

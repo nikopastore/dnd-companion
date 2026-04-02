@@ -3,8 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Rarity = "common" | "uncommon" | "rare" | "very_rare" | "legendary";
 
@@ -341,27 +343,25 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
 
       {/* Add Item Form */}
       {showForm && (
-        <div className="bg-surface-container p-5 rounded-sm space-y-3 animate-fade-in-up border border-secondary/10">
-          <p className="font-headline text-sm text-secondary uppercase tracking-wider mb-2">Add Session Item</p>
+        <div className="glass rounded-sm p-6 border border-secondary/10 space-y-3 animate-fade-in-up relative overflow-hidden">
+          <div className="decorative-orb absolute -top-16 -right-16 w-48 h-48" />
+          <p className="font-headline text-sm text-secondary uppercase tracking-wider mb-2 relative z-10">Add Session Item</p>
           <Input id="loot-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Flame Tongue Greatsword..." />
           <Input id="loot-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A magical weapon wreathed in flame..." />
           <Input id="loot-loc" label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dragon's hoard, Room 12..." />
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-                Rarity
-              </label>
-              <select
-                value={rarity}
-                onChange={(e) => setRarity(e.target.value as Rarity)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-              >
-                {(Object.keys(RARITY_CONFIG) as Rarity[]).map((r) => (
-                  <option key={r} value={r}>{RARITY_CONFIG[r].label}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              id="loot-rarity"
+              label="Rarity"
+              icon="auto_awesome"
+              value={rarity}
+              onChange={(e) => setRarity(e.target.value as Rarity)}
+            >
+              {(Object.keys(RARITY_CONFIG) as Rarity[]).map((r) => (
+                <option key={r} value={r}>{RARITY_CONFIG[r].label}</option>
+              ))}
+            </Select>
             <div>
               <Input id="loot-value" label="Value" value={value} onChange={(e) => setValue(e.target.value)} placeholder="500 gp" />
             </div>
@@ -384,7 +384,7 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
                 Hidden ({hidden.length})
               </span>
               {hidden.map((item) => (
-                <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-outline-variant/30 interactive-glow">
+                <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-outline-variant/30 interactive-glow shadow-whisper">
                   <Icon name="visibility_off" size={16} className="text-on-surface/30" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -420,7 +420,7 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
                 Revealed ({revealed.length})
               </span>
               {revealed.map((item) => (
-                <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-secondary/30 interactive-glow glow-gold">
+                <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-secondary/30 interactive-glow glow-gold shadow-whisper">
                   <Icon name="visibility" size={16} className="text-secondary" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -453,11 +453,16 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
 
           {/* Empty State */}
           {sessionItems.length === 0 && (
-            <div className="text-center py-12">
-              <Icon name="inventory_2" size={48} className="text-on-surface/10 mx-auto mb-3" />
-              <p className="text-on-surface-variant font-body">No session items yet</p>
-              <p className="text-on-surface/30 font-body text-xs mt-1">Add items, or use the Treasure Generator</p>
-            </div>
+            <EmptyState
+              icon="inventory_2"
+              title="No session items yet"
+              description="Add items, or use the Treasure Generator"
+              action={
+                <Button variant="ghost" size="sm" onClick={() => setShowForm(true)} className="glow-gold">
+                  <Icon name="add" size={14} /> Add Item
+                </Button>
+              }
+            />
           )}
         </div>
       )}
@@ -465,8 +470,9 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
       {/* Treasure Generator Section */}
       {activeSection === "generator" && (
         <div className="space-y-4 animate-fade-in-up">
-          <div className="bg-surface-container p-5 rounded-sm border border-secondary/10 space-y-4">
-            <div className="flex items-center gap-2">
+          <div className="glass rounded-sm p-6 border border-secondary/10 space-y-4 relative overflow-hidden">
+            <div className="decorative-orb absolute -bottom-12 -left-12 w-40 h-40" />
+            <div className="flex items-center gap-2 relative z-10">
               <Icon name="casino" size={20} className="text-secondary" />
               <span className="font-headline text-sm text-secondary uppercase tracking-wider">Random Treasure</span>
             </div>
@@ -595,20 +601,24 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
           )}
 
           {!srdLoading && filteredSrd.length === 0 && srdItems.length > 0 && (
-            <div className="text-center py-8">
-              <Icon name="search_off" size={36} className="text-on-surface/10 mx-auto mb-2" />
-              <p className="text-on-surface/30 font-body text-sm">No items match your search</p>
-            </div>
+            <EmptyState
+              icon="search_off"
+              title="No items match your search"
+              description="Try a different search term"
+            />
           )}
 
           {!srdLoading && srdItems.length === 0 && (
-            <div className="text-center py-8">
-              <Icon name="cloud_off" size={36} className="text-on-surface/10 mx-auto mb-2" />
-              <p className="text-on-surface/30 font-body text-sm">Could not load magic items from SRD</p>
-              <Button variant="ghost" size="sm" onClick={fetchSrdItems} className="mt-2">
-                <Icon name="refresh" size={14} /> Retry
-              </Button>
-            </div>
+            <EmptyState
+              icon="cloud_off"
+              title="Could not load magic items"
+              description="Unable to fetch items from the SRD"
+              action={
+                <Button variant="ghost" size="sm" onClick={fetchSrdItems}>
+                  <Icon name="refresh" size={14} /> Retry
+                </Button>
+              }
+            />
           )}
         </div>
       )}
