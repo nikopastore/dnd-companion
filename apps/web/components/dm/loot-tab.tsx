@@ -7,6 +7,8 @@ import { Select } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
+import { AIAssistButton } from "@/components/ai/ai-assist-button";
+import { AI_PROMPTS } from "@/lib/ai";
 
 type Rarity = "common" | "uncommon" | "rare" | "very_rare" | "legendary";
 
@@ -345,7 +347,29 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
       {showForm && (
         <div className="glass rounded-sm p-6 border border-secondary/10 space-y-3 animate-fade-in-up relative overflow-hidden">
           <div className="decorative-orb absolute -top-16 -right-16 w-48 h-48" />
-          <p className="font-headline text-sm text-secondary uppercase tracking-wider mb-2 relative z-10">Add Session Item</p>
+          <div className="flex items-center gap-2 mb-2 relative z-10">
+            <p className="font-headline text-sm text-secondary uppercase tracking-wider">Add Session Item</p>
+            <div className="flex-1" />
+            <AIAssistButton
+              label="Generate Magic Item"
+              size="sm"
+              systemPrompt={AI_PROMPTS.magicItemGenerator}
+              userPrompt="Generate a unique D&D 5e magic item."
+              onApply={(content) => {}}
+              onApplyJSON={(data) => {
+                const item = data as Record<string, unknown>;
+                if (item.name) setName(item.name as string);
+                if (item.description) setDescription(item.description as string);
+                if (item.value) setValue(item.value as string);
+                if (item.rarity) {
+                  const rarityStr = (item.rarity as string).toLowerCase().replace(/ /g, "_");
+                  if (["common", "uncommon", "rare", "very_rare", "legendary"].includes(rarityStr)) {
+                    setRarity(rarityStr as Rarity);
+                  }
+                }
+              }}
+            />
+          </div>
           <Input id="loot-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Flame Tongue Greatsword..." />
           <Input id="loot-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A magical weapon wreathed in flame..." />
           <Input id="loot-loc" label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dragon's hoard, Room 12..." />

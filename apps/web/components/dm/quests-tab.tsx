@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
+import { AIAssistButton } from "@/components/ai/ai-assist-button";
+import { AI_PROMPTS } from "@/lib/ai";
 
 type QuestStatus = "active" | "on_hold" | "completed" | "failed";
 type QuestPriority = "urgent" | "normal" | "low";
@@ -185,6 +187,20 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
           <div className="flex items-center gap-2 mb-2 relative z-10">
             <p className="font-headline text-sm text-secondary uppercase tracking-wider">New Quest</p>
             <div className="decorative-line flex-1 ml-2" />
+            <AIAssistButton
+              label="Generate Quest"
+              size="sm"
+              systemPrompt={AI_PROMPTS.questGenerator}
+              userPrompt="Generate an engaging D&D quest with hooks, objectives, and rewards."
+              onApply={(content) => {}}
+              onApplyJSON={(data) => {
+                const quest = data as Record<string, unknown>;
+                if (quest.title) setTitle(quest.title as string);
+                if (quest.description) setDescription(quest.description as string);
+                if (quest.priority) setPriority((quest.priority as QuestPriority) || "normal");
+                if (quest.notes) setNotes(quest.notes as string);
+              }}
+            />
           </div>
           <Input id="quest-title" label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Retrieve the Lost Amulet..." />
           <Input id="quest-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A mysterious artifact has been stolen..." />

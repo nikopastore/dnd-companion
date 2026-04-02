@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import { AttributeOrb } from "@/components/ui/attribute-orb";
+import { AIAssistButton } from "@/components/ai/ai-assist-button";
+import { AI_PROMPTS } from "@/lib/ai";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { ABILITIES, getAbilityModifier } from "@dnd-companion/shared";
 import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 
@@ -18,6 +21,8 @@ export function ReviewAndCreate({ builder }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [backstory, setBackstory] = useState("");
+  const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
 
   const conMod = getAbilityModifier(state.abilityScores.constitution);
 
@@ -70,14 +75,43 @@ export function ReviewAndCreate({ builder }: Props) {
         {/* Left: Name and Summary */}
         <div className="lg:col-span-5 space-y-6 animate-fade-in-up" style={{ animationDelay: "120ms" }}>
           <div className="bg-surface-container-low p-8 rounded-sm space-y-6 border border-outline-variant/8 shadow-whisper">
-            <Input
-              id="name"
-              label="Character Name"
-              placeholder="What shall they be called?"
-              value={state.name}
-              onChange={(e) => update({ name: e.target.value })}
-              className="font-headline text-2xl"
-            />
+            <div className="flex items-start gap-6">
+              <ImageUpload
+                currentImage={portraitUrl}
+                onUpload={(url) => setPortraitUrl(url)}
+                size="sm"
+                label="Portrait"
+              />
+              <div className="flex-1 space-y-3">
+                <Input
+                  id="name"
+                  label="Character Name"
+                  placeholder="What shall they be called?"
+                  value={state.name}
+                  onChange={(e) => update({ name: e.target.value })}
+                  className="font-headline text-2xl"
+                />
+                <AIAssistButton
+                  label="Generate Backstory"
+                  systemPrompt={AI_PROMPTS.backstoryGenerator}
+                  userPrompt={`Write a backstory for a character named "${state.name || "this character"}".`}
+                  context={`Race: ${state.raceName || "Unknown"}\nClass: ${state.className || "Unknown"}\nBackground: ${state.backgroundName || "Unknown"}`}
+                  onApply={(text) => setBackstory(text)}
+                  size="sm"
+                />
+              </div>
+            </div>
+
+            {backstory && (
+              <div className="bg-surface-container p-4 rounded-sm border-l-2 border-secondary/40 animate-fade-in">
+                <span className="font-label text-[10px] uppercase tracking-widest text-secondary font-bold block mb-2">
+                  Backstory
+                </span>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed whitespace-pre-wrap">
+                  {backstory}
+                </p>
+              </div>
+            )}
 
             <div className="space-y-3 stagger-children">
               <div className="flex justify-between items-center py-2 animate-fade-in-up">

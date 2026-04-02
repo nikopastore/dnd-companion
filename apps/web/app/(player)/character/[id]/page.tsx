@@ -6,6 +6,8 @@ import { ABILITIES, getAbilityModifier, formatModifier, SKILLS } from "@dnd-comp
 import type { ConditionKey } from "@dnd-companion/shared";
 import { AttributeOrb } from "@/components/ui/attribute-orb";
 import { Icon } from "@/components/ui/icon";
+import { EntityImage } from "@/components/ui/entity-image";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { CombatStats } from "@/components/character/combat-stats";
 import { ConditionManager } from "@/components/character/condition-manager";
 import { RestButtons } from "@/components/character/rest-buttons";
@@ -62,6 +64,7 @@ export default function CharacterSheetPage() {
   const [char, setChar] = useState<CharacterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"sheet" | "inventory" | "dice">("sheet");
+  const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/characters/${id}`)
@@ -157,6 +160,22 @@ export default function CharacterSheetPage() {
       {/* Character Header */}
       <div className="animate-fade-in-up">
         <div className="flex items-end gap-4">
+          <div className="relative group shrink-0">
+            <EntityImage
+              imageUrl={portraitUrl}
+              entityType="character"
+              name={char.name}
+              size="lg"
+            />
+            <div className="absolute -bottom-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ImageUpload
+                currentImage={portraitUrl}
+                onUpload={(url) => setPortraitUrl(url)}
+                size="sm"
+                label="Change Portrait"
+              />
+            </div>
+          </div>
           <div>
             <h1 className="font-headline text-4xl text-on-background tracking-tight">{char.name}</h1>
             <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mt-1">

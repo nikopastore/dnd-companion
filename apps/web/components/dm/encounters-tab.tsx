@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
+import { AIAssistButton } from "@/components/ai/ai-assist-button";
+import { AI_PROMPTS } from "@/lib/ai";
 
 type EncounterStatus = "active" | "prepared" | "completed";
 type Difficulty = "easy" | "medium" | "hard" | "deadly";
@@ -319,7 +321,37 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
       {showForm && (
         <div className="glass rounded-sm p-6 border border-secondary/10 space-y-4 animate-fade-in-up relative overflow-hidden">
           <div className="decorative-orb absolute -top-16 -right-16 w-48 h-48" />
-          <p className="font-headline text-sm text-secondary uppercase tracking-wider relative z-10">Build Encounter</p>
+          <div className="flex items-center gap-2 relative z-10">
+            <p className="font-headline text-sm text-secondary uppercase tracking-wider">Build Encounter</p>
+            <div className="flex-1" />
+            <AIAssistButton
+              label="AI Build Encounter"
+              size="sm"
+              systemPrompt={AI_PROMPTS.encounterBuilder}
+              userPrompt={`Design a ${difficulty} encounter for a D&D party.`}
+              context={`Desired difficulty: ${difficulty}${name ? `\nEncounter theme: ${name}` : ""}`}
+              onApply={(content) => {}}
+              onApplyJSON={(data) => {
+                const enc = data as Record<string, unknown>;
+                if (enc.name) setName(enc.name as string);
+                if (enc.description) setDescription(enc.description as string);
+                if (enc.difficulty && ["easy", "medium", "hard", "deadly"].includes(enc.difficulty as string)) {
+                  setDifficulty(enc.difficulty as Difficulty);
+                }
+                if (enc.monsters && Array.isArray(enc.monsters)) {
+                  const newMonsters = (enc.monsters as Array<Record<string, unknown>>).map((m) => ({
+                    name: (m.name as string) || "",
+                    cr: (m.cr as string) || "1",
+                    count: (m.count as number) || 1,
+                    hp: (m.hp as number) || 10,
+                    ac: (m.ac as number) || 12,
+                  }));
+                  setMonsters(newMonsters);
+                }
+                if (enc.notes) setNotes(enc.notes as string);
+              }}
+            />
+          </div>
 
           <Input id="enc-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ambush at the Bridge..." />
           <Input id="enc-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="The party is ambushed while crossing..." />

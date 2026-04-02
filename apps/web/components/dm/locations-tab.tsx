@@ -7,6 +7,8 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
+import { AIAssistButton } from "@/components/ai/ai-assist-button";
+import { AI_PROMPTS } from "@/lib/ai";
 
 type LocationType = "region" | "city" | "dungeon" | "wilderness" | "building" | "tavern" | "temple";
 
@@ -69,7 +71,7 @@ function LocationNode({ node, depth }: { node: TreeNode; depth: number }) {
   return (
     <div className="animate-fade-in-up">
       <div
-        className={`flex items-center gap-2 p-3 rounded-sm transition-all duration-300 cursor-pointer interactive-glow ${
+        className={`flex items-center gap-2 p-3 rounded-sm transition-all duration-300 cursor-pointer interactive-glow shadow-whisper ${
           showDetails
             ? "bg-surface-container border border-secondary/15"
             : "bg-surface-container-low border border-outline-variant/8 hover:border-secondary/15"
@@ -216,54 +218,58 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
           <Input id="loc-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="The Whispering Peaks..." />
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-                Type
-              </label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as LocationType)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-              >
-                {(Object.keys(TYPE_CONFIG) as LocationType[]).map((t) => (
-                  <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-                Parent Location
-              </label>
-              <select
-                value={parentId}
-                onChange={(e) => setParentId(e.target.value)}
-                className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300"
-              >
-                <option value="">Top Level</option>
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {(TYPE_CONFIG[loc.type as LocationType] || TYPE_CONFIG.region).label}: {loc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              id="loc-type"
+              label="Type"
+              icon="category"
+              value={type}
+              onChange={(e) => setType(e.target.value as LocationType)}
+            >
+              {(Object.keys(TYPE_CONFIG) as LocationType[]).map((t) => (
+                <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>
+              ))}
+            </Select>
+            <Select
+              id="loc-parent"
+              label="Parent Location"
+              icon="account_tree"
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+            >
+              <option value="">Top Level</option>
+              {locations.map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {(TYPE_CONFIG[loc.type as LocationType] || TYPE_CONFIG.region).label}: {loc.name}
+                </option>
+              ))}
+            </Select>
           </div>
 
-          <Input id="loc-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A vast mountain range shrouded in mist..." />
-
-          <div className="space-y-1.5">
-            <label htmlFor="loc-notes" className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-              DM Notes
-            </label>
-            <textarea
-              id="loc-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Secret passages, hidden treasures..."
-              rows={3}
-              className="w-full bg-surface-container-highest/80 rounded-sm px-4 py-3 font-body text-on-surface border border-outline-variant/10 outline-none focus:border-secondary/40 transition-all duration-300 placeholder:text-on-surface/25 resize-none"
-            />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
+                Description
+              </label>
+              <AIAssistButton
+                label="Describe Location"
+                size="sm"
+                systemPrompt={AI_PROMPTS.locationDescriber}
+                userPrompt={name ? `Describe a ${type} called "${name}".` : `Describe a ${type} in a fantasy D&D setting.`}
+                context={name ? `Location name: ${name}\nType: ${type}` : `Type: ${type}`}
+                onApply={(content) => setDescription(content)}
+              />
+            </div>
+            <Input id="loc-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A vast mountain range shrouded in mist..." />
           </div>
+
+          <Textarea
+            id="loc-notes"
+            label="DM Notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Secret passages, hidden treasures..."
+            rows={3}
+          />
 
           <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()} className="glow-gold">
             {loading ? "Creating..." : "Add Location"}
@@ -279,11 +285,17 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <Icon name="map" size={48} className="text-on-surface/10 mx-auto mb-3" />
-          <p className="text-on-surface-variant font-body">No locations added yet</p>
-          <p className="text-on-surface/30 font-body text-xs mt-1">Create regions, cities, and dungeons for your world</p>
-        </div>
+        <EmptyState
+          icon="map"
+          title="No locations added yet"
+          description="Create regions, cities, and dungeons for your world"
+          action={
+            <Button variant="primary" size="sm" onClick={() => setShowForm(true)} className="glow-gold">
+              <Icon name="add" size={16} />
+              Add Location
+            </Button>
+          }
+        />
       )}
     </div>
   );

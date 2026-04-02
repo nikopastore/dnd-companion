@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { EntityImage } from "@/components/ui/entity-image";
 import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 
 interface Race {
@@ -110,7 +111,10 @@ export function RaceSelection({ builder }: Props) {
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in-up">
           <div className="lg:col-span-5 space-y-6">
             <div className="p-6 bg-surface-container-low rounded-sm relative border-l-2 border-primary animate-slide-in-left shadow-whisper">
-              <h3 className="font-headline text-2xl text-on-surface mb-2">{selectedRace.name}</h3>
+              <div className="flex items-center gap-4 mb-3">
+                <EntityImage entityType="race" name={selectedRace.name} size="md" />
+                <h3 className="font-headline text-2xl text-on-surface">{selectedRace.name}</h3>
+              </div>
               <div className="space-y-1 font-body text-sm text-on-surface-variant">
                 <p>Size: {selectedRace.size}</p>
                 <p>Speed: {selectedRace.speed} ft</p>

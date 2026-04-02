@@ -120,6 +120,7 @@ enum MemberRole {
 model Character {
   id               String @id @default(cuid())
   name             String
+  imageUrl         String?
   level            Int    @default(1)
   experiencePoints Int    @default(0)
 
@@ -260,6 +261,7 @@ enum Condition {
 model Race {
   id             String    @id @default(cuid())
   name           String    @unique
+  imageUrl       String?
   speed          Int
   abilityBonuses Json      // { "strength": 2, "constitution": 1 }
   traits         Json      // [{ name, description }]
@@ -286,6 +288,7 @@ model Subrace {
 model CharacterClass {
   id              String @id @default(cuid())
   name            String @unique
+  imageUrl        String?
   hitDie          Int
   primaryAbility  String
   savingThrows    String[]
@@ -314,6 +317,7 @@ model ClassLevel {
 model Background {
   id                 String   @id @default(cuid())
   name               String   @unique
+  imageUrl           String?
   skillProficiencies String[]
   toolProficiencies  String[]
   languages          Int      @default(0)
@@ -344,6 +348,7 @@ model Spell {
 model Equipment {
   id          String  @id @default(cuid())
   name        String  @unique
+  imageUrl    String?
   category    String
   cost        String
   weight      Float?
@@ -358,6 +363,7 @@ model Equipment {
 model NPC {
   id           String  @id @default(cuid())
   name         String
+  imageUrl     String?
   description  String? @db.Text
   statBlock    Json?
   isEnemy      Boolean @default(false)
@@ -429,6 +435,7 @@ enum SessionStatus {
 model Location {
   id          String    @id @default(cuid())
   name        String
+  imageUrl    String?
   type        String    // city, dungeon, wilderness, building, region, tavern
   description String?   @db.Text
   notes       String?   @db.Text
@@ -445,6 +452,7 @@ model Location {
 model Quest {
   id          String      @id @default(cuid())
   title       String
+  imageUrl    String?
   description String?     @db.Text
   status      QuestStatus @default(ACTIVE)
   priority    String      @default("normal")
@@ -468,6 +476,7 @@ enum QuestStatus {
 model Encounter {
   id          String  @id @default(cuid())
   name        String
+  imageUrl    String?
   description String? @db.Text
   difficulty  String? // easy, medium, hard, deadly
   monsters    Json    // [{ name, cr, count, hp, ac, notes }]

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
+import { AIAssistButton } from "@/components/ai/ai-assist-button";
+import { AI_PROMPTS } from "@/lib/ai";
 
 interface Scene {
   title: string;
@@ -231,21 +233,55 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
           </div>
 
           {/* Strong Start */}
-          <Textarea
-            id="session-strong-start"
-            label="Strong Start"
-            value={strongStart}
-            onChange={(e) => setStrongStart(e.target.value)}
-            rows={3}
-            placeholder="Start the session with action, danger, or drama..."
-          />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
+                <Icon name="bolt" size={14} className="text-secondary" />
+                Strong Start
+              </label>
+              <AIAssistButton
+                label="Generate Strong Start"
+                size="sm"
+                systemPrompt={AI_PROMPTS.sessionStrongStart}
+                userPrompt={title ? `Generate a strong start for a session titled "${title}".` : "Generate a strong start for a D&D session."}
+                context={title ? `Session title: ${title}` : undefined}
+                onApply={(content) => setStrongStart(content)}
+              />
+            </div>
+            <Textarea
+              id="session-strong-start"
+              value={strongStart}
+              onChange={(e) => setStrongStart(e.target.value)}
+              rows={3}
+              placeholder="Start the session with action, danger, or drama..."
+            />
+          </div>
 
           {/* Scenes */}
           <div className="space-y-3">
-            <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
-              <Icon name="movie" size={14} className="text-secondary" />
-              Scenes ({scenes.length})
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
+                <Icon name="movie" size={14} className="text-secondary" />
+                Scenes ({scenes.length})
+              </label>
+              <AIAssistButton
+                label="Generate Scenes"
+                size="sm"
+                systemPrompt={AI_PROMPTS.sessionScenes}
+                userPrompt={title ? `Generate scenes for a session titled "${title}".` : "Generate scenes for a D&D session."}
+                context={title ? `Session title: ${title}${strongStart ? `\nStrong Start: ${strongStart}` : ""}` : undefined}
+                onApply={(content) => {}}
+                onApplyJSON={(data) => {
+                  if (Array.isArray(data)) {
+                    const newScenes = data.map((s: { title?: string; description?: string }) => ({
+                      title: s.title || "Untitled Scene",
+                      description: s.description || "",
+                    }));
+                    setScenes((prev) => [...prev, ...newScenes]);
+                  }
+                }}
+              />
+            </div>
 
             {scenes.length > 0 && (
               <div className="space-y-2">
@@ -317,10 +353,26 @@ export function SessionsTab({ sessions, campaignId, onAdd }: SessionsTabProps) {
 
           {/* Secrets & Clues */}
           <div className="space-y-3">
-            <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
-              <Icon name="visibility" size={14} className="text-secondary" />
-              Secrets &amp; Clues ({secrets.length})
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold flex items-center gap-1.5">
+                <Icon name="visibility" size={14} className="text-secondary" />
+                Secrets &amp; Clues ({secrets.length})
+              </label>
+              <AIAssistButton
+                label="Generate Secrets"
+                size="sm"
+                systemPrompt={AI_PROMPTS.sessionSecrets}
+                userPrompt={title ? `Generate secrets and clues for a session titled "${title}".` : "Generate secrets and clues for a D&D session."}
+                context={title ? `Session title: ${title}${strongStart ? `\nStrong Start: ${strongStart}` : ""}` : undefined}
+                onApply={(content) => {}}
+                onApplyJSON={(data) => {
+                  if (Array.isArray(data)) {
+                    const newSecrets = data.map((s: { secret?: string }) => s.secret || "").filter(Boolean);
+                    setSecrets((prev) => [...prev, ...newSecrets]);
+                  }
+                }}
+              />
+            </div>
 
             {secrets.length > 0 && (
               <div className="space-y-2">

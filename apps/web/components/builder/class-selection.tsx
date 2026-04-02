@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { EntityImage } from "@/components/ui/entity-image";
 import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 
 interface CharClass {
@@ -98,7 +99,10 @@ export function ClassSelection({ builder }: Props) {
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-scale-in">
           <div className="space-y-4">
             <div className="bg-surface-container-low p-6 rounded-sm space-y-3 border border-outline-variant/8 shadow-whisper">
-              <h3 className="font-headline text-2xl text-on-surface">{selectedClass.name}</h3>
+              <div className="flex items-center gap-4">
+                <EntityImage entityType="class" name={selectedClass.name} size="md" />
+                <h3 className="font-headline text-2xl text-on-surface">{selectedClass.name}</h3>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface-container-high p-3 rounded-sm text-center relative overflow-hidden glow-gold border border-outline-variant/8">
                   <div className="decorative-orb w-12 h-12 bg-secondary -right-1 -top-1" />

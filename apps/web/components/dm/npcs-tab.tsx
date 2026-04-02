@@ -8,6 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
+import { EntityImage } from "@/components/ui/entity-image";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { AIAssistButton } from "@/components/ai/ai-assist-button";
+import { AI_PROMPTS } from "@/lib/ai";
 
 interface NPC {
   id: string;
@@ -89,6 +93,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
   const [formCr, setFormCr] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formNotes, setFormNotes] = useState("");
+  const [formImageUrl, setFormImageUrl] = useState<string | null>(null);
 
   // Derived filter values
   const factions = useMemo(() => {
@@ -135,6 +140,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
     setFormCr("");
     setFormDescription("");
     setFormNotes("");
+    setFormImageUrl(null);
   }
 
   async function handleCreate() {
@@ -285,6 +291,41 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
               New NPC
             </h3>
             <div className="decorative-line flex-1 ml-2" />
+            <AIAssistButton
+              label="Generate NPC"
+              size="sm"
+              systemPrompt={AI_PROMPTS.npcGenerator}
+              userPrompt="Generate a unique and interesting D&D 5e NPC."
+              context={formFaction ? `Faction context: ${formFaction}` : undefined}
+              onApply={(content) => {}}
+              onApplyJSON={(data) => {
+                const npc = data as Record<string, unknown>;
+                if (npc.name) setFormName(npc.name as string);
+                if (npc.race) setFormRace(npc.race as string);
+                if (npc.npcClass) setFormNpcClass(npc.npcClass as string);
+                if (npc.alignment) setFormAlignment(npc.alignment as string);
+                if (npc.personality) setFormPersonality(npc.personality as string);
+                if (npc.appearance) setFormAppearance(npc.appearance as string);
+                if (npc.voice) setFormVoice(npc.voice as string);
+                if (npc.faction) setFormFaction(npc.faction as string);
+                if (npc.relationship) setFormRelationship(npc.relationship as string);
+                if (npc.description) setFormDescription(npc.description as string);
+                if (npc.cr) setFormCr(npc.cr as string);
+              }}
+            />
+          </div>
+
+          {/* NPC Portrait Upload */}
+          <div className="flex items-center gap-4">
+            <ImageUpload
+              currentImage={formImageUrl}
+              onUpload={(url) => setFormImageUrl(url)}
+              size="sm"
+              label="NPC Portrait"
+            />
+            <p className="font-body text-xs text-on-surface-variant/50 italic">
+              Upload a portrait for this NPC (optional)
+            </p>
           </div>
 
           {/* Row 1: Name, Race, Class */}
@@ -478,18 +519,20 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
                 {/* Card Header */}
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {/* Alive/Dead indicator */}
-                        <span
-                          className={`w-2 h-2 rounded-full shrink-0 ${
-                            npc.isAlive ? "bg-green-400" : "bg-on-surface-variant/30"
-                          }`}
-                        />
-                        <h3 className="font-headline text-base font-bold text-on-surface truncate">
-                          {npc.name}
-                        </h3>
-                      </div>
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <EntityImage entityType="npc" name={npc.name} size="sm" className="shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          {/* Alive/Dead indicator */}
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              npc.isAlive ? "bg-green-400" : "bg-on-surface-variant/30"
+                            }`}
+                          />
+                          <h3 className="font-headline text-base font-bold text-on-surface truncate">
+                            {npc.name}
+                          </h3>
+                        </div>
 
                       {/* Race / Class */}
                       {(npc.race || npc.npcClass) && (
@@ -504,6 +547,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
                           {npc.alignment}
                         </p>
                       )}
+                      </div>
                     </div>
 
                     {/* Expand/Collapse button (when expanded) */}
@@ -653,7 +697,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
                       !npc.description &&
                       !npc.notes &&
                       !npc.locationName &&
-                      (!npc.statBlock || Object.keys(npc.statBlock).length === 0) && (
+                      (!npc.statBlock || Object.keys(npc.statBlock as Record<string, unknown>).length === 0) && (
                         <p className="font-body text-sm text-on-surface-variant/30 italic text-center py-4">
                           No additional details recorded for this NPC
                         </p>
