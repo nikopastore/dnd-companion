@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { OptionGallery } from "@/components/builder/option-gallery";
 import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 
 interface Background {
@@ -18,12 +19,44 @@ interface Props {
   builder: ReturnType<typeof useCharacterBuilder>;
 }
 
+const FEATURED_BACKGROUNDS = ["Soldier", "Acolyte", "Criminal", "Sage", "Folk Hero", "Charlatan"];
+
 export function BackgroundSelection({ builder }: Props) {
   const { state, update, nextStep, prevStep } = builder;
   const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [loading, setLoading] = useState(true);
 
   const selected = backgrounds.find((b) => b.id === state.backgroundId);
+  const featuredBackgroundIds = useMemo(
+    () =>
+      backgrounds
+        .filter((background) => FEATURED_BACKGROUNDS.includes(background.name))
+        .map((background) => background.id),
+    [backgrounds]
+  );
+
+  const backgroundOptions = useMemo(
+    () =>
+      backgrounds.map((background) => ({
+        id: background.id,
+        title: background.name,
+        subtitle:
+          background.languages > 0
+            ? `${background.languages} bonus language${background.languages > 1 ? "s" : ""}`
+            : "No bonus languages",
+        description: background.feature.description,
+        entityType: "quest" as const,
+        imageUrl: null,
+        meta: [
+          ...background.skillProficiencies,
+          ...(background.toolProficiencies.length > 0
+            ? background.toolProficiencies
+            : ["No tool proficiencies"]),
+        ],
+        searchText: `${background.feature.name} ${background.feature.description} ${background.skillProficiencies.join(" ")} ${background.toolProficiencies.join(" ")}`,
+      })),
+    [backgrounds]
+  );
 
   useEffect(() => {
     fetch("/api/srd/backgrounds")
@@ -46,40 +79,21 @@ export function BackgroundSelection({ builder }: Props) {
       {loading ? (
         <p className="text-on-surface-variant animate-pulse">Loading backgrounds...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12 stagger-children">
-          {backgrounds.map((bg) => {
-            const isSelected = state.backgroundId === bg.id;
-            return (
-              <button
-                key={bg.id}
-                onClick={() => update({ backgroundId: bg.id, backgroundName: bg.name })}
-                className={`p-6 rounded-sm text-left transition-all duration-500 interactive-glow animate-fade-in-up group ${
-                  isSelected
-                    ? "bg-surface-container border border-secondary/60 shadow-elevated"
-                    : "bg-surface-container-low border border-outline-variant/10 hover:bg-surface-container-high hover:border-secondary/40"
-                }`}
-              >
-                <h3 className={`font-headline text-xl mb-2 transition-colors duration-500 ${isSelected ? "text-secondary" : "text-on-surface group-hover:text-secondary/80"}`}>
-                  {bg.name}
-                </h3>
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {bg.skillProficiencies.map((skill) => (
-                    <span key={skill} className={`px-2 py-0.5 rounded-xl text-[9px] font-label uppercase transition-all duration-500 ${
-                      isSelected
-                        ? "bg-secondary-container/20 text-secondary border border-secondary/20"
-                        : "bg-surface-container-highest text-on-surface-variant border border-transparent"
-                    }`}>
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-                <p className="font-body text-xs text-on-surface-variant">
-                  {bg.feature.name}
-                </p>
-                {isSelected && <div className="mt-3 h-0.5 bg-secondary/40 rounded-full" />}
-              </button>
-            );
-          })}
+        <div className="mb-12">
+          <OptionGallery
+            options={backgroundOptions}
+            selectedId={state.backgroundId}
+            onSelect={(option) => {
+              const background = backgrounds.find((entry) => entry.id === option.id);
+              if (background) {
+                update({ backgroundId: background.id, backgroundName: background.name });
+              }
+            }}
+            featuredIds={featuredBackgroundIds}
+            featuredLabel="Popular origins"
+            allLabel="Every background"
+            searchPlaceholder="Search backgrounds, features, or proficiencies"
+          />
         </div>
       )}
 

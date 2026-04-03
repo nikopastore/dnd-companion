@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@dnd-companion/database";
 import { auth } from "@/lib/auth";
+import { getCampaignAccess } from "@/lib/campaign-access";
 
 // POST /api/npcs — create an NPC
 export async function POST(request: Request) {
@@ -35,9 +36,12 @@ export async function POST(request: Request) {
   }
 
   // Verify user is DM of this campaign
-  const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
-  if (!campaign || campaign.dmId !== session.user.id) {
-    return NextResponse.json({ error: "Not the DM of this campaign" }, { status: 403 });
+  const access = await getCampaignAccess(campaignId, session.user.id);
+  if (!access.campaign) {
+    return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
+  }
+  if (!access.canManageCampaign) {
+    return NextResponse.json({ error: "Not allowed to manage this campaign" }, { status: 403 });
   }
 
   const npc = await prisma.nPC.create({

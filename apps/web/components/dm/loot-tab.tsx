@@ -4,18 +4,23 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AIAssistButton } from "@/components/ai/ai-assist-button";
 import { AI_PROMPTS } from "@/lib/ai";
+import { OptionGallery } from "@/components/builder/option-gallery";
 
 type Rarity = "common" | "uncommon" | "rare" | "very_rare" | "legendary";
 
 interface SessionItem {
   id: string;
   name: string;
+  imageUrl?: string | null;
+  category?: string | null;
   description: string | null;
+  quantity?: number;
   location: string | null;
   isHidden: boolean;
   claimedById: string | null;
@@ -33,8 +38,55 @@ interface SRDItem {
 interface Props {
   sessionItems: SessionItem[];
   campaignId: string;
+  characters: Array<{ id: string; name: string; className?: string; raceName?: string }>;
   onAddItem: (item: SessionItem) => void;
 }
+
+type BuilderStep = 0 | 1 | 2;
+type ItemCategory = "weapons" | "potions" | "armor" | "gear" | "treasure";
+
+const ITEM_CATEGORY_OPTIONS = [
+  {
+    id: "weapons",
+    title: "Weapons",
+    description: "Blades, bows, and martial gear ready for immediate use or assignment.",
+    subtitle: "Damage & combat",
+    entityType: "item" as const,
+    meta: ["Swords", "Bows", "Polearms"],
+  },
+  {
+    id: "potions",
+    title: "Potions & Healing",
+    description: "Consumables, healing supplies, and quick-use magical support items.",
+    subtitle: "Recovery & utility",
+    entityType: "item" as const,
+    meta: ["Healing", "Buffs", "Consumables"],
+  },
+  {
+    id: "armor",
+    title: "Armor & Shields",
+    description: "Protective equipment, shields, and defensive magic gear for the party.",
+    subtitle: "Defense & survival",
+    entityType: "item" as const,
+    meta: ["Heavy armor", "Light armor", "Shields"],
+  },
+  {
+    id: "gear",
+    title: "Adventuring Gear",
+    description: "Travel tools, kits, supplies, and practical items for exploration.",
+    subtitle: "Utility & travel",
+    entityType: "item" as const,
+    meta: ["Tools", "Kits", "Supplies"],
+  },
+  {
+    id: "treasure",
+    title: "Treasure",
+    description: "Coins, gems, relics, and art objects that can be claimed or split later.",
+    subtitle: "Loot & rewards",
+    entityType: "item" as const,
+    meta: ["Coins", "Gems", "Art objects"],
+  },
+];
 
 const RARITY_CONFIG: Record<Rarity, { label: string; color: string; bgClass: string }> = {
   common: { label: "Common", color: "text-gray-400", bgClass: "bg-gray-900/20 border-gray-500/20" },
@@ -199,10 +251,14 @@ function generateTreasure(crRange: string): GeneratedTreasure[] {
   return results;
 }
 
-export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
+export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<"items" | "generator" | "browser">("items");
+  const [builderStep, setBuilderStep] = useState<BuilderStep>(0);
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | null>(null);
+  const [assignments, setAssignments] = useState<Record<string, number>>({});
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   // Add item form
   const [name, setName] = useState("");
@@ -210,6 +266,7 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
   const [location, setLocation] = useState("");
   const [rarity, setRarity] = useState<Rarity>("common");
   const [value, setValue] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
   // Treasure generator
   const [crRange, setCrRange] = useState("0-4");
@@ -229,31 +286,122 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
     return srdItems.filter((item) => item.name.toLowerCase().includes(lower));
   }, [srdItems, searchFilter]);
 
+  const builderTemplates = useMemo(() => {
+    if (!selectedCategory) return [];
+
+    if (selectedCategory === "treasure") {
+      return [...GEMS, ...ART_OBJECTS].map((entry) => ({
+        id: entry,
+        title: entry.split(" (")[0],
+        description: entry.includes("gp") ? "A valuable treasure find ready to be claimed or split." : "A portable treasure reward.",
+        subtitle: "Treasure",
+        entityType: "item" as const,
+        meta: [entry.match(/\((.+)\)/)?.[1] || "Value varies"],
+      }));
+    }
+
+    const categoryFilters: Record<Exclude<ItemCategory, "treasure">, (item: SRDItem) => boolean> = {
+      weapons: (item) => item.name.toLowerCase().includes("sword") || item.name.toLowerCase().includes("bow") || item.name.toLowerCase().includes("axe") || item.name.toLowerCase().includes("dagger") || item.name.toLowerCase().includes("mace") || item.name.toLowerCase().includes("hammer") || item.name.toLowerCase().includes("spear") || item.name.toLowerCase().includes("staff") || item.name.toLowerCase().includes("crossbow") || item.name.toLowerCase().includes("weapon"),
+      potions: (item) => item.name.toLowerCase().includes("potion") || item.name.toLowerCase().includes("healing"),
+      armor: (item) => item.name.toLowerCase().includes("armor") || item.name.toLowerCase().includes("shield") || item.name.toLowerCase().includes("mail") || item.name.toLowerCase().includes("plate"),
+      gear: (item) => !["weapon", "potion", "armor", "shield", "mail", "plate"].some((keyword) => item.name.toLowerCase().includes(keyword)),
+    };
+
+    return srdItems
+      .filter(categoryFilters[selectedCategory as Exclude<ItemCategory, "treasure">])
+      .slice(0, 30)
+      .map((item) => ({
+        id: item.index,
+        title: item.name,
+        description: item.desc?.[0] || "SRD equipment template.",
+        subtitle: item.cost ? `${item.cost.quantity} ${item.cost.unit}` : "SRD template",
+        entityType: "item" as const,
+        meta: item.cost ? [`${item.cost.quantity} ${item.cost.unit}`] : [],
+      }));
+  }, [selectedCategory, srdItems]);
+
   function resetForm() {
     setName("");
     setDescription("");
     setLocation("");
     setRarity("common");
     setValue("");
+    setQuantity(1);
+    setAssignments({});
+    setSelectedCategory(null);
+    setBuilderStep(0);
+    setSearchFilter("");
+    setEditingItemId(null);
+  }
+
+  function toggleAssignment(characterId: string) {
+    setAssignments((prev) => {
+      if (prev[characterId]) {
+        const next = { ...prev };
+        delete next[characterId];
+        return next;
+      }
+      return { ...prev, [characterId]: 1 };
+    });
+  }
+
+  function beginEditing(item: SessionItem) {
+    setEditingItemId(item.id);
+    setSelectedCategory((item.category as ItemCategory) || null);
+    setBuilderStep(2);
+    setName(item.name);
+    setDescription(item.description || "");
+    setLocation(item.location || "");
+    setValue(item.value || "");
+    setQuantity(item.quantity ?? 1);
+    setRarity(((item.rarity as Rarity) || "common"));
+    setShowForm(true);
   }
 
   async function handleAddItem() {
     if (!name.trim()) return;
     setLoading(true);
-    const res = await fetch(`/api/campaigns/${campaignId}/session-items`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: name.trim(),
-        description: description.trim() || null,
-        location: location.trim() || null,
-        rarity,
-        value: value.trim() || null,
-      }),
-    });
+    const res = await fetch(
+      editingItemId
+        ? `/api/campaigns/${campaignId}/session-items/${editingItemId}`
+        : `/api/campaigns/${campaignId}/session-items`,
+      {
+        method: editingItemId ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || null,
+          location: location.trim() || null,
+          rarity,
+          value: value.trim() || null,
+          category: selectedCategory,
+          quantity,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      setLoading(false);
+      return;
+    }
+
+    const item = await res.json();
+
+    const selectedAssignments = Object.entries(assignments).map(([characterId, qty]) => ({
+      characterId,
+      quantity: qty,
+    }));
+
+    if (!editingItemId && selectedAssignments.length > 0) {
+      await fetch(`/api/campaigns/${campaignId}/session-items/${item.id}/grant`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignments: selectedAssignments }),
+      });
+    }
+
     setLoading(false);
     if (res.ok) {
-      const item = await res.json();
       onAddItem(item);
       resetForm();
       setShowForm(false);
@@ -288,7 +436,7 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
   async function fetchSrdItems() {
     setSrdLoading(true);
     try {
-      const res = await fetch("/api/srd/equipment?category=Potion");
+      const res = await fetch("/api/srd/equipment");
       if (res.ok) {
         const data = await res.json();
         setSrdItems(Array.isArray(data) ? data : data.results || []);
@@ -300,10 +448,10 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
   }
 
   useEffect(() => {
-    if (activeSection === "browser" && srdItems.length === 0) {
+    if ((activeSection === "browser" || showForm) && srdItems.length === 0) {
       fetchSrdItems();
     }
-  }, [activeSection]);
+  }, [activeSection, showForm]);
 
   return (
     <div className="space-y-6">
@@ -315,7 +463,20 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
             Loot & Items ({sessionItems.length})
           </span>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => { setShowForm(!showForm); }} className="interactive-glow">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+              setShowForm(false);
+              return;
+            }
+            resetForm();
+            setShowForm(true);
+          }}
+          className="interactive-glow"
+        >
           <Icon name={showForm ? "close" : "add"} size={14} />
           {showForm ? "Cancel" : "Add Item"}
         </Button>
@@ -348,7 +509,9 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
         <div className="glass rounded-sm p-6 border border-secondary/10 space-y-3 animate-fade-in-up relative overflow-hidden">
           <div className="decorative-orb absolute -top-16 -right-16 w-48 h-48" />
           <div className="flex items-center gap-2 mb-2 relative z-10">
-            <p className="font-headline text-sm text-secondary uppercase tracking-wider">Add Session Item</p>
+            <p className="font-headline text-sm text-secondary uppercase tracking-wider">
+              {editingItemId ? "Edit Item Card" : "Item Builder"}
+            </p>
             <div className="flex-1" />
             <AIAssistButton
               label="Generate Magic Item"
@@ -361,39 +524,198 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
                 if (item.name) setName(item.name as string);
                 if (item.description) setDescription(item.description as string);
                 if (item.value) setValue(item.value as string);
+                if (item.category) {
+                  setSelectedCategory((item.category as ItemCategory) || null);
+                }
                 if (item.rarity) {
                   const rarityStr = (item.rarity as string).toLowerCase().replace(/ /g, "_");
                   if (["common", "uncommon", "rare", "very_rare", "legendary"].includes(rarityStr)) {
                     setRarity(rarityStr as Rarity);
                   }
                 }
+                setBuilderStep(2);
               }}
             />
           </div>
-          <Input id="loot-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Flame Tongue Greatsword..." />
-          <Input id="loot-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A magical weapon wreathed in flame..." />
-          <Input id="loot-loc" label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dragon's hoard, Room 12..." />
 
-          <div className="grid grid-cols-2 gap-3">
-            <Select
-              id="loot-rarity"
-              label="Rarity"
-              icon="auto_awesome"
-              value={rarity}
-              onChange={(e) => setRarity(e.target.value as Rarity)}
-            >
-              {(Object.keys(RARITY_CONFIG) as Rarity[]).map((r) => (
-                <option key={r} value={r}>{RARITY_CONFIG[r].label}</option>
-              ))}
-            </Select>
-            <div>
-              <Input id="loot-value" label="Value" value={value} onChange={(e) => setValue(e.target.value)} placeholder="500 gp" />
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {["Category", "Template", "Finalize"].map((label, index) => (
+              <div
+                key={label}
+                className={`rounded-full px-3 py-1 font-label text-[10px] uppercase tracking-[0.18em] ${
+                  builderStep === index
+                    ? "bg-secondary/10 text-secondary"
+                    : builderStep > index
+                      ? "bg-primary/10 text-primary"
+                      : "bg-surface-container-high text-on-surface-variant/45"
+                }`}
+              >
+                {index + 1}. {label}
+              </div>
+            ))}
           </div>
 
-          <Button size="sm" onClick={handleAddItem} disabled={loading || !name.trim()} className="glow-gold">
-            {loading ? "Adding..." : "Add Item"}
-          </Button>
+          {builderStep === 0 && (
+            <OptionGallery
+              options={ITEM_CATEGORY_OPTIONS}
+              selectedId={selectedCategory}
+              onSelect={(option) => {
+                setSelectedCategory(option.id as ItemCategory);
+                setBuilderStep(1);
+              }}
+              featuredIds={["weapons", "potions", "treasure"]}
+              featuredLabel="Common starting points"
+              allLabel="Browse categories"
+              searchPlaceholder="Search item categories"
+            />
+          )}
+
+          {builderStep === 1 && (
+            <div className="space-y-4">
+              <OptionGallery
+                options={builderTemplates}
+                selectedId={name}
+                onSelect={(option) => {
+                  setName(option.title);
+                  setDescription(option.description);
+                  setValue(option.meta?.[0] ?? "");
+                  setBuilderStep(2);
+                }}
+                featuredIds={builderTemplates.slice(0, 6).map((option) => option.id)}
+                featuredLabel="Suggested templates"
+                allLabel="Template library"
+                searchPlaceholder="Search templates"
+                emptyMessage="No templates found for this category yet. Use AI generation or continue and create one manually."
+              />
+              <div className="flex justify-between">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setBuilderStep(0)}>
+                  <Icon name="arrow_back" size={14} />
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setBuilderStep(2)}
+                >
+                  Continue manually
+                  <Icon name="arrow_forward" size={14} />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {builderStep === 2 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Input id="loot-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Flame Tongue Greatsword..." />
+                <Input id="loot-loc" label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dragon's hoard, Room 12..." />
+              </div>
+
+              <Textarea
+                id="loot-desc"
+                label="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="A magical weapon wreathed in flame..."
+                rows={3}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Select
+                  id="loot-rarity"
+                  label="Rarity"
+                  icon="auto_awesome"
+                  value={rarity}
+                  onChange={(e) => setRarity(e.target.value as Rarity)}
+                >
+                  {(Object.keys(RARITY_CONFIG) as Rarity[]).map((r) => (
+                    <option key={r} value={r}>{RARITY_CONFIG[r].label}</option>
+                  ))}
+                </Select>
+                <Input
+                  id="loot-value"
+                  label="Value"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  placeholder="500 gp"
+                />
+                <Input
+                  id="loot-quantity"
+                  label="Quantity"
+                  type="number"
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                />
+              </div>
+
+              {characters.length > 0 && !editingItemId && (
+                <div className="space-y-3 rounded-sm border border-outline-variant/10 bg-surface-container-low p-4">
+                  <div className="flex items-center gap-2">
+                    <Icon name="person_add" size={16} className="text-secondary" />
+                    <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary">
+                      Grant To Characters
+                    </span>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {characters.map((character) => {
+                      const selected = Boolean(assignments[character.id]);
+                      return (
+                        <label
+                          key={character.id}
+                          className={`rounded-sm border p-3 transition-all duration-300 ${
+                            selected
+                              ? "border-secondary/25 bg-secondary/10"
+                              : "border-outline-variant/10 bg-surface-container"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              onChange={() => toggleAssignment(character.id)}
+                            />
+                            <div className="flex-1">
+                              <p className="font-body text-sm text-on-surface">{character.name}</p>
+                              <p className="font-label text-[10px] uppercase tracking-[0.16em] text-on-surface-variant/45">
+                                {[character.raceName, character.className].filter(Boolean).join(" · ") || "Character"}
+                              </p>
+                            </div>
+                            {selected && (
+                              <input
+                                type="number"
+                                min={1}
+                                max={quantity}
+                                value={assignments[character.id]}
+                                onChange={(event) =>
+                                  setAssignments((prev) => ({
+                                    ...prev,
+                                    [character.id]: Math.max(1, Math.min(quantity, parseInt(event.target.value) || 1)),
+                                  }))
+                                }
+                                className="w-16 rounded-sm border border-outline-variant/10 bg-surface-container-high px-2 py-1 text-sm text-on-surface"
+                              />
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setBuilderStep(selectedCategory ? 1 : 0)}>
+                  <Icon name="arrow_back" size={14} />
+                  Back
+                </Button>
+                <Button size="sm" onClick={handleAddItem} disabled={loading || !name.trim()} className="glow-gold">
+                  {loading ? (editingItemId ? "Saving..." : "Adding...") : editingItemId ? "Save Item Card" : "Create Item Card"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -413,6 +735,16 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-body text-sm text-on-surface">{item.name}</span>
+                      {(item.quantity ?? 1) > 1 && (
+                        <span className="font-label text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-xl border border-outline-variant/10 bg-surface-container-high/40 text-on-surface/50">
+                          x{item.quantity}
+                        </span>
+                      )}
+                      {item.category && (
+                        <span className="font-label text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-xl border border-outline-variant/10 bg-surface-container-high/40 text-on-surface/50">
+                          {item.category}
+                        </span>
+                      )}
                       {item.rarity && getRarityConfig(item.rarity) && (
                         <span className={`font-label text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-xl border ${getRarityConfig(item.rarity)!.bgClass} ${getRarityConfig(item.rarity)!.color}`}>
                           {getRarityConfig(item.rarity)!.label}
@@ -431,6 +763,10 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
                   {item.value && (
                     <span className="font-label text-[10px] text-secondary">{item.value}</span>
                   )}
+                  <Button type="button" variant="ghost" size="sm" onClick={() => beginEditing(item)}>
+                    <Icon name="edit" size={12} />
+                    Edit
+                  </Button>
                 </div>
               ))}
             </div>
@@ -449,6 +785,16 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-body text-sm text-on-surface">{item.name}</span>
+                      {(item.quantity ?? 1) > 1 && (
+                        <span className="font-label text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-xl border border-outline-variant/10 bg-surface-container-high/40 text-on-surface/50">
+                          x{item.quantity}
+                        </span>
+                      )}
+                      {item.category && (
+                        <span className="font-label text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-xl border border-outline-variant/10 bg-surface-container-high/40 text-on-surface/50">
+                          {item.category}
+                        </span>
+                      )}
                       {item.rarity && getRarityConfig(item.rarity) && (
                         <span className={`font-label text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-xl border ${getRarityConfig(item.rarity)!.bgClass} ${getRarityConfig(item.rarity)!.color}`}>
                           {getRarityConfig(item.rarity)!.label}
@@ -470,6 +816,10 @@ export function LootTab({ sessionItems, campaignId, onAddItem }: Props) {
                   {item.value && (
                     <span className="font-label text-[10px] text-secondary">{item.value}</span>
                   )}
+                  <Button type="button" variant="ghost" size="sm" onClick={() => beginEditing(item)}>
+                    <Icon name="edit" size={12} />
+                    Edit
+                  </Button>
                 </div>
               ))}
             </div>

@@ -10,11 +10,15 @@ interface Campaign {
   id: string;
   name: string;
   status: string;
+  system: string;
+  edition: string;
+  setting: string | null;
   dm: { name: string | null; image: string | null };
   members: Array<{
     user: { name: string | null; image: string | null };
   }>;
   _count: { members: number };
+  viewerRole: string | null;
 }
 
 export default function CampaignsPage() {
@@ -98,6 +102,10 @@ export default function CampaignsPage() {
               memberCount={campaign._count.members}
               members={campaign.members.map((m) => m.user)}
               status={campaign.status}
+              system={campaign.system}
+              edition={campaign.edition}
+              setting={campaign.setting}
+              viewerRole={campaign.viewerRole}
             />
           ))}
         </section>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&amp;family=Inter:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-container": "#a52a2a",
+              "surface": "#0e1418",
+              "on-secondary-fixed": "#241a00",
+              "on-primary": "#68000a",
+              "surface-bright": "#343a3e",
+              "tertiary-container": "#515a5f",
+              "on-primary-container": "#ffc0bb",
+              "on-background": "#dde3e9",
+              "on-tertiary": "#293236",
+              "primary-fixed": "#ffdad7",
+              "primary": "#ffb3ad",
+              "tertiary": "#bfc8ce",
+              "on-secondary-container": "#342800",
+              "inverse-surface": "#dde3e9",
+              "tertiary-fixed": "#dbe4ea",
+              "secondary-fixed": "#ffe088",
+              "surface-container": "#1a2024",
+              "surface-container-highest": "#2f363a",
+              "surface-container-low": "#161c20",
+              "on-error-container": "#ffdad6",
+              "outline": "#a78a87",
+              "on-tertiary-fixed": "#141d21",
+              "secondary": "#e9c349",
+              "on-secondary": "#3c2f00",
+              "on-tertiary-container": "#c8d1d7",
+              "primary-fixed-dim": "#ffb3ad",
+              "surface-tint": "#ffb3ad",
+              "on-surface-variant": "#e0bfbc",
+              "background": "#0e1418",
+              "surface-variant": "#2f363a",
+              "on-surface": "#dde3e9",
+              "outline-variant": "#58413f",
+              "error": "#ffb4ab",
+              "on-error": "#690005",
+              "inverse-on-surface": "#2b3136",
+              "on-tertiary-fixed-variant": "#3f484d",
+              "on-primary-fixed-variant": "#8c171b",
+              "on-secondary-fixed-variant": "#574500",
+              "on-primary-fixed": "#410004",
+              "inverse-primary": "#ad302f",
+              "error-container": "#93000a",
+              "secondary-container": "#af8d11",
+              "surface-dim": "#0e1418",
+              "surface-container-high": "#252b2f",
+              "secondary-fixed-dim": "#e9c349",
+              "tertiary-fixed-dim": "#bfc8ce",
+              "surface-container-lowest": "#090f13"
+            },
+            fontFamily: {
+              "headline": ["Noto Serif"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuA3W1S1kU2mGa434bfTOEWd6_kjAHKHMhEQ6DbNW6OsZLCGOz-qS3j7PS8AQbLcQ8SDNSR6dO-dl7PYMuFzO1Wi-7-EbL5EcPeF7q3yYLcBy_aPGNwgTw4uccE6ob1VM4rqEtuDLM911WbCOtQP6iF-oca4aOZtPkI3j1BfW--pPDQ-tQuQ9UnhfKP-Jq52zSBZdkn7yXD8MjIDeRQVCRICmvU7Z0vDh10VLSC97eFd4ryXsTm-VE51q8vNkCgop2T8SIWb12894tGB);
+    background-repeat: repeat
+    }
+.ritual-glow {
+    box-shadow: 0 0 40px -10px rgba(233, 195, 73, 0.15)
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#0e1418] fixed top-0 w-full z-50 shadow-none">
+<div class="flex justify-between items-center px-6 h-16 w-full bg-[#161c20]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-sm bg-surface-container-high flex items-center justify-center border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-sm">auto_stories</span>
+</div>
+<h1 class="text-xl font-serif text-[#e9c349] tracking-widest uppercase">Mythic Codex</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#ffb3ad]/70 hover:bg-[#252b2f] transition-colors duration-300 p-2 rounded-sm cursor-pointer">settings</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-secondary/30">
+<img alt="Character Portrait" class="w-full h-full object-cover" data-alt="dignified character portrait of a high elf archivist with glowing amber eyes and silver hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgPvTtwYVQYK76ZpuvctsJMfG_jKLdH1_qlUfTbNg1V3w28mID0SFqimCZTtaem0tfRFCl9WuHXVB4tD2tKxy2Gh6ttnrwYo86U4Yhg9O_UmaemARBq-4IbgsIFqRergOW6iSYv3iZx_ETPp7uFk5LKC0Uut8OZJD4FxDaokQDSPZoStYXiEBGZhMuYV-Sf6AQGt7Xi5V8NA7-N0xtx2RlWCIjrjWAHIl7Tnxt0XuTVWMYbc62GEgBTKPncpf0XWhDEKkpzDgyUoon"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-12">
+<!-- Join Ritual Section -->
+<section class="relative ritual-glow p-8 md:p-12 bg-surface-container-low rounded-sm overflow-hidden border border-secondary/5">
+<div class="absolute inset-0 paper-texture opacity-5 pointer-events-none"></div>
+<div class="relative z-10 text-center space-y-8">
+<div class="space-y-2">
+<h2 class="font-headline text-3xl md:text-4xl text-secondary tracking-tight">Enter the Fray</h2>
+<p class="font-body text-on-surface-variant max-w-md mx-auto text-sm md:text-base">Speak the secret cipher provided by your Dungeon Master to bind your soul to the party.</p>
+</div>
+<!-- 6-Digit Code Input -->
+<div class="flex flex-col items-center gap-8">
+<div class="flex gap-2 md:gap-4 justify-center">
+<!-- Simulated 6-digit input fields -->
+<input class="w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl bg-surface-container-highest border-none rounded-sm focus:ring-1 focus:ring-secondary/40 text-secondary placeholder-secondary/10" maxlength="1" placeholder="•" type="text"/>
+<input class="w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl bg-surface-container-highest border-none rounded-sm focus:ring-1 focus:ring-secondary/40 text-secondary placeholder-secondary/10" maxlength="1" placeholder="•" type="text"/>
+<input class="w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl bg-surface-container-highest border-none rounded-sm focus:ring-1 focus:ring-secondary/40 text-secondary placeholder-secondary/10" maxlength="1" placeholder="•" type="text"/>
+<div class="w-2 flex items-center justify-center text-secondary/30">-</div>
+<input class="w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl bg-surface-container-highest border-none rounded-sm focus:ring-1 focus:ring-secondary/40 text-secondary placeholder-secondary/10" maxlength="1" placeholder="•" type="text"/>
+<input class="w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl bg-surface-container-highest border-none rounded-sm focus:ring-1 focus:ring-secondary/40 text-secondary placeholder-secondary/10" maxlength="1" placeholder="•" type="text"/>
+<input class="w-10 h-14 md:w-14 md:h-20 text-center font-headline text-2xl bg-surface-container-highest border-none rounded-sm focus:ring-1 focus:ring-secondary/40 text-secondary placeholder-secondary/10" maxlength="1" placeholder="•" type="text"/>
+</div>
+<button class="group relative px-10 py-4 bg-gradient-to-r from-primary-container to-[#8c171b] text-on-primary-container font-headline text-lg tracking-wide rounded-sm border border-secondary/30 transition-all hover:scale-[1.02] active:scale-95 shadow-xl">
+<span class="relative z-10 flex items-center gap-3">
+                            Join Campaign
+                            <span class="material-symbols-outlined text-sm">auto_awesome</span>
+</span>
+<div class="absolute inset-0 bg-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+</div>
+</div>
+<!-- Asymmetric Decorative Element -->
+<div class="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary/5 rounded-full blur-3xl"></div>
+</section>
+<!-- Your Parties Section -->
+<section class="space-y-6">
+<div class="flex justify-between items-end border-b border-outline-variant/20 pb-2">
+<h3 class="font-headline text-xl text-on-surface">Your Active Parties</h3>
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary/60">3 Chronicles Found</span>
+</div>
+<!-- Campaign Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Campaign Card 1 -->
+<div class="bg-surface-container-low group cursor-pointer border border-transparent hover:border-secondary/20 transition-all duration-300">
+<div class="relative h-32 overflow-hidden">
+<img alt="The Void Singularity" class="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 scale-105 group-hover:scale-100" data-alt="atmospheric dark fantasy landscape of a crumbling stone tower amidst a swirling purple magical storm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWd_7GVBZpJ3MDQY5BRpZJG1amqxQFuKopkaRNvRKNOgNUpiu2HARhNDmIN0XRCDn118Gv_1HPXnVANVUtmYAoR0ktKiNPVlOudMMNBMYJuJ8riX7Wow25gcCB9pQgk374mRcKBwiANqtgoMGlWxWUMA4rVygxqWTdZ1-qaIDKbV5rLk88yKJRk0ESXZpRlYx6XdKguAhrWR80qh1lqLeZLKl6rhQlITsdTDYLDyQ13Meih_ApA2CFRqibvnqNB-RjpY-sgkH3iPzd"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"></div>
+</div>
+<div class="p-6 -mt-8 relative z-10 space-y-4">
+<div class="space-y-1">
+<h4 class="font-headline text-xl text-primary">The Void Singularity</h4>
+<p class="text-xs text-on-surface-variant font-label uppercase tracking-tighter">Dungeon Master: Arcanis</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="rugged human warrior portrait with battle scars and dark beard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn9cBn7oFYj8mE0cv008w44BhP3fcqYK0cNRet5eeWIA_zOKR8UO3T0z8kAUQQssTRY4GHt9BdR6p1pMuiH9T2UAik6HeF9mPt4JlEyX3YrbNpmVz6tKoFfP0kX3u7krYLnVO_38wsOWWfTQ_LkLCwGQtxRlPd9urLgsRcbyf9y9DOXyV9wYY6R1cpavUb-Gq7Yeyk0e2isHlqKmK9UuSANfrgjtjAjMHyjI5LzoJNt-hJeQ5WstO8MrEoQTmOrAYzIZ6nH5GaGmIS"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="elven wizard portrait with intricate facial tattoos and sapphire jewelry" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy8GUAwiFPd5E6aud7T_LPxLb5FYwppZ2LawOA8fp9jwyQ1CyjlHlFAmZxOqGPGr8_fv5WtkKy3h_j77A5rpau7d7z8pide0LN9yYyJgcbaKOXx2bDuqLriTOidskOD2gHc77S1xRgm5OD8RWmX8JrkTeMdTZ99nfavIQOeCK--XWZLXLpMdnW6vcVi6D1DvBqiWpaRgGu5VXpb1Nm-yWCwqGh2LHBlSLLDXhT--ui-e-s4_-xY2FnD2A4EDfLiVsRt_2yeivH7IJ3"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="halfling rogue portrait with a mischievous grin and hooded cloak" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDb0P2CDC0-cFvMmMOuQqx_ArGfw1jb1BEAz0RUiBOVemTFECS4tnV9dKBuSFRWeNPRPBN8y3k4CDbepZy6BNihQFB6ugHJl_Uy4U9FZhXIsC1Dy0B4-voQhAcyJTDgtHX3GOoqfthKuMaVtiUaElvAEfJmXO3TqoU7iopKrWJYS2zGiYTAY9ujUl5YhI2TDvfewyh1yTNKuHiM4_jOVABpny66nBiCyV0GqWktq1B5B7QGtzD7u9Q_u01GnZVxSXFO8MGQczjBQjm6"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant">+2</div>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Campaign Card 2 -->
+<div class="bg-surface-container-low group cursor-pointer border border-transparent hover:border-secondary/20 transition-all duration-300">
+<div class="relative h-32 overflow-hidden">
+<img alt="Echoes of the Elderwood" class="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 scale-105 group-hover:scale-100" data-alt="ancient overgrown stone ruins in a dense foggy forest with ethereal green fireflies" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFIPCVbSNGIIeYIO_fHdN2BRC0ZnFaNePL5rPiEtVYpyix7HUOrCLyOPvmrs5Xl_G_u0TY2mtdVnVYyjXf_IO5MxZWXzmHlqhK73VZylYbeDaes0FoVq9ekP_U-5WB70S-sfD3CGSNT9tawJ2rr8UNj14-Pvo6oT9GSEg3BZUFgMjZj2iRXlt4STmXQdizM1huIbTE-vjfVp4sPNOpjPKdhXTxwHm97E97MHbwFaZ7ui4rTnvlAvk-tBu-8oPfMhzFrCD8L6ZXwe45"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"></div>
+</div>
+<div class="p-6 -mt-8 relative z-10 space-y-4">
+<div class="space-y-1">
+<h4 class="font-headline text-xl text-primary">Echoes of Elderwood</h4>
+<p class="text-xs text-on-surface-variant font-label uppercase tracking-tighter">Dungeon Master: Sylvana</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="stoic dwarf paladin portrait with gold-plated armor and braided beard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC78Ci3RYaSaKcwg7mosc8QO4B4I-BuBS2HfcAlF1vm-MqVT87TsNfoGWag6rt-fhj64H8eFo9J_Ng3XlUQoEwSOwjPKPcP5H8gXvjFsX6CG6ehhI7afS8tAKzcgsfA38BbYetSwBUUhQoQddV-4MJ7whOAMP8sC74zDZAcd936OmbMyZUOLXwH6bsXov3xb-hbLf6v3wjgHxL83K_hjDTSEBZqOQQQtc_dL0NK2FkPOAiEtXXQBjEgv5QVwiONOcTLDxcWCi8jQIPh"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-low object-cover" data-alt="tiefling warlock portrait with glowing horns and purple skin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCA1JkkJmN1XJyztPz4fuCvPIlgl-GsF1kjoxfVA6fwmcZRpO1Rmhc1ZvrgMPirMPakWwMpV56qTNZJnaDq7M7S5LjyI_amz40wvruub-A1-MqVoxUVkzNR6C9ZiXYqePf4AwTu40JyN8AKAK60cj3S3Nw3iUk8sfPoD_lIuh5nJC_18o58njVvz1hnMV5K0REIVQZBsoy6if3Pnlu4o2TNDNb0HSe_onoE-LXPHloNorNzkzfFKJYcqqSFlALIM8PY6kHJV4O21NKB"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant">+1</div>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-sm border-t border-[#e9c349]/15 bg-[#0e1418]/80 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<div class="flex justify-around items-center w-full h-20 pb-safe px-2">
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Sheet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">backpack</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Inventory</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-2xl">auto_stories</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Spells</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">auto_awesome</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Architect</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#e9c349] border-t-2 border-[#e9c349] pt-1 transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">groups</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Campaign</span>
+</a>
+</div>
+</nav>
+</body></html>

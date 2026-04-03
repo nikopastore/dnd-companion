@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@dnd-companion/database";
+import { Prisma, prisma } from "@dnd-companion/database";
 import { auth } from "@/lib/auth";
 import { getAbilityModifier } from "@dnd-companion/shared";
+import { buildSpellSlotsState, getWarlockPactSpellSlots, isPactCaster } from "@/lib/character-progression";
 
 // GET /api/characters — list user's characters
 export async function GET() {
@@ -15,6 +16,12 @@ export async function GET() {
     include: {
       race: { select: { name: true } },
       class: { select: { name: true, hitDie: true } },
+      multiclasses: {
+        include: {
+          class: { select: { name: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
       background: { select: { name: true } },
     },
     orderBy: { updatedAt: "desc" },
@@ -31,16 +38,43 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { name, raceId, subraceId, classId, backgroundId, abilityScores, campaignId } = body;
+  const {
+    name,
+    raceId,
+    subraceId,
+    classId,
+    backgroundId,
+    abilityScores,
+    campaignId,
+    imageUrl,
+    backstory,
+    personalityTraits,
+    ideals,
+    bonds,
+    flaws,
+    personalGoals,
+    secrets,
+    voiceNotes,
+    lastSessionChanges,
+    characterTimeline,
+    automationMode,
+    rulesBookmarks,
+  } = body;
 
   if (!name || !raceId || !classId || !backgroundId || !abilityScores) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // Get class info for HP calculation
-  const charClass = await prisma.characterClass.findUnique({ where: { id: classId } });
+  const [charClass, race] = await Promise.all([
+    prisma.characterClass.findUnique({ where: { id: classId } }),
+    prisma.race.findUnique({ where: { id: raceId } }),
+  ]);
+
   if (!charClass) {
     return NextResponse.json({ error: "Invalid class" }, { status: 400 });
+  }
+  if (!race) {
+    return NextResponse.json({ error: "Invalid race" }, { status: 400 });
   }
 
   // Level 1 HP = max hit die + CON modifier
@@ -57,6 +91,19 @@ export async function POST(request: Request) {
     data: {
       name,
       userId: session.user.id,
+      imageUrl: imageUrl || null,
+      backstory: backstory?.trim() || null,
+      personalityTraits: personalityTraits?.trim() || null,
+      ideals: ideals?.trim() || null,
+      bonds: bonds?.trim() || null,
+      flaws: flaws?.trim() || null,
+      personalGoals: personalGoals?.trim() || null,
+      secrets: secrets?.trim() || null,
+      voiceNotes: voiceNotes?.trim() || null,
+      lastSessionChanges: lastSessionChanges?.trim() || null,
+      characterTimeline: Array.isArray(characterTimeline) ? characterTimeline : undefined,
+      automationMode: typeof automationMode === "string" ? automationMode : undefined,
+      rulesBookmarks: Array.isArray(rulesBookmarks) ? rulesBookmarks : undefined,
       raceId,
       subraceId: subraceId || null,
       classId,
@@ -67,7 +114,7 @@ export async function POST(request: Request) {
       maxHP: Math.max(1, maxHP),
       armorClass: 10 + dexMod, // Base AC, will be modified by armor
       initiative: dexMod,
-      speed: 30, // Will be set from race
+      speed: race.speed,
       proficiencyBonus: 2,
       strength: abilityScores.strength,
       dexterity: abilityScores.dexterity,
@@ -78,13 +125,28 @@ export async function POST(request: Request) {
       saveProficiencies: charClass.savingThrows,
       skillProficiencies: [],
       skillExpertise: [],
+      primaryClassLevel: 1,
       hitDiceRemaining: 1,
       hitDiceTotal: 1,
       classResources: classLevel1?.resources ?? undefined,
-    },
+      spellSlotsState: isPactCaster(charClass.name)
+        ? undefined
+        : buildSpellSlotsState(
+            (classLevel1?.spellSlots as Record<string, number> | null | undefined) ?? null
+          ),
+      pactSpellSlotsState: isPactCaster(charClass.name)
+        ? buildSpellSlotsState(getWarlockPactSpellSlots(1))
+        : undefined,
+    } as Prisma.CharacterUncheckedCreateInput,
     include: {
       race: { select: { name: true } },
       class: { select: { name: true } },
+      multiclasses: {
+        include: {
+          class: { select: { name: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
       background: { select: { name: true } },
     },
   });

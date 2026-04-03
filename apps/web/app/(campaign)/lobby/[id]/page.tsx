@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { type ConditionKey } from "@dnd-companion/shared";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { LiveActivityFeed } from "@/components/campaign/live-activity-feed";
@@ -15,6 +14,12 @@ import { QuestsTab } from "@/components/dm/quests-tab";
 import { LocationsTab } from "@/components/dm/locations-tab";
 import { EncountersTab } from "@/components/dm/encounters-tab";
 import { LootTab } from "@/components/dm/loot-tab";
+import { CampaignSearchPanel } from "@/components/campaign/campaign-search-panel";
+import { ActiveEncounterPanel } from "@/components/campaign/active-encounter-panel";
+import { LocationExplorerPanel } from "@/components/campaign/location-explorer-panel";
+import { PartyHubPanel } from "@/components/campaign/party-hub-panel";
+import { WorldbuildingPanel } from "@/components/dm/worldbuilding-panel";
+import { useSocket } from "@/hooks/use-socket";
 
 interface CampaignData {
   id: string;
@@ -22,6 +27,47 @@ interface CampaignData {
   description: string | null;
   inviteCode: string;
   status: string;
+  system: string;
+  edition: string;
+  setting: string | null;
+  tone: string | null;
+  onboardingMode: string;
+  worldName: string | null;
+  worldSummary: string | null;
+  houseRules: unknown;
+  worldCanon: unknown;
+  playerCanon: unknown;
+  rumors: unknown;
+  factions: unknown;
+  factionDirectory: unknown;
+  storyThreads: unknown;
+  scheduledEvents: unknown;
+  worldRegions: unknown;
+  loreEntries: unknown;
+  historicalEvents: unknown;
+  calendarState: unknown;
+  threatClocks: unknown;
+  unresolvedMysteries: unknown;
+  partyTreasury: unknown;
+  treasuryLedger: unknown;
+  partyStash: unknown;
+  craftingProjects: unknown;
+  announcements: unknown;
+  merchants: unknown;
+  economyLog: unknown;
+  schedulePolls: unknown;
+  campaignMessages: unknown;
+  handouts: unknown;
+  groupReputation: number;
+  groupRenown: number;
+  stronghold: unknown;
+  sharedPlans: unknown;
+  backups: unknown;
+  sessionZero: unknown;
+  accessibilityOptions: unknown;
+  viewerRole: string | null;
+  viewerCanManage: boolean;
+  viewerCanViewDmContent: boolean;
   dm: { id: string; name: string | null; image: string | null };
   members: Array<{
     id: string;
@@ -34,65 +80,141 @@ interface CampaignData {
       currentHP: number;
       maxHP: number;
       armorClass: number;
+      initiative: number;
+      concentrationSpell: string | null;
+      conditions: Array<{ condition: string }>;
+      race: { name: string };
+      class: { name: string };
     } | null;
   }>;
   npcs: Array<{
-    id: string; name: string; description: string | null; isEnemy: boolean;
-    notes: string | null; race: string | null; npcClass: string | null;
-    alignment: string | null; personality: string | null; appearance: string | null;
-    voice: string | null; faction: string | null; locationName: string | null;
-    relationship: string | null; isAlive: boolean; cr: string | null;
+    id: string;
+    name: string;
+    description: string | null;
+    isEnemy: boolean;
+    notes: string | null;
+    race: string | null;
+    npcClass: string | null;
+    alignment: string | null;
+    personality: string | null;
+    appearance: string | null;
+    voice: string | null;
+    faction: string | null;
+    locationName: string | null;
+    relationship: string | null;
+    isAlive: boolean;
+    cr: string | null;
     statBlock: unknown;
   }>;
   sessionItems: Array<{
-    id: string; name: string; description: string | null; location: string | null;
-    isHidden: boolean; claimedById: string | null; rarity: string | null; value: string | null;
+    id: string;
+    name: string;
+    description: string | null;
+    location: string | null;
+    isHidden: boolean;
+    claimedById: string | null;
+    rarity: string | null;
+    value: string | null;
+    category: string | null;
+    quantity: number;
+    imageUrl: string | null;
   }>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   gameSessions: any[];
   locations: Array<{
-    id: string; name: string; type: string; description: string | null;
-    notes: string | null; parentId: string | null;
+    id: string;
+    name: string;
+    imageUrl: string | null;
+    mapData: unknown;
+    type: string;
+    description: string | null;
+    notes: string | null;
+    parentId: string | null;
     children: Array<{ id: string; name: string; type: string }>;
   }>;
   quests: Array<{
-    id: string; title: string; description: string | null; status: string;
-    priority: string; notes: string | null; giverNpcId: string | null;
+    id: string;
+    title: string;
+    description: string | null;
+    status: string;
+    priority: string;
+    notes: string | null;
+    giverNpcId: string | null;
   }>;
   encounters: Array<{
-    id: string; name: string; description: string | null; difficulty: string | null;
-    monsters: unknown; loot: unknown; notes: string | null; status: string;
+    id: string;
+    name: string;
+    description: string | null;
+    difficulty: string | null;
+    monsters: unknown;
+    loot: unknown;
+    liveState: unknown;
+    notes: string | null;
+    status: string;
   }>;
   campaignNotes: Array<{
-    id: string; title: string; content: string; category: string;
+    id: string;
+    title: string;
+    content: string;
+    category: string;
     isPinned: boolean;
   }>;
 }
 
 const DM_TABS = [
   { id: "overview", label: "Overview", icon: "dashboard" },
+  { id: "world", label: "World", icon: "public" },
+  { id: "party", label: "Party", icon: "groups_2" },
   { id: "sessions", label: "Sessions", icon: "event_note" },
   { id: "npcs", label: "NPCs", icon: "groups" },
   { id: "quests", label: "Quests", icon: "assignment" },
   { id: "locations", label: "Locations", icon: "map" },
   { id: "encounters", label: "Encounters", icon: "swords" },
   { id: "loot", label: "Loot & Items", icon: "inventory_2" },
+  { id: "search", label: "Search", icon: "manage_search" },
 ];
+
+function getRoleLabel(role: string | null | undefined) {
+  switch (role) {
+    case "DM":
+      return "Dungeon Master";
+    case "CO_DM":
+      return "Co-DM";
+    case "PLAYER":
+      return "Player";
+    case "SPECTATOR":
+      return "Spectator";
+    default:
+      return "Member";
+  }
+}
+
+function getMemberSubtitle(member: CampaignData["members"][number]) {
+  if (member.role === "DM") return "Dungeon Master";
+  if (member.role === "CO_DM") return "Co-DM";
+  if (member.role === "SPECTATOR") return "Spectator";
+  return member.character?.name || "No character";
+}
 
 export default function CampaignLobbyPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: session } = useSession();
+  const { on } = useSocket();
   const [campaign, setCampaign] = useState<CampaignData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
-  const isDM = session?.user?.id === campaign?.dm?.id;
+  const canManageCampaign = Boolean(campaign?.viewerCanManage);
+  const viewerRoleLabel = getRoleLabel(campaign?.viewerRole);
+  const canContributePlans = campaign?.viewerRole !== "SPECTATOR";
 
   useEffect(() => {
     fetch(`/api/campaigns/${id}`)
       .then((res) => res.json())
-      .then((data) => { setCampaign(data); setLoading(false); })
+      .then((data) => {
+        setCampaign(data);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [id]);
 
@@ -101,6 +223,61 @@ export default function CampaignLobbyPage() {
       .then((res) => res.json())
       .then((data) => setCampaign(data));
   }, [id]);
+
+  useEffect(() => {
+    if (!campaign || canManageCampaign) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshCampaign();
+      }
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [campaign, canManageCampaign, refreshCampaign]);
+
+  useEffect(() => {
+    const unsubs = [
+      on("encounter:updated", (payload: unknown) => {
+        const data = payload as { campaignId?: string; encounterId?: string; status?: string; liveState?: unknown };
+        if (!data.campaignId || data.campaignId !== id || !data.encounterId) return;
+        setCampaign((current) =>
+          current
+            ? {
+                ...current,
+                encounters: current.encounters.map((encounter) =>
+                  encounter.id === data.encounterId
+                    ? {
+                        ...encounter,
+                        status: data.status ?? encounter.status,
+                        liveState: data.liveState ?? encounter.liveState,
+                      }
+                    : encounter
+                ),
+              }
+            : current
+        );
+      }),
+      on("location:map-updated", (payload: unknown) => {
+        const data = payload as { campaignId?: string; locationId?: string; location?: CampaignData["locations"][number] };
+        if (!data.campaignId || data.campaignId !== id || !data.locationId || !data.location) return;
+        setCampaign((current) =>
+          current
+            ? {
+                ...current,
+                locations: current.locations.map((location) => (location.id === data.locationId ? data.location! : location)),
+              }
+            : current
+        );
+      }),
+    ];
+
+    return () => {
+      unsubs.forEach((unsub) => unsub?.());
+    };
+  }, [id, on]);
 
   function copyInviteCode() {
     if (!campaign) return;
@@ -116,7 +293,7 @@ export default function CampaignLobbyPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
     });
-    setCampaign((prev) => prev ? { ...prev, status: newStatus } : prev);
+    setCampaign((prev) => (prev ? { ...prev, status: newStatus } : prev));
   }
 
   if (loading) {
@@ -127,7 +304,9 @@ export default function CampaignLobbyPage() {
           <div className="h-4 w-40 bg-surface-container-high/60 rounded-sm mx-auto" />
           <div className="h-12 bg-surface-container-high/30 rounded-sm mt-8" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-surface-container-high/20 rounded-sm" />)}
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="h-24 bg-surface-container-high/20 rounded-sm" />
+            ))}
           </div>
         </div>
       </main>
@@ -151,8 +330,7 @@ export default function CampaignLobbyPage() {
     ARCHIVED: "bg-surface-container-high text-on-surface/40 border-outline-variant/20",
   };
 
-  // Player view (non-DM)
-  if (!isDM) {
+  if (!canManageCampaign) {
     return (
       <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-8">
         <section className="text-center space-y-4 animate-fade-in-up">
@@ -166,7 +344,7 @@ export default function CampaignLobbyPage() {
             <p className="font-body text-on-surface-variant max-w-lg mx-auto">{campaign.description}</p>
           )}
           <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter">
-            DM: {campaign.dm.name}
+            DM: {campaign.dm.name} - You are here as {viewerRoleLabel}
           </p>
         </section>
 
@@ -193,34 +371,86 @@ export default function CampaignLobbyPage() {
               <div>
                 <p className="font-body font-semibold text-on-surface">{member.user.name}</p>
                 <p className="font-label text-[10px] uppercase tracking-widest text-on-surface/40">
-                  {member.role === "DM" ? "Dungeon Master" : member.character?.name || "No character"}
+                  {getMemberSubtitle(member)}
                 </p>
               </div>
             </div>
           ))}
         </section>
 
+        <PartyHubPanel
+          campaignId={campaign.id}
+          partyTreasury={campaign.partyTreasury}
+          treasuryLedger={campaign.treasuryLedger}
+          partyStash={campaign.partyStash}
+          craftingProjects={campaign.craftingProjects}
+          announcements={campaign.announcements}
+          merchants={campaign.merchants}
+          economyLog={campaign.economyLog}
+          schedulePolls={campaign.schedulePolls}
+          campaignMessages={campaign.campaignMessages}
+          handouts={campaign.handouts}
+          sharedPlans={campaign.sharedPlans}
+          members={campaign.members}
+          sessions={campaign.gameSessions}
+          canManage={false}
+          canContributePlans={Boolean(canContributePlans)}
+          onRefresh={refreshCampaign}
+        />
+
+        <WorldbuildingPanel
+          campaignId={campaign.id}
+          worldName={campaign.worldName}
+          worldSummary={campaign.worldSummary}
+          worldRegions={campaign.worldRegions}
+          factionDirectory={campaign.factionDirectory}
+          loreEntries={campaign.loreEntries}
+          historicalEvents={campaign.historicalEvents}
+          calendarState={campaign.calendarState}
+          canManage={false}
+          onSaved={refreshCampaign}
+        />
+
+        <ActiveEncounterPanel
+          encounters={campaign.encounters || []}
+          locations={(campaign.locations || []).map((location) => ({
+            id: location.id,
+            name: location.name,
+            imageUrl: location.imageUrl,
+            mapData: location.mapData,
+          }))}
+        />
+
+        <LocationExplorerPanel locations={campaign.locations || []} />
+
         <LiveActivityFeed campaignId={campaign.id} />
       </main>
     );
   }
 
-  // DM Command Center
   const tabsWithCounts = DM_TABS.map((tab) => ({
     ...tab,
     count:
-      tab.id === "npcs" ? campaign.npcs?.length :
-      tab.id === "sessions" ? campaign.gameSessions?.length :
-      tab.id === "quests" ? campaign.quests?.length :
-      tab.id === "locations" ? campaign.locations?.length :
-      tab.id === "encounters" ? campaign.encounters?.length :
-      tab.id === "loot" ? campaign.sessionItems?.length :
-      undefined,
+      tab.id === "npcs"
+        ? campaign.npcs?.length
+        : tab.id === "sessions"
+          ? campaign.gameSessions?.length
+          : tab.id === "world"
+            ? (Array.isArray(campaign.worldRegions) ? campaign.worldRegions.length : 0) +
+              (Array.isArray(campaign.loreEntries) ? campaign.loreEntries.length : 0)
+          : tab.id === "quests"
+            ? campaign.quests?.length
+            : tab.id === "locations"
+              ? campaign.locations?.length
+              : tab.id === "encounters"
+                ? campaign.encounters?.length
+                : tab.id === "loot"
+                  ? campaign.sessionItems?.length
+                  : undefined,
   }));
 
   return (
     <main className="pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto space-y-6">
-      {/* Campaign Header */}
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up">
         <div>
           <div className="flex items-center gap-3">
@@ -230,7 +460,7 @@ export default function CampaignLobbyPage() {
             </span>
           </div>
           <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter mt-1">
-            DM: {campaign.dm.name} (You) · {campaign.members.length} members
+            DM: {campaign.dm.name} {campaign.viewerRole === "DM" ? "(You)" : `- ${viewerRoleLabel}`} - {campaign.members.length} members
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -248,21 +478,61 @@ export default function CampaignLobbyPage() {
 
       <div className="decorative-line" />
 
-      {/* DM Tab Navigation */}
       <DMTabs tabs={tabsWithCounts} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Tab Content */}
       <div className="animate-fade-in" key={activeTab}>
         {activeTab === "overview" && (
           <OverviewTab
-            campaign={campaign as any}
+            campaign={campaign}
             onStatusChange={updateStatus}
+            onCampaignRefresh={refreshCampaign}
+          />
+        )}
+        {activeTab === "party" && (
+          <PartyHubPanel
+            campaignId={campaign.id}
+            partyTreasury={campaign.partyTreasury}
+            treasuryLedger={campaign.treasuryLedger}
+            partyStash={campaign.partyStash}
+            craftingProjects={campaign.craftingProjects}
+            announcements={campaign.announcements}
+            merchants={campaign.merchants}
+            economyLog={campaign.economyLog}
+            schedulePolls={campaign.schedulePolls}
+            campaignMessages={campaign.campaignMessages}
+            handouts={campaign.handouts}
+            sharedPlans={campaign.sharedPlans}
+            members={campaign.members}
+            sessions={campaign.gameSessions}
+            canManage={Boolean(campaign.viewerCanManage)}
+            canContributePlans={Boolean(canContributePlans)}
+            onRefresh={refreshCampaign}
+          />
+        )}
+        {activeTab === "world" && (
+          <WorldbuildingPanel
+            campaignId={campaign.id}
+            worldName={campaign.worldName}
+            worldSummary={campaign.worldSummary}
+            worldRegions={campaign.worldRegions}
+            factionDirectory={campaign.factionDirectory}
+            loreEntries={campaign.loreEntries}
+            historicalEvents={campaign.historicalEvents}
+            calendarState={campaign.calendarState}
+            canManage={Boolean(campaign.viewerCanManage)}
+            onSaved={refreshCampaign}
           />
         )}
         {activeTab === "sessions" && (
           <SessionsTab
             sessions={campaign.gameSessions || []}
             campaignId={campaign.id}
+            members={campaign.members
+              .filter((member) => member.character)
+              .map((member) => ({
+                id: member.character!.id,
+                name: member.character!.name,
+              }))}
             onAdd={() => refreshCampaign()}
           />
         )}
@@ -294,6 +564,24 @@ export default function CampaignLobbyPage() {
           <EncountersTab
             encounters={campaign.encounters || []}
             campaignId={campaign.id}
+            characters={campaign.members
+              .filter((member) => member.character)
+              .map((member) => ({
+                id: member.character!.id,
+                name: member.character!.name,
+                currentHP: member.character!.currentHP,
+                maxHP: member.character!.maxHP,
+                armorClass: member.character!.armorClass,
+                initiative: member.character!.initiative,
+                concentrationSpell: member.character!.concentrationSpell,
+                activeConditions: member.character!.conditions.map((entry) => entry.condition as ConditionKey),
+              }))}
+            locations={(campaign.locations || []).map((location) => ({
+              id: location.id,
+              name: location.name,
+              imageUrl: location.imageUrl,
+              mapData: location.mapData,
+            }))}
             onAdd={() => refreshCampaign()}
           />
         )}
@@ -301,12 +589,22 @@ export default function CampaignLobbyPage() {
           <LootTab
             sessionItems={campaign.sessionItems || []}
             campaignId={campaign.id}
+            characters={campaign.members
+              .filter((member) => member.character)
+              .map((member) => ({
+                id: member.character!.id,
+                name: member.character!.name,
+                raceName: member.character!.race.name,
+                className: member.character!.class.name,
+              }))}
             onAddItem={() => refreshCampaign()}
           />
         )}
+        {activeTab === "search" && (
+          <CampaignSearchPanel campaignId={campaign.id} />
+        )}
       </div>
 
-      {/* Activity Feed (always visible) */}
       <LiveActivityFeed campaignId={campaign.id} />
     </main>
   );

@@ -1,13 +1,13 @@
 import type { Socket } from "socket.io";
-import jwt from "jsonwebtoken";
+import crypto from "node:crypto";
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || "dev-secret";
+const SOCKET_SECRET = process.env.NEXTAUTH_SECRET || "dev-secret";
 
-interface JWTPayload {
+interface SocketTokenPayload {
   id?: string;
   name?: string;
-  email?: string;
-  sub?: string;
+  email?: string | null;
+  exp?: number;
 }
 
 export function authMiddleware(socket: Socket, next: (err?: Error) => void) {
@@ -18,8 +18,22 @@ export function authMiddleware(socket: Socket, next: (err?: Error) => void) {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    socket.data.userId = decoded.id || decoded.sub;
+    const [encodedPayload, signature] = token.split(".");
+    if (!encodedPayload || !signature) {
+      return next(new Error("Invalid token format"));
+    }
+
+    const expectedSignature = crypto.createHmac("sha256", SOCKET_SECRET).update(encodedPayload).digest("base64url");
+    if (signature !== expectedSignature) {
+      return next(new Error("Invalid token signature"));
+    }
+
+    const decoded = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as SocketTokenPayload;
+    if (!decoded.exp || decoded.exp < Date.now()) {
+      return next(new Error("Expired token"));
+    }
+
+    socket.data.userId = decoded.id;
     socket.data.userName = decoded.name || decoded.email || "Unknown";
 
     if (!socket.data.userId) {

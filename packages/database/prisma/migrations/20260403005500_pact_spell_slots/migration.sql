@@ -1,0 +1,2 @@
+ALTER TABLE "Character"
+ADD COLUMN IF NOT EXISTS "pactSpellSlotsState" JSONB;

@@ -24,8 +24,6 @@ export function ReviewAndCreate({ builder }: Props) {
   const [backstory, setBackstory] = useState("");
   const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
 
-  const conMod = getAbilityModifier(state.abilityScores.constitution);
-
   async function handleCreate() {
     if (!state.name.trim()) {
       setError("Your character needs a name");
@@ -45,6 +43,8 @@ export function ReviewAndCreate({ builder }: Props) {
         backgroundId: state.backgroundId,
         abilityScores: state.abilityScores,
         campaignId: state.campaignId,
+        imageUrl: portraitUrl,
+        backstory,
       }),
     });
 
@@ -137,7 +137,6 @@ export function ReviewAndCreate({ builder }: Props) {
               <div className="flex justify-between items-center py-2 animate-fade-in-up">
                 <span className="font-label text-xs uppercase tracking-widest text-on-surface/40">HP</span>
                 <span className="font-headline text-lg text-primary">
-                  {/* Hit die max + CON mod at level 1 */}
                   Calculated on save
                 </span>
               </div>

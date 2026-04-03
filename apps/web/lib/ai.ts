@@ -147,6 +147,18 @@ Make scenes varied: mix combat, roleplay, exploration, and puzzle/mystery.`,
 [{"secret": "The innkeeper is actually a retired assassin.", "discovered": false}]
 Mix different types: NPC secrets, world lore, upcoming threats, hidden treasures.`,
 
+  sessionRecapPlayer: `You are a D&D recap assistant. Turn DM prep notes and live notes into a concise player-facing recap.
+- Focus on what the party saw, learned, promised, and changed
+- Preserve canon and avoid inventing unconfirmed facts
+- Keep it readable as a "Previously on..." summary
+Respond with plain text only.`,
+
+  sessionRecapDM: `You are a D&D continuity assistant. Turn prep notes and live notes into a DM-only continuity recap.
+- Track consequences, unresolved threads, faction movement, promises, and risks for next session
+- Highlight what changed in the world and what the players may have forgotten
+- Preserve canon and do not invent major changes without labeling them as possible implications
+Respond with plain text only.`,
+
   encounterBuilder: `You are a D&D 5e encounter designer. Given a party composition and desired difficulty, suggest an encounter. Return as JSON:
 {
   "name": "Encounter Name",

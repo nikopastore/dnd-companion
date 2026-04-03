@@ -71,6 +71,44 @@ model Campaign {
   description String?
   inviteCode  String         @unique
   status      CampaignStatus @default(LOBBY)
+  system      String         @default("D&D")
+  edition     String         @default("5e")
+  setting     String?
+  tone        String?
+  onboardingMode String      @default("beginner")
+  worldName   String?
+  worldSummary String?       @db.Text
+  houseRules  Json?
+  worldCanon  Json?
+  playerCanon Json?
+  rumors      Json?
+  factions    Json?
+  factionDirectory Json?
+  storyThreads Json?
+  scheduledEvents Json?
+  worldRegions Json?
+  loreEntries Json?
+  historicalEvents Json?
+  calendarState Json?
+  threatClocks Json?
+  unresolvedMysteries Json?
+  partyTreasury Json?
+  treasuryLedger Json?
+  partyStash   Json?
+  craftingProjects Json?
+  announcements Json?
+  merchants    Json?
+  economyLog   Json?
+  schedulePolls Json?
+  campaignMessages Json?
+  handouts     Json?
+  groupReputation Int        @default(0)
+  groupRenown Int            @default(0)
+  stronghold  Json?
+  sharedPlans Json?
+  backups     Json?
+  sessionZero Json?
+  accessibilityOptions Json?
 
   dmId String
   dm   User   @relation("DungeonMaster", fields: [dmId], references: [id])
@@ -113,6 +151,8 @@ model CampaignMember {
 enum MemberRole {
   PLAYER
   DM
+  CO_DM
+  SPECTATOR
 }
 
 // ─── Character Models ────────────────────────────────────────────
@@ -121,6 +161,7 @@ model Character {
   id               String @id @default(cuid())
   name             String
   imageUrl         String?
+  backstory        String? @db.Text
   level            Int    @default(1)
   experiencePoints Int    @default(0)
 
@@ -154,7 +195,7 @@ model Character {
   subraceId    String?
   subrace      Subrace?       @relation(fields: [subraceId], references: [id])
   classId      String
-  class        CharacterClass @relation(fields: [classId], references: [id])
+  class        CharacterClass @relation("PrimaryCharacterClass", fields: [classId], references: [id])
   subclassId   String?
   backgroundId String
   background   Background     @relation(fields: [backgroundId], references: [id])
@@ -163,12 +204,27 @@ model Character {
   deathSaveSuccesses Int @default(0)
   deathSaveFailures  Int @default(0)
   exhaustionLevel    Int @default(0)
+  primaryClassLevel  Int @default(1)
   hitDiceRemaining   Int
   hitDiceTotal       Int
 
   // Flexible class resources (ki, rages, sorcery points, etc.)
   classResources     Json?
+  spellSlotsState    Json?
+  pactSpellSlotsState Json?
   concentrationSpell String?
+  automationMode     String @default("ASSISTED")
+  rulesBookmarks     Json?
+  subclassName       String?
+  personalityTraits  String? @db.Text
+  ideals             String? @db.Text
+  bonds              String? @db.Text
+  flaws              String? @db.Text
+  personalGoals      String? @db.Text
+  secrets            String? @db.Text
+  voiceNotes         String? @db.Text
+  lastSessionChanges String? @db.Text
+  characterTimeline  Json?
 
   // Currency
   copperPieces   Int @default(0)
@@ -185,6 +241,7 @@ model Character {
   spells         CharacterSpell[]
   features       CharacterFeature[]
   conditions     CharacterCondition[]
+  multiclasses   CharacterMulticlass[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -193,11 +250,18 @@ model Character {
 model CharacterItem {
   id          String  @id @default(cuid())
   name        String
+  description String? @db.Text
+  imageUrl    String?
+  category    String?
+  rarity      String?
+  value       String?
   quantity    Int     @default(1)
   weight      Float?
   isEquipped  Boolean @default(false)
   isAttuned   Boolean @default(false)
   notes       String?
+  sourceSessionItemId String?
+  itemHistory Json?
 
   characterId String
   character   Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
@@ -213,8 +277,26 @@ model CharacterSpell {
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
   spellId     String
   spell       Spell     @relation(fields: [spellId], references: [id])
+  sourceClassId String?
+  sourceClass   CharacterClass? @relation("SpellSourceClass", fields: [sourceClassId], references: [id])
 
   @@unique([characterId, spellId])
+}
+
+model CharacterMulticlass {
+  id           String  @id @default(cuid())
+  level        Int     @default(1)
+  subclassName String?
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  classId     String
+  class       CharacterClass @relation("MulticlassCharacterClass", fields: [classId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([characterId, classId])
 }
 
 model CharacterFeature {
@@ -297,8 +379,10 @@ model CharacterClass {
   proficiencies   Json   // { armor: [], weapons: [], tools: [] }
   startingEquipment Json
 
-  levels     ClassLevel[]
-  characters Character[]
+  levels             ClassLevel[]
+  primaryCharacters  Character[]           @relation("PrimaryCharacterClass")
+  multiclassEntries  CharacterMulticlass[] @relation("MulticlassCharacterClass")
+  spellSourceSpells  CharacterSpell[]      @relation("SpellSourceClass")
 }
 
 model ClassLevel {
@@ -391,7 +475,10 @@ model NPC {
 model SessionItem {
   id          String  @id @default(cuid())
   name        String
+  imageUrl    String?
+  category    String?
   description String? @db.Text
+  quantity    Int     @default(1)
   location    String?
   isHidden    Boolean @default(true)
   claimedById String?
@@ -402,6 +489,7 @@ model SessionItem {
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── DM Session Planning ─────────────────────────────────────────
@@ -414,10 +502,17 @@ model GameSession {
   status      SessionStatus @default(PLANNED)
 
   strongStart    String? @db.Text
+  objectives     Json?
   scenes         Json?   // [{ title, description, type }]
   secretsAndClues Json?  // [{ secret, discovered }]
   summary        String? @db.Text
   notes          String? @db.Text
+  publicRecap    String? @db.Text
+  dmRecap        String? @db.Text
+  pacingNotes    String? @db.Text
+  attendance     Json?
+  preparedChecklist Json?
+  liveNotes      Json?
 
   campaignId String
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
@@ -436,6 +531,7 @@ model Location {
   id          String    @id @default(cuid())
   name        String
   imageUrl    String?
+  mapData     Json?
   type        String    // city, dungeon, wilderness, building, region, tavern
   description String?   @db.Text
   notes       String?   @db.Text
@@ -481,6 +577,7 @@ model Encounter {
   difficulty  String? // easy, medium, hard, deadly
   monsters    Json    // [{ name, cr, count, hp, ac, notes }]
   loot        Json?   // [{ name, quantity, description }]
+  liveState   Json?
   notes       String? @db.Text
   status      String  @default("prepared") // prepared, active, completed
 
@@ -488,6 +585,7 @@ model Encounter {
   campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CampaignNote {

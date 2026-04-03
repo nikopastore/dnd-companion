@@ -13,6 +13,8 @@ export function getSocket(token: string): Socket {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
+  } else {
+    socket.auth = { token };
   }
   return socket;
 }

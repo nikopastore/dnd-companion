@@ -11,22 +11,40 @@ export function useSocket() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // We need a session token for auth. In development without a real JWT,
-    // we'll use a placeholder. In production, this would be the NextAuth JWT.
     if (!session?.user) return;
 
-    // For now, use a simple token. In production, get the actual JWT from NextAuth.
-    const token = "dev-token"; // TODO: Replace with real JWT from session
+    let cancelled = false;
 
-    const socket = getSocket(token);
-    socketRef.current = socket;
+    const connectSocket = async () => {
+      try {
+        const response = await fetch("/api/socket-token", { cache: "no-store" });
+        if (!response.ok) {
+          setConnected(false);
+          return;
+        }
 
-    socket.on("connect", () => setConnected(true));
-    socket.on("disconnect", () => setConnected(false));
+        const data = (await response.json()) as { token?: string };
+        if (!data.token || cancelled) {
+          setConnected(false);
+          return;
+        }
 
-    socket.connect();
+        const socket = getSocket(data.token);
+        socketRef.current = socket;
+
+        socket.on("connect", () => setConnected(true));
+        socket.on("disconnect", () => setConnected(false));
+
+        socket.connect();
+      } catch {
+        setConnected(false);
+      }
+    };
+
+    void connectSocket();
 
     return () => {
+      cancelled = true;
       disconnectSocket();
       setConnected(false);
     };

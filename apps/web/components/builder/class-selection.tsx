@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { EntityImage } from "@/components/ui/entity-image";
+import { OptionGallery } from "@/components/builder/option-gallery";
 import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 
 interface CharClass {
@@ -17,12 +18,7 @@ interface CharClass {
   proficiencies: { armor: string; weapons: string; tools: string };
 }
 
-const CLASS_ICONS: Record<string, string> = {
-  Barbarian: "bolt", Bard: "music_note", Cleric: "church", Druid: "eco",
-  Fighter: "swords", Monk: "self_improvement", Paladin: "shield",
-  Ranger: "target", Rogue: "visibility", Sorcerer: "magic_button",
-  Warlock: "nights_stay", Wizard: "auto_stories",
-};
+const FEATURED_CLASSES = ["Fighter", "Wizard", "Rogue", "Cleric", "Barbarian", "Bard"];
 
 interface Props {
   builder: ReturnType<typeof useCharacterBuilder>;
@@ -34,6 +30,32 @@ export function ClassSelection({ builder }: Props) {
   const [loading, setLoading] = useState(true);
 
   const selectedClass = classes.find((c) => c.id === state.classId);
+  const featuredClassIds = useMemo(
+    () =>
+      classes
+        .filter((cls) => FEATURED_CLASSES.includes(cls.name))
+        .map((cls) => cls.id),
+    [classes]
+  );
+
+  const classOptions = useMemo(
+    () =>
+      classes.map((cls) => ({
+        id: cls.id,
+        title: cls.name,
+        subtitle: `Hit die d${cls.hitDie} · ${cls.primaryAbility} focus`,
+        description: `Saving throws: ${cls.savingThrows.join(", ")}. Choose ${cls.numSkillChoices} skills from ${cls.skillChoices.join(", ")}.`,
+        entityType: "class" as const,
+        imageUrl: null,
+        meta: [
+          `d${cls.hitDie} HP`,
+          `${cls.numSkillChoices} skills`,
+          ...cls.savingThrows.map((save) => `${save} save`),
+        ],
+        searchText: `${cls.primaryAbility} ${cls.proficiencies.armor} ${cls.proficiencies.weapons} ${cls.skillChoices.join(" ")}`,
+      })),
+    [classes]
+  );
 
   useEffect(() => {
     fetch("/api/srd/classes")
@@ -56,41 +78,19 @@ export function ClassSelection({ builder }: Props) {
       {loading ? (
         <p className="text-on-surface-variant animate-pulse">Loading classes...</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12 stagger-children">
-          {classes.map((cls) => {
-            const isSelected = state.classId === cls.id;
-            return (
-              <button
-                key={cls.id}
-                onClick={() => update({ classId: cls.id, className: cls.name })}
-                className={`p-6 rounded-sm text-center transition-all duration-500 interactive-glow animate-fade-in-up group ${
-                  isSelected
-                    ? "bg-surface-container border border-secondary/60 relative overflow-hidden animate-border-glow shadow-elevated"
-                    : "bg-surface-container-low border border-outline-variant/10 hover:bg-surface-container-high hover:border-secondary/40"
-                }`}
-              >
-                {isSelected && <div className="absolute inset-0 bg-primary-container/5 pointer-events-none" />}
-                <div className={`w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center transition-all duration-500 ${
-                  isSelected
-                    ? "bg-primary-container/20 scale-110 border border-secondary/30 glow-gold"
-                    : "bg-surface-container-highest group-hover:scale-110 group-hover:bg-surface-container-high"
-                }`}>
-                  <Icon
-                    name={CLASS_ICONS[cls.name] || "person"}
-                    size={28}
-                    filled={isSelected}
-                    className={`transition-colors duration-500 ${isSelected ? "text-secondary" : "text-on-surface-variant group-hover:text-secondary"}`}
-                  />
-                </div>
-                <span className={`font-headline text-lg block transition-colors duration-500 ${isSelected ? "text-secondary" : "text-on-surface"}`}>
-                  {cls.name}
-                </span>
-                <span className="font-label text-[10px] uppercase tracking-tighter text-on-surface-variant">
-                  d{cls.hitDie} Hit Die
-                </span>
-              </button>
-            );
-          })}
+        <div className="mb-12">
+          <OptionGallery
+            options={classOptions}
+            selectedId={state.classId}
+            onSelect={(option) => {
+              const cls = classes.find((entry) => entry.id === option.id);
+              if (cls) update({ classId: cls.id, className: cls.name });
+            }}
+            featuredIds={featuredClassIds}
+            featuredLabel="Popular callings"
+            allLabel="Every class"
+            searchPlaceholder="Search classes, proficiencies, or skills"
+          />
         </div>
       )}
 

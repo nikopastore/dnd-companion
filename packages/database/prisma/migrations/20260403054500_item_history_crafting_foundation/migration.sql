@@ -1,0 +1,5 @@
+ALTER TABLE "Campaign"
+ADD COLUMN IF NOT EXISTS "craftingProjects" JSONB;
+
+ALTER TABLE "CharacterItem"
+ADD COLUMN IF NOT EXISTS "itemHistory" JSONB;

@@ -10,6 +10,9 @@ import { Chip } from "@/components/ui/chip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AIAssistButton } from "@/components/ai/ai-assist-button";
 import { AI_PROMPTS } from "@/lib/ai";
+import { OptionGallery } from "@/components/builder/option-gallery";
+import { EncounterTrackerPanel } from "@/components/dm/encounter-tracker-panel";
+import { type EncounterTrackerCharacter } from "@/lib/encounter-tracker";
 
 type EncounterStatus = "active" | "prepared" | "completed";
 type Difficulty = "easy" | "medium" | "hard" | "deadly";
@@ -36,13 +39,21 @@ interface Encounter {
   difficulty: string | null;
   monsters: Monster[] | unknown;
   loot: LootItem[] | unknown;
+  liveState: unknown;
   notes: string | null;
 }
 
 interface Props {
   encounters: Encounter[];
   campaignId: string;
-  onAdd: (encounter: Encounter) => void;
+  characters: EncounterTrackerCharacter[];
+  locations: Array<{
+    id: string;
+    name: string;
+    imageUrl: string | null;
+    mapData: unknown;
+  }>;
+  onAdd: () => void;
 }
 
 const STATUS_ORDER: EncounterStatus[] = ["active", "prepared", "completed"];
@@ -67,6 +78,15 @@ const XP_BUDGETS: Record<Difficulty, number> = {
   hard: 1500,
   deadly: 2000,
 };
+
+const ENCOUNTER_STYLE_OPTIONS = [
+  { id: "ambush", title: "Ambush", description: "Enemy pressure starts fast, with initiative and positioning as the hook.", subtitle: "Immediate danger", entityType: "encounter" as const, meta: ["Open strong"] },
+  { id: "defense", title: "Defense", description: "Protect a chokepoint, ally, convoy, or ritual under pressure.", subtitle: "Hold the line", entityType: "encounter" as const, meta: ["Protection"] },
+  { id: "chase", title: "Chase", description: "Movement and escalation drive the fight across changing terrain.", subtitle: "Mobile battle", entityType: "encounter" as const, meta: ["Pursuit"] },
+  { id: "infiltration", title: "Infiltration", description: "Stealth, alarm states, and partial detection shape the scene.", subtitle: "Stealth tension", entityType: "encounter" as const, meta: ["Stealth"] },
+  { id: "boss", title: "Boss Fight", description: "A signature villain or monster anchors the encounter structure.", subtitle: "Set-piece", entityType: "encounter" as const, meta: ["Payoff"] },
+  { id: "gauntlet", title: "Gauntlet", description: "A sequence of attrition beats grinds the party before a payoff room.", subtitle: "Endurance", entityType: "encounter" as const, meta: ["Attrition"] },
+];
 
 // CR to XP mapping (standard 5e)
 const CR_XP: Record<string, number> = {
@@ -96,7 +116,24 @@ function calculateTotalXP(monsters: Monster[]): number {
   }, 0);
 }
 
-function EncounterCard({ encounter }: { encounter: Encounter }) {
+function EncounterCard({
+  encounter,
+  campaignId,
+  characters,
+  locations,
+  onRefresh,
+}: {
+  encounter: Encounter;
+  campaignId: string;
+  characters: EncounterTrackerCharacter[];
+  locations: Array<{
+    id: string;
+    name: string;
+    imageUrl: string | null;
+    mapData: unknown;
+  }>;
+  onRefresh: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const diffConfig = DIFFICULTY_CONFIG[(encounter.difficulty as Difficulty) || "medium"] || DIFFICULTY_CONFIG.medium;
   const monsters = parseMonsters(encounter.monsters);
@@ -210,15 +247,28 @@ function EncounterCard({ encounter }: { encounter: Encounter }) {
               <p className="font-body text-sm text-on-surface-variant italic">{encounter.notes}</p>
             </div>
           )}
+
+          <div>
+            <span className="font-label text-[10px] uppercase tracking-widest text-on-surface/40 block mb-3">Combat Runtime</span>
+            <EncounterTrackerPanel
+              campaignId={campaignId}
+              encounter={encounter}
+              characters={characters}
+              locations={locations}
+              onRefresh={onRefresh}
+            />
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
+export function EncountersTab({ encounters, campaignId, characters, locations, onAdd }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [builderStep, setBuilderStep] = useState<0 | 1 | 2>(0);
+  const [encounterStyle, setEncounterStyle] = useState("ambush");
 
   // Form state
   const [name, setName] = useState("");
@@ -272,6 +322,8 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
     setMonsters([{ name: "", cr: "1", count: 1, hp: 10, ac: 12 }]);
     setLoot([]);
     setNotes("");
+    setBuilderStep(0);
+    setEncounterStyle("ambush");
   }
 
   async function handleAdd() {
@@ -294,8 +346,8 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
     });
     setLoading(false);
     if (res.ok) {
-      const encounter = await res.json();
-      onAdd(encounter);
+      await res.json();
+      onAdd();
       resetForm();
       setShowForm(false);
     }
@@ -311,7 +363,20 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
             Encounters ({encounters.length})
           </span>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => setShowForm(!showForm)} className="interactive-glow">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+              setShowForm(false);
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+          }}
+          className="interactive-glow"
+        >
           <Icon name={showForm ? "close" : "add"} size={14} />
           {showForm ? "Cancel" : "Build Encounter"}
         </Button>
@@ -322,7 +387,7 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
         <div className="glass rounded-sm p-6 border border-secondary/10 space-y-4 animate-fade-in-up relative overflow-hidden">
           <div className="decorative-orb absolute -top-16 -right-16 w-48 h-48" />
           <div className="flex items-center gap-2 relative z-10">
-            <p className="font-headline text-sm text-secondary uppercase tracking-wider">Build Encounter</p>
+            <p className="font-headline text-sm text-secondary uppercase tracking-wider">Encounter Builder</p>
             <div className="flex-1" />
             <AIAssistButton
               label="AI Build Encounter"
@@ -349,38 +414,78 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
                   setMonsters(newMonsters);
                 }
                 if (enc.notes) setNotes(enc.notes as string);
+                setBuilderStep(2);
               }}
             />
           </div>
+          <div className="flex flex-wrap gap-2">
+            {["Difficulty", "Style", "Finalize"].map((label, index) => (
+              <div
+                key={label}
+                className={`rounded-full px-3 py-1 font-label text-[10px] uppercase tracking-[0.18em] ${
+                  builderStep === index
+                    ? "bg-secondary/10 text-secondary"
+                    : builderStep > index
+                      ? "bg-primary/10 text-primary"
+                      : "bg-surface-container-high text-on-surface-variant/45"
+                }`}
+              >
+                {index + 1}. {label}
+              </div>
+            ))}
+          </div>
 
+          {builderStep === 0 && (
+            <OptionGallery
+              options={(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map((key) => ({
+                id: key,
+                title: DIFFICULTY_CONFIG[key].label,
+                description: `Target roughly ${XP_BUDGETS[key].toLocaleString()} XP for a balanced baseline party of four.`,
+                subtitle: "Difficulty target",
+                entityType: "encounter" as const,
+                meta: [`${XP_BUDGETS[key].toLocaleString()} XP`, DIFFICULTY_CONFIG[key].label],
+              }))}
+              selectedId={difficulty}
+              onSelect={(option) => {
+                setDifficulty(option.id as Difficulty);
+                setBuilderStep(1);
+              }}
+              featuredIds={["medium", "hard", "deadly"]}
+              featuredLabel="Recommended challenge"
+              allLabel="Encounter difficulty"
+              searchPlaceholder="Search difficulty"
+            />
+          )}
+
+          {builderStep === 1 && (
+            <div className="space-y-4">
+              <OptionGallery
+                options={ENCOUNTER_STYLE_OPTIONS}
+                selectedId={encounterStyle}
+                onSelect={(option) => {
+                  setEncounterStyle(option.id);
+                  if (!description.trim()) {
+                    setDescription(option.description);
+                  }
+                  setBuilderStep(2);
+                }}
+                featuredIds={["ambush", "boss", "defense"]}
+                featuredLabel="Common battle structures"
+                allLabel="Encounter frames"
+                searchPlaceholder="Search encounter style"
+              />
+              <Button type="button" variant="ghost" size="sm" onClick={() => setBuilderStep(0)}>
+                <Icon name="arrow_back" size={14} />
+                Back
+              </Button>
+            </div>
+          )}
+
+          {builderStep === 2 && (
+            <>
           <Input id="enc-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ambush at the Bridge..." />
           <Input id="enc-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="The party is ambushed while crossing..." />
-
-          {/* Difficulty Selector */}
-          <div className="space-y-1.5">
-            <label className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/80 font-bold">
-              Difficulty
-            </label>
-            <div className="flex gap-2">
-              {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map((d) => {
-                const cfg = DIFFICULTY_CONFIG[d];
-                const isSelected = difficulty === d;
-                return (
-                  <button
-                    key={d}
-                    onClick={() => setDifficulty(d)}
-                    className={`flex-1 py-2 rounded-sm font-label text-[10px] uppercase tracking-wider font-bold border transition-all duration-300 ${
-                      isSelected
-                        ? `${cfg.bgClass} ${cfg.color} border-current`
-                        : "bg-surface-container-high/40 text-on-surface/40 border-outline-variant/10 hover:text-on-surface/60"
-                    }`}
-                  >
-                    {cfg.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <Input id="enc-style" label="Builder Summary" value={`${difficulty} · ${encounterStyle}`} readOnly />
 
           {/* XP Budget Calculator */}
           <div className={`bg-surface-container-lowest p-3 rounded-sm border flex items-center justify-between transition-all duration-500 ${formTotalXP > xpBudget ? "border-error/30 glow-danger" : "border-secondary/15 glow-gold"}`}>
@@ -551,9 +656,17 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
             rows={3}
           />
 
-          <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()} className="glow-gold">
-            {loading ? "Creating..." : "Create Encounter"}
-          </Button>
+          <div className="flex justify-between">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setBuilderStep(1)}>
+              <Icon name="arrow_back" size={14} />
+              Back
+            </Button>
+            <Button size="sm" onClick={handleAdd} disabled={loading || !name.trim()} className="glow-gold">
+              {loading ? "Creating..." : "Create Encounter"}
+            </Button>
+          </div>
+            </>
+          )}
         </div>
       )}
 
@@ -579,7 +692,14 @@ export function EncountersTab({ encounters, campaignId, onAdd }: Props) {
 
               <div className="space-y-2">
                 {statusEncounters.map((encounter) => (
-                  <EncounterCard key={encounter.id} encounter={encounter} />
+                  <EncounterCard
+                    key={encounter.id}
+                    encounter={encounter}
+                    campaignId={campaignId}
+                    characters={characters}
+                    locations={locations}
+                    onRefresh={onAdd}
+                  />
                 ))}
               </div>
             </div>

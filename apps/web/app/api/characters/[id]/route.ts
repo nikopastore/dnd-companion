@@ -19,12 +19,52 @@ export async function GET(
     include: {
       race: true,
       subrace: true,
-      class: { include: { levels: { where: { level: { lte: 20 } }, orderBy: { level: "asc" } } } },
+      class: {
+        include: {
+          levels: { where: { level: { lte: 20 } }, orderBy: { level: "asc" } },
+        },
+      },
+      multiclasses: {
+        include: {
+          class: {
+            include: {
+              levels: { where: { level: { lte: 20 } }, orderBy: { level: "asc" } },
+            },
+          },
+        },
+        orderBy: { createdAt: "asc" },
+      },
       background: true,
       items: { include: { equipment: true }, orderBy: { name: "asc" } },
-      spells: { include: { spell: true } },
+      spells: {
+        include: {
+          spell: true,
+          sourceClass: { select: { id: true, name: true, primaryAbility: true } },
+        },
+        orderBy: { spell: { level: "asc" } },
+      },
       features: { orderBy: { level: "asc" } },
       conditions: true,
+      campaignMember: {
+        include: {
+          campaign: {
+            include: {
+              members: {
+                include: {
+                  character: {
+                    select: {
+                      id: true,
+                      name: true,
+                      race: { select: { name: true } },
+                      class: { select: { name: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -36,7 +76,25 @@ export async function GET(
     return NextResponse.json({ error: "Not your character" }, { status: 403 });
   }
 
-  return NextResponse.json(character);
+  const partyMembers =
+    character.campaignMember?.campaign.members
+      .map((member) => member.character)
+      .filter((member): member is NonNullable<typeof member> => Boolean(member))
+      .filter((member) => member.id !== character.id) ?? [];
+  const campaignContext = character.campaignMember?.campaign
+    ? {
+        name: character.campaignMember.campaign.name,
+        system: character.campaignMember.campaign.system,
+        edition: character.campaignMember.campaign.edition,
+        houseRules: character.campaignMember.campaign.houseRules,
+      }
+    : null;
+
+  return NextResponse.json({
+    ...character,
+    partyMembers,
+    campaignContext,
+  });
 }
 
 // PATCH /api/characters/:id — update character fields
@@ -59,12 +117,14 @@ export async function PATCH(
 
   // Allowlist of updatable fields
   const allowedFields = [
-    "name", "currentHP", "tempHP", "maxHP", "armorClass", "initiative", "speed",
+    "name", "imageUrl", "backstory", "currentHP", "tempHP", "maxHP", "armorClass", "initiative", "speed",
     "strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma",
     "deathSaveSuccesses", "deathSaveFailures", "exhaustionLevel",
-    "hitDiceRemaining", "classResources", "concentrationSpell",
+    "hitDiceRemaining", "classResources", "spellSlotsState", "pactSpellSlotsState", "concentrationSpell", "subclassName",
+    "automationMode", "rulesBookmarks",
+    "personalityTraits", "ideals", "bonds", "flaws", "personalGoals", "secrets", "voiceNotes", "lastSessionChanges", "characterTimeline",
     "copperPieces", "silverPieces", "electrumPieces", "goldPieces", "platinumPieces",
-    "level", "experiencePoints", "proficiencyBonus",
+    "level", "experiencePoints", "proficiencyBonus", "primaryClassLevel",
     "skillProficiencies", "skillExpertise", "saveProficiencies",
   ];
 

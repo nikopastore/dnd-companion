@@ -8,6 +8,32 @@ interface CampaignCardProps {
   memberCount: number;
   members: Array<{ name: string | null; image: string | null }>;
   status: string;
+  system?: string;
+  edition?: string;
+  setting?: string | null;
+  viewerRole?: string | null;
+}
+
+const ROLE_BADGES: Record<string, string> = {
+  DM: "bg-secondary/15 text-secondary border-secondary/20",
+  CO_DM: "bg-primary/15 text-primary border-primary/20",
+  PLAYER: "bg-surface-container-high text-on-surface-variant border-outline-variant/10",
+  SPECTATOR: "bg-surface-container-high/60 text-on-surface-variant/70 border-outline-variant/10",
+};
+
+function getRoleLabel(role?: string | null) {
+  switch (role) {
+    case "DM":
+      return "DM";
+    case "CO_DM":
+      return "Co-DM";
+    case "PLAYER":
+      return "Player";
+    case "SPECTATOR":
+      return "Spectator";
+    default:
+      return null;
+  }
 }
 
 export function CampaignCard({
@@ -17,7 +43,13 @@ export function CampaignCard({
   memberCount,
   members,
   status,
+  system,
+  edition,
+  setting,
+  viewerRole,
 }: CampaignCardProps) {
+  const roleLabel = getRoleLabel(viewerRole);
+
   return (
     <Link
       href={`/lobby/${id}`}
@@ -34,7 +66,7 @@ export function CampaignCard({
 
       <div className="p-6 -mt-8 relative z-10 space-y-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-headline text-xl text-primary">{name}</h4>
             {status === "ACTIVE" && (
               <span className="relative flex h-2 w-2">
@@ -42,10 +74,22 @@ export function CampaignCard({
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
               </span>
             )}
+            {roleLabel && (
+              <span
+                className={`rounded-full border px-2 py-1 font-label text-[9px] uppercase tracking-[0.16em] ${ROLE_BADGES[viewerRole || "PLAYER"]}`}
+              >
+                {roleLabel}
+              </span>
+            )}
           </div>
           <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter">
             Dungeon Master: {dmName}
           </p>
+          {(system || setting) && (
+            <p className="text-[10px] text-on-surface-variant/60 font-label uppercase tracking-tighter">
+              {[system, edition, setting].filter(Boolean).join(" · ")}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-between items-center">

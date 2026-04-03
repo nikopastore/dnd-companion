@@ -12,6 +12,7 @@ import { EntityImage } from "@/components/ui/entity-image";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { AIAssistButton } from "@/components/ai/ai-assist-button";
 import { AI_PROMPTS } from "@/lib/ai";
+import { OptionGallery } from "@/components/builder/option-gallery";
 
 interface NPC {
   id: string;
@@ -65,6 +66,33 @@ const alignments = [
   "Chaotic Evil",
 ];
 
+const NPC_ROLE_OPTIONS = relationships.map((relationship) => ({
+  id: relationship,
+  title: relationshipConfig[relationship].label,
+  description:
+    relationship === "ally"
+      ? "Friendly support character, quest contact, or trusted recurring face."
+      : relationship === "enemy"
+        ? "Opposing force, threat, saboteur, or combat-facing rival."
+        : relationship === "neutral"
+          ? "Observer, merchant, witness, or socially flexible world character."
+          : relationship === "patron"
+            ? "Sponsor, noble, guild contact, or mission-giving authority figure."
+            : "Competitive foil, recurring challenger, or personal counterweight.",
+  subtitle: "NPC role",
+  entityType: "npc" as const,
+  meta: [relationshipConfig[relationship].label],
+}));
+
+const ALIGNMENT_OPTIONS = alignments.map((alignment) => ({
+  id: alignment,
+  title: alignment,
+  description: `Use ${alignment} as the NPC's moral and behavioral baseline for dialogue and decisions.`,
+  subtitle: "Alignment",
+  entityType: "npc" as const,
+  meta: [alignment.split(" ")[0], alignment.split(" ")[1]],
+}));
+
 export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
   // Filter state
   const [filterFaction, setFilterFaction] = useState<string | null>(null);
@@ -77,6 +105,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
   // Create form
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [builderStep, setBuilderStep] = useState<0 | 1 | 2>(0);
 
   // Form fields
   const [formName, setFormName] = useState("");
@@ -141,6 +170,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
     setFormDescription("");
     setFormNotes("");
     setFormImageUrl(null);
+    setBuilderStep(0);
   }
 
   async function handleCreate() {
@@ -192,8 +222,13 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
           variant={showForm ? "ghost" : "primary"}
           size="sm"
           onClick={() => {
-            setShowForm(!showForm);
-            if (showForm) resetForm();
+            if (showForm) {
+              resetForm();
+              setShowForm(false);
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
           }}
           className={showForm ? "" : "glow-gold"}
         >
@@ -288,7 +323,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
           <div className="flex items-center gap-2 mb-1 relative z-10">
             <Icon name="person_add" size={20} className="text-secondary" />
             <h3 className="font-headline text-base text-secondary">
-              New NPC
+              NPC Builder
             </h3>
             <div className="decorative-line flex-1 ml-2" />
             <AIAssistButton
@@ -311,9 +346,67 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
                 if (npc.relationship) setFormRelationship(npc.relationship as string);
                 if (npc.description) setFormDescription(npc.description as string);
                 if (npc.cr) setFormCr(npc.cr as string);
+                setBuilderStep(2);
               }}
             />
           </div>
+
+          <div className="flex flex-wrap gap-2">
+            {["Role", "Alignment", "Finalize"].map((label, index) => (
+              <div
+                key={label}
+                className={`rounded-full px-3 py-1 font-label text-[10px] uppercase tracking-[0.18em] ${
+                  builderStep === index
+                    ? "bg-secondary/10 text-secondary"
+                    : builderStep > index
+                      ? "bg-primary/10 text-primary"
+                      : "bg-surface-container-high text-on-surface-variant/45"
+                }`}
+              >
+                {index + 1}. {label}
+              </div>
+            ))}
+          </div>
+
+          {builderStep === 0 && (
+            <OptionGallery
+              options={NPC_ROLE_OPTIONS}
+              selectedId={formRelationship}
+              onSelect={(option) => {
+                setFormRelationship(option.id);
+                setFormIsEnemy(option.id === "enemy");
+                setBuilderStep(1);
+              }}
+              featuredIds={["ally", "enemy", "patron"]}
+              featuredLabel="Common NPC roles"
+              allLabel="Relationship roles"
+              searchPlaceholder="Search NPC roles"
+            />
+          )}
+
+          {builderStep === 1 && (
+            <div className="space-y-4">
+              <OptionGallery
+                options={ALIGNMENT_OPTIONS}
+                selectedId={formAlignment}
+                onSelect={(option) => {
+                  setFormAlignment(option.id);
+                  setBuilderStep(2);
+                }}
+                featuredIds={["Lawful Good", "True Neutral", "Chaotic Evil"]}
+                featuredLabel="Common alignments"
+                allLabel="Moral baselines"
+                searchPlaceholder="Search alignments"
+              />
+              <Button type="button" variant="ghost" size="sm" onClick={() => setBuilderStep(0)}>
+                <Icon name="arrow_back" size={14} />
+                Back
+              </Button>
+            </div>
+          )}
+
+          {builderStep === 2 && (
+            <>
 
           {/* NPC Portrait Upload */}
           <div className="flex items-center gap-4">
@@ -481,6 +574,15 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
           {/* Submit */}
           <div className="flex justify-end pt-2">
             <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setBuilderStep(1)}
+            >
+              <Icon name="arrow_back" size={14} />
+              Back
+            </Button>
+            <Button
               onClick={handleCreate}
               disabled={loading || !formName.trim()}
               loading={loading}
@@ -490,6 +592,8 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
               Create NPC
             </Button>
           </div>
+            </>
+          )}
         </div>
       )}
 

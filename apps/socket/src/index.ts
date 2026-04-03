@@ -2,6 +2,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { authMiddleware } from "./middleware/auth";
 import { registerCampaignHandlers } from "./handlers/campaign";
+import { registerEncounterHandlers } from "./handlers/encounter";
 import { registerSessionHandlers } from "./handlers/session";
 
 const PORT = parseInt(process.env.SOCKET_PORT || "3001");
@@ -29,6 +30,7 @@ io.on("connection", (socket) => {
 
   // Register event handlers
   registerCampaignHandlers(io, socket);
+  registerEncounterHandlers(io, socket);
   registerSessionHandlers(io, socket);
 
   socket.on("disconnect", () => {

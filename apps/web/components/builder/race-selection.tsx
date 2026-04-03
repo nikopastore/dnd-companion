@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { EntityImage } from "@/components/ui/entity-image";
+import { OptionGallery } from "@/components/builder/option-gallery";
 import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 
 interface Race {
@@ -17,11 +18,7 @@ interface Race {
   subraces: Array<{ id: string; name: string; abilityBonuses: Record<string, number>; traits: Array<{ name: string; description: string }> }>;
 }
 
-const RACE_ICONS: Record<string, string> = {
-  Human: "person", Elf: "forest", Dwarf: "mountain_flag", Halfling: "cruelty_free",
-  Dragonborn: "egg", Gnome: "psychology", "Half-Elf": "diversity_3",
-  "Half-Orc": "fitness_center", Tiefling: "auto_awesome",
-};
+const FEATURED_RACES = ["Human", "Elf", "Dwarf", "Halfling", "Dragonborn", "Tiefling"];
 
 interface Props {
   builder: ReturnType<typeof useCharacterBuilder>;
@@ -33,6 +30,37 @@ export function RaceSelection({ builder }: Props) {
   const [loading, setLoading] = useState(true);
 
   const selectedRace = races.find((r) => r.id === state.raceId);
+  const featuredRaceIds = useMemo(
+    () =>
+      races
+        .filter((race) => FEATURED_RACES.includes(race.name))
+        .map((race) => race.id),
+    [races]
+  );
+
+  const raceOptions = useMemo(
+    () =>
+      races.map((race) => ({
+        id: race.id,
+        title: race.name,
+        subtitle: `${race.size} form · ${race.speed} ft speed`,
+        description:
+          race.traits[0]?.description ??
+          `Languages: ${race.languages.join(", ")}`,
+        entityType: "race" as const,
+        imageUrl: null,
+        meta: [
+          ...Object.entries(race.abilityBonuses).map(
+            ([ability, bonus]) => `+${bonus} ${ability.slice(0, 3)}`
+          ),
+          race.subraces.length > 0 ? `${race.subraces.length} subraces` : "Single lineage",
+        ],
+        searchText: `${race.languages.join(" ")} ${(race.traits ?? [])
+          .map((trait) => `${trait.name} ${trait.description}`)
+          .join(" ")}`,
+      })),
+    [races]
+  );
 
   useEffect(() => {
     fetch("/api/srd/races")
@@ -56,53 +84,22 @@ export function RaceSelection({ builder }: Props) {
         </p>
       </div>
 
-      {/* Race Carousel */}
       <section className="mb-12">
-        <span className="font-label text-xs uppercase tracking-widest text-secondary font-bold mb-4 block">
-          Common Ancestries
-        </span>
         {loading ? (
           <p className="text-on-surface-variant animate-pulse">Loading races...</p>
         ) : (
-          <div className="flex gap-6 overflow-x-auto pb-6 snap-x custom-scrollbar stagger-children">
-            {races.map((race) => {
-              const isSelected = state.raceId === race.id;
-              return (
-                <button
-                  key={race.id}
-                  onClick={() => selectRace(race)}
-                  className={`snap-start flex-none w-40 h-52 rounded-sm p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 interactive-glow animate-fade-in-up group ${
-                    isSelected
-                      ? "bg-surface-container border border-secondary/60 relative overflow-hidden animate-border-glow shadow-elevated"
-                      : "bg-surface-container-low border border-outline-variant/10 hover:bg-surface-container-high hover:border-secondary/40"
-                  }`}
-                >
-                  {isSelected && <div className="absolute inset-0 bg-primary-container/5 pointer-events-none" />}
-                  <div
-                    className={`w-20 h-20 mb-4 rounded-full flex items-center justify-center transition-all duration-500 ${
-                      isSelected
-                        ? "bg-primary-container/20 scale-110 border border-secondary/30 glow-gold"
-                        : "bg-surface-container-highest group-hover:scale-110 group-hover:bg-surface-container-high"
-                    }`}
-                  >
-                    <Icon
-                      name={RACE_ICONS[race.name] || "person"}
-                      size={36}
-                      filled={isSelected}
-                      className={`transition-colors duration-500 ${isSelected ? "text-secondary" : "text-on-surface-variant group-hover:text-secondary"}`}
-                    />
-                  </div>
-                  <span className={`font-headline text-lg transition-colors duration-500 ${isSelected ? "text-secondary" : "text-on-surface"}`}>
-                    {race.name}
-                  </span>
-                  <span className={`font-label text-[10px] uppercase tracking-tighter transition-colors duration-500 ${isSelected ? "text-secondary/70" : "text-on-surface-variant"}`}>
-                    Speed {race.speed}ft
-                  </span>
-                  {isSelected && <div className="absolute bottom-0 left-0 w-full h-1 bg-secondary" />}
-                </button>
-              );
-            })}
-          </div>
+          <OptionGallery
+            options={raceOptions}
+            selectedId={state.raceId}
+            onSelect={(option) => {
+              const race = races.find((entry) => entry.id === option.id);
+              if (race) selectRace(race);
+            }}
+            featuredIds={featuredRaceIds}
+            featuredLabel="Popular lineages"
+            allLabel="Every ancestry"
+            searchPlaceholder="Search races, languages, or traits"
+          />
         )}
       </section>
 

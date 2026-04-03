@@ -13,11 +13,23 @@ import { ConditionManager } from "@/components/character/condition-manager";
 import { RestButtons } from "@/components/character/rest-buttons";
 import { DiceRoller } from "@/components/character/dice-roller";
 import { InventoryPanel } from "@/components/character/inventory-panel";
+import { ProgressionPanel } from "@/components/character/progression-panel";
+import { RulesReferencePanel } from "@/components/character/rules-reference-panel";
+import { SpellbookPanel } from "@/components/character/spellbook-panel";
+import { StoryPanel } from "@/components/character/story-panel";
+import {
+  normalizeAutomationMode,
+  resetClassResourcesForLongRest,
+  resetClassResourcesForShortRest,
+} from "@/lib/rest-automation";
 
 interface CharacterData {
   id: string;
   name: string;
+  imageUrl: string | null;
+  backstory: string | null;
   level: number;
+  experiencePoints: number;
   currentHP: number;
   maxHP: number;
   tempHP: number;
@@ -25,6 +37,8 @@ interface CharacterData {
   initiative: number;
   speed: number;
   proficiencyBonus: number;
+  subclassName: string | null;
+  primaryClassLevel: number;
   strength: number;
   dexterity: number;
   constitution: number;
@@ -40,22 +54,123 @@ interface CharacterData {
   hitDiceRemaining: number;
   hitDiceTotal: number;
   classResources: Record<string, unknown> | null;
+  spellSlotsState: Record<string, { current: number; total: number }> | null;
+  pactSpellSlotsState: Record<string, { current: number; total: number }> | null;
   concentrationSpell: string | null;
+  automationMode: string;
+  rulesBookmarks: unknown;
+  personalityTraits: string | null;
+  ideals: string | null;
+  bonds: string | null;
+  flaws: string | null;
+  personalGoals: string | null;
+  secrets: string | null;
+  voiceNotes: string | null;
+  lastSessionChanges: string | null;
+  characterTimeline: unknown;
   copperPieces: number;
   silverPieces: number;
   electrumPieces: number;
   goldPieces: number;
   platinumPieces: number;
   race: { name: string };
-  class: { name: string; hitDie: number };
+  class: {
+    id: string;
+    name: string;
+    hitDie: number;
+    primaryAbility: string;
+    imageUrl?: string | null;
+    levels: Array<{
+      level: number;
+      spellSlots: Record<string, number> | null;
+      resources: Record<string, unknown> | null;
+    }>;
+  };
+  multiclasses: Array<{
+    id: string;
+    level: number;
+    subclassName: string | null;
+    classId: string;
+    class: {
+      id: string;
+      name: string;
+      hitDie: number;
+      primaryAbility: string;
+      imageUrl?: string | null;
+      levels: Array<{
+        level: number;
+        spellSlots: Record<string, number> | null;
+        resources: Record<string, unknown> | null;
+      }>;
+    };
+  }>;
   background: { name: string };
-  items: Array<{ id: string; name: string; quantity: number; weight: number | null; isEquipped: boolean; isAttuned: boolean; notes: string | null }>;
+  spells: Array<{
+    id: string;
+    isPrepared: boolean;
+    sourceClass: {
+      id: string;
+      name: string;
+      primaryAbility: string;
+    } | null;
+    spell: {
+      id: string;
+      name: string;
+      level: number;
+      school: string;
+      castingTime: string;
+      range: string;
+      components: string;
+      duration: string;
+      concentration: boolean;
+      ritual: boolean;
+      description: string;
+    };
+  }>;
+  features: Array<{
+    id: string;
+    name: string;
+    description: string;
+    source: string;
+    level: number;
+  }>;
+  items: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    imageUrl: string | null;
+    category: string | null;
+    rarity: string | null;
+    value: string | null;
+    quantity: number;
+    weight: number | null;
+    isEquipped: boolean;
+    isAttuned: boolean;
+    notes: string | null;
+    itemHistory: unknown;
+  }>;
   conditions: Array<{ condition: ConditionKey }>;
+  partyMembers: Array<{
+    id: string;
+    name: string;
+    race: { name: string };
+    class: { name: string };
+  }>;
+  campaignContext: {
+    name: string;
+    system: string;
+    edition: string;
+    houseRules: unknown;
+  } | null;
 }
 
 const TAB_ICONS: Record<string, string> = {
   sheet: "description",
   inventory: "inventory_2",
+  progression: "trending_up",
+  spellbook: "local_library",
+  rules: "gavel",
+  story: "history_edu",
   dice: "casino",
 };
 
@@ -63,15 +178,32 @@ export default function CharacterSheetPage() {
   const { id } = useParams<{ id: string }>();
   const [char, setChar] = useState<CharacterData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"sheet" | "inventory" | "dice">("sheet");
+  const [tab, setTab] = useState<"sheet" | "inventory" | "progression" | "spellbook" | "rules" | "story" | "dice">("sheet");
   const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/characters/${id}`)
-      .then((res) => res.json())
-      .then((data) => { setChar(data); setLoading(false); })
-      .catch(() => setLoading(false));
+  const refreshCharacter = useCallback(async () => {
+    const res = await fetch(`/api/characters/${id}`);
+    if (!res.ok) {
+      setLoading(false);
+      return;
+    }
+    const data = await res.json();
+    setChar(data);
+    if (data.imageUrl) {
+      setPortraitUrl(data.imageUrl);
+    }
+    setLoading(false);
   }, [id]);
+
+  useEffect(() => {
+    refreshCharacter().catch(() => setLoading(false));
+  }, [refreshCharacter]);
+
+  useEffect(() => {
+    if (char?.imageUrl) {
+      setPortraitUrl(char.imageUrl);
+    }
+  }, [char?.imageUrl]);
 
   const updateField = useCallback(async (field: string, value: unknown) => {
     if (!char) return;
@@ -98,27 +230,149 @@ export default function CharacterSheetPage() {
         conditions: [...prev.conditions, { condition }],
       } : prev);
     }
-    // TODO: API call to toggle condition
-  }, [char]);
+    const res = await fetch(`/api/characters/${id}/conditions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ condition }),
+    });
+    if (!res.ok) {
+      await refreshCharacter();
+    }
+  }, [char, id, refreshCharacter]);
+
+  const updateItem = useCallback(
+    async (itemId: string, changes: Record<string, unknown>) => {
+      if (!char) return;
+
+      const res = await fetch(`/api/characters/${id}/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(changes),
+      });
+
+      if (!res.ok) return;
+
+      const updatedItem = await res.json();
+      setChar((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((item) =>
+                item.id === itemId ? updatedItem : item
+              ),
+            }
+          : prev
+      );
+    },
+    [char, id]
+  );
+
+  const tradeWithPartyMember = useCallback(
+    async (
+      payload:
+        | { kind: "item"; targetCharacterId: string; itemId: string; quantity: number }
+        | { kind: "currency"; targetCharacterId: string; currencyType: "copperPieces" | "silverPieces" | "electrumPieces" | "goldPieces" | "platinumPieces"; amount: number }
+    ) => {
+      if (!char) return;
+
+      const res = await fetch(`/api/characters/${id}/trade`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) return;
+
+      await refreshCharacter();
+    },
+    [char, id, refreshCharacter]
+  );
 
   const handleShortRest = useCallback(() => {
     if (!char) return;
+    const automationMode = normalizeAutomationMode(char.automationMode);
+    if (automationMode === "MANUAL") {
+      return;
+    }
+
     // Reset death saves
     updateField("deathSaveSuccesses", 0);
     updateField("deathSaveFailures", 0);
-    // Class-specific resets would go here
+    if (char.pactSpellSlotsState) {
+      const refreshedPactSlots = Object.entries(char.pactSpellSlotsState).reduce<Record<string, { current: number; total: number }>>(
+        (acc, [slotLevel, slotState]) => ({
+          ...acc,
+          [slotLevel]: {
+            current: slotState.total,
+            total: slotState.total,
+          },
+        }),
+        {}
+      );
+      updateField("pactSpellSlotsState", refreshedPactSlots);
+    }
+    if (automationMode === "FULL") {
+      const refreshedResources = resetClassResourcesForShortRest(
+        (char.classResources as Record<string, unknown> | null) ?? null
+      );
+      if (refreshedResources) {
+        updateField("classResources", refreshedResources);
+      }
+    }
   }, [char, updateField]);
 
   const handleLongRest = useCallback(() => {
     if (!char) return;
+    const automationMode = normalizeAutomationMode(char.automationMode);
+    if (automationMode === "MANUAL") {
+      return;
+    }
+
     updateField("currentHP", char.maxHP);
     updateField("tempHP", 0);
     updateField("deathSaveSuccesses", 0);
     updateField("deathSaveFailures", 0);
     updateField("hitDiceRemaining", char.hitDiceTotal);
+    if (char.spellSlotsState) {
+      const refreshedSlots = Object.entries(char.spellSlotsState).reduce<Record<string, { current: number; total: number }>>(
+        (acc, [slotLevel, slotState]) => ({
+          ...acc,
+          [slotLevel]: {
+            current: slotState.total,
+            total: slotState.total,
+          },
+        }),
+        {}
+      );
+      updateField("spellSlotsState", refreshedSlots);
+    }
+    if (char.pactSpellSlotsState) {
+      const refreshedPactSlots = Object.entries(char.pactSpellSlotsState).reduce<Record<string, { current: number; total: number }>>(
+        (acc, [slotLevel, slotState]) => ({
+          ...acc,
+          [slotLevel]: {
+            current: slotState.total,
+            total: slotState.total,
+          },
+        }),
+        {}
+      );
+      updateField("pactSpellSlotsState", refreshedPactSlots);
+    }
     // Reset exhaustion by 1 level
     if (char.exhaustionLevel > 0) {
       updateField("exhaustionLevel", char.exhaustionLevel - 1);
+    }
+    if (automationMode === "FULL") {
+      const refreshedResources = resetClassResourcesForLongRest(
+        (char.classResources as Record<string, unknown> | null) ?? null
+      );
+      if (refreshedResources) {
+        updateField("classResources", refreshedResources);
+      }
+      if (char.concentrationSpell) {
+        updateField("concentrationSpell", null);
+      }
     }
   }, [char, updateField]);
 
@@ -154,6 +408,31 @@ export default function CharacterSheetPage() {
   }
 
   const activeConditions = char.conditions.map((c) => c.condition);
+  const classTracks = [
+    {
+      classId: char.class.id,
+      className: char.class.name,
+      level: char.primaryClassLevel,
+      subclassName: char.subclassName,
+      hitDie: char.class.hitDie,
+      primaryAbility: char.class.primaryAbility,
+      imageUrl: char.class.imageUrl ?? null,
+      levels: char.class.levels,
+      isPrimary: true,
+    },
+    ...char.multiclasses.map((entry) => ({
+      classId: entry.class.id,
+      className: entry.class.name,
+      level: entry.level,
+      subclassName: entry.subclassName,
+      hitDie: entry.class.hitDie,
+      primaryAbility: entry.class.primaryAbility,
+      imageUrl: entry.class.imageUrl ?? null,
+      levels: entry.class.levels,
+      isPrimary: false,
+    })),
+  ];
+  const classSummary = classTracks.map((track) => `${track.className} ${track.level}`).join(" / ");
 
   return (
     <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto space-y-8">
@@ -170,7 +449,10 @@ export default function CharacterSheetPage() {
             <div className="absolute -bottom-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <ImageUpload
                 currentImage={portraitUrl}
-                onUpload={(url) => setPortraitUrl(url)}
+                onUpload={(url) => {
+                  setPortraitUrl(url);
+                  updateField("imageUrl", url);
+                }}
                 size="sm"
                 label="Change Portrait"
               />
@@ -179,7 +461,7 @@ export default function CharacterSheetPage() {
           <div>
             <h1 className="font-headline text-4xl text-on-background tracking-tight">{char.name}</h1>
             <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mt-1">
-              Level {char.level} {char.race.name} {char.class.name} · {char.background.name}
+              Level {char.level} {char.race.name} · {classSummary} · {char.background.name}
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -194,7 +476,7 @@ export default function CharacterSheetPage() {
 
       {/* Tab Navigation */}
       <div className="flex gap-2 animate-fade-in">
-        {(["sheet", "inventory", "dice"] as const).map((t) => (
+        {(["sheet", "inventory", "progression", "spellbook", "rules", "story", "dice"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -332,6 +614,17 @@ export default function CharacterSheetPage() {
             </div>
           </section>
 
+          {char.backstory && (
+            <section className="bg-surface-container-low p-6 rounded-sm shadow-whisper animate-fade-in-up">
+              <span className="font-headline text-secondary uppercase tracking-widest text-xs block mb-4">
+                Backstory
+              </span>
+              <p className="font-body text-sm leading-relaxed text-on-surface-variant whitespace-pre-wrap">
+                {char.backstory}
+              </p>
+            </section>
+          )}
+
           {/* Conditions & Death Saves */}
           <ConditionManager
             activeConditions={activeConditions}
@@ -343,8 +636,96 @@ export default function CharacterSheetPage() {
           />
 
           {/* Rest Buttons */}
-          <RestButtons onShortRest={handleShortRest} onLongRest={handleLongRest} />
+          <RestButtons
+            onShortRest={handleShortRest}
+            onLongRest={handleLongRest}
+            automationMode={normalizeAutomationMode(char.automationMode)}
+          />
         </div>
+      )}
+
+      {tab === "progression" && (
+        <ProgressionPanel
+          characterId={char.id}
+          level={char.level}
+          proficiencyBonus={char.proficiencyBonus}
+          experiencePoints={char.experiencePoints}
+          constitution={char.constitution}
+          abilityScores={{
+            strength: char.strength,
+            dexterity: char.dexterity,
+            constitution: char.constitution,
+            intelligence: char.intelligence,
+            wisdom: char.wisdom,
+            charisma: char.charisma,
+          }}
+          classTracks={classTracks}
+          classResources={char.classResources}
+          spellSlotsState={char.spellSlotsState}
+          features={char.features}
+          onRefresh={refreshCharacter}
+        />
+      )}
+
+      {tab === "spellbook" && (
+        <SpellbookPanel
+          characterId={char.id}
+          classTracks={classTracks.map((track) => ({
+            classId: track.classId,
+            className: track.className,
+            level: track.level,
+            primaryAbility: track.primaryAbility,
+            subclassName: track.subclassName,
+          }))}
+          abilityScores={{
+            strength: char.strength,
+            dexterity: char.dexterity,
+            constitution: char.constitution,
+            intelligence: char.intelligence,
+            wisdom: char.wisdom,
+            charisma: char.charisma,
+          }}
+          spellSlotsState={char.spellSlotsState}
+          pactSpellSlotsState={char.pactSpellSlotsState}
+          knownSpells={char.spells}
+          onRefresh={refreshCharacter}
+          onUpdateField={updateField}
+        />
+      )}
+
+      {tab === "rules" && (
+        <RulesReferencePanel
+          automationMode={char.automationMode}
+          rulesBookmarks={char.rulesBookmarks}
+          activeConditions={activeConditions}
+          concentrationSpell={char.concentrationSpell}
+          spellSlotsState={char.spellSlotsState}
+          pactSpellSlotsState={char.pactSpellSlotsState}
+          campaignContext={char.campaignContext}
+          onUpdateField={updateField}
+        />
+      )}
+
+      {tab === "story" && (
+        <StoryPanel
+          personalityTraits={char.personalityTraits}
+          ideals={char.ideals}
+          bonds={char.bonds}
+          flaws={char.flaws}
+          personalGoals={char.personalGoals}
+          secrets={char.secrets}
+          voiceNotes={char.voiceNotes}
+          lastSessionChanges={char.lastSessionChanges}
+          characterTimeline={char.characterTimeline}
+          onSave={async (payload) => {
+            await fetch(`/api/characters/${id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            await refreshCharacter();
+          }}
+        />
       )}
 
       {tab === "inventory" && (
@@ -364,6 +745,14 @@ export default function CharacterSheetPage() {
             updateField("goldPieces", c.gp);
             updateField("platinumPieces", c.pp);
           }}
+          onUpdateItem={updateItem}
+          partyMembers={char.partyMembers.map((member) => ({
+            id: member.id,
+            name: member.name,
+            raceName: member.race.name,
+            className: member.class.name,
+          }))}
+          onTrade={tradeWithPartyMember}
         />
       )}
 

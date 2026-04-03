@@ -1,0 +1,4 @@
+ALTER TABLE "Campaign"
+ADD COLUMN IF NOT EXISTS "treasuryLedger" JSONB,
+ADD COLUMN IF NOT EXISTS "partyStash" JSONB,
+ADD COLUMN IF NOT EXISTS "announcements" JSONB;

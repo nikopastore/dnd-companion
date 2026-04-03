@@ -1,0 +1,3 @@
+ALTER TABLE "Campaign"
+ADD COLUMN IF NOT EXISTS "threatClocks" JSONB,
+ADD COLUMN IF NOT EXISTS "unresolvedMysteries" JSONB;

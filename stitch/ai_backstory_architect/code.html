@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Digital Tome - AI Backstory Architect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#a52a2a",
+                        "surface": "#0e1418",
+                        "on-secondary-fixed": "#241a00",
+                        "on-primary": "#68000a",
+                        "surface-bright": "#343a3e",
+                        "tertiary-container": "#515a5f",
+                        "on-primary-container": "#ffc0bb",
+                        "on-background": "#dde3e9",
+                        "on-tertiary": "#293236",
+                        "primary-fixed": "#ffdad7",
+                        "primary": "#ffb3ad",
+                        "tertiary": "#bfc8ce",
+                        "on-secondary-container": "#342800",
+                        "inverse-surface": "#dde3e9",
+                        "tertiary-fixed": "#dbe4ea",
+                        "secondary-fixed": "#ffe088",
+                        "surface-container": "#1a2024",
+                        "surface-container-highest": "#2f363a",
+                        "surface-container-low": "#161c20",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#a78a87",
+                        "on-tertiary-fixed": "#141d21",
+                        "secondary": "#e9c349",
+                        "on-secondary": "#3c2f00",
+                        "on-tertiary-container": "#c8d1d7",
+                        "primary-fixed-dim": "#ffb3ad",
+                        "surface-tint": "#ffb3ad",
+                        "on-surface-variant": "#e0bfbc",
+                        "background": "#0e1418",
+                        "surface-variant": "#2f363a",
+                        "on-surface": "#dde3e9",
+                        "outline-variant": "#58413f",
+                        "error": "#ffb4ab",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#2b3136",
+                        "on-tertiary-fixed-variant": "#3f484d",
+                        "on-primary-fixed-variant": "#8c171b",
+                        "on-secondary-fixed-variant": "#574500",
+                        "on-primary-fixed": "#410004",
+                        "inverse-primary": "#ad302f",
+                        "error-container": "#93000a",
+                        "secondary-container": "#af8d11",
+                        "surface-dim": "#0e1418",
+                        "surface-container-high": "#252b2f",
+                        "secondary-fixed-dim": "#e9c349",
+                        "tertiary-fixed-dim": "#bfc8ce",
+                        "surface-container-lowest": "#090f13"
+                    },
+                    fontFamily: {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.paper-grain {
+    position: relative
+    }
+.paper-grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBi69DghXgJEq6InM3rHC5z9Uc4_8ys6jDMVeMOC8tvLiUGKyexGsx6D7Yl2zhviYmJoSohRMgQ-SoCOnqw9_-qRLdUyeV6gyYf49QrD6-o1512fdG1IBuHybqb4k6HzCMJFEmhRrGs1g3PaEDUyR7d5FAksvHl-4qHQDBG_eisePNHNmcZ15QePaTLSFN-0wgaiWTnSj0MqR5U-DdEMyqI7rJUc6Tyu9TuYql22aMvwp6ijvG8mXrbyl8w3X3MRLxX6lVGQNkeeUjE)
+    }
+.mystical-glow {
+    box-shadow: 0 0 25px -5px rgba(233, 195, 73, 0.15)
+    }
+.waveform-bar {
+    animation: pulse-height 1.5s ease-in-out infinite
+    }
+@keyframes pulse-height {
+    0%, 100% {
+        height: 8px;
+        } 50% {
+        height: 24px;
+        }
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#0e1418] flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-secondary/20">
+<img alt="Character Portrait" class="w-full h-full object-cover" data-alt="atmospheric portrait of a mysterious cloaked figure in a dimly lit library" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyfwRi7UkM1Bk1cDIAhY7ctKs0ArstysKKWYoNjGcTFnQ-x9lPZyjrpdOrW_qR1taG-ajkrIENptM-Aukc7fxGYcqsAT5yvT8hHr8GO8xRQqorxdcOq52tFRA4uFVgixvsKnL3kbEbzpjzgzyIs97nok2b9rhqK6uUS9rA5E63JgaSuQwaaDWuJvZ0wZYqP8JHAD53D0Cy1IKtRrLOX6vlMtYqB-5fGacXgRMAJgo54mSmixLqWBJx393kJhONeJyf-uJrbFaIxAOo"/>
+</div>
+<h1 class="font-['Noto_Serif'] headline-md tracking-tight text-[#e9c349] uppercase font-serif text-xl tracking-widest">The Digital Tome</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary-container text-on-primary-container px-4 py-1.5 text-sm font-bold tracking-widest uppercase border border-secondary/30 rounded-sm hover:bg-[#252b2f] transition-colors duration-300 active:scale-95">
+                Generate Story
+            </button>
+<span class="material-symbols-outlined text-[#ffb3ad] cursor-pointer hover:bg-[#252b2f] p-2 rounded-full transition-colors">settings</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-20 pb-32 px-4 md:px-12 lg:px-24 max-w-5xl mx-auto w-full flex flex-col gap-8">
+<!-- Intro Header -->
+<section class="text-center space-y-2 mt-8">
+<h2 class="font-headline text-3xl md:text-4xl text-on-surface">Backstory Architect</h2>
+<p class="font-body text-on-surface-variant/70 text-sm tracking-wide italic">"Whisper your past into the void, and let the archive record your fate."</p>
+</section>
+<!-- Chat Thread -->
+<div class="flex-grow flex flex-col gap-10 overflow-y-auto">
+<!-- Narrator Message -->
+<div class="flex flex-col items-start gap-4 max-w-2xl">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-headline text-secondary tracking-widest uppercase text-xs font-bold">The Narrator</span>
+</div>
+<div class="bg-surface-container-low p-6 paper-grain mystical-glow rounded-sm border-l-2 border-secondary/40">
+<p class="font-headline text-lg leading-relaxed text-on-surface italic">
+                        "Tell me about the event that changed everything... Was it a fire that took your home, or a secret whispered by a dying king?"
+                    </p>
+</div>
+</div>
+<!-- User Response -->
+<div class="flex flex-col items-end gap-4 max-w-2xl ml-auto">
+<div class="flex items-center gap-3">
+<span class="font-headline text-primary tracking-widest uppercase text-xs font-bold">Aelwyn Swifthead</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div class="bg-surface-container-high p-6 paper-grain rounded-sm border-r-2 border-primary/40">
+<p class="font-body text-md leading-relaxed text-on-surface">
+                        It wasn't a fire. It was the silence. One morning, I woke up in the Silver Spire and everyone was simply... gone. Not dead. Just vanished. Like they never existed at all.
+                    </p>
+</div>
+</div>
+<!-- Narrator Message (Follow-up) -->
+<div class="flex flex-col items-start gap-4 max-w-2xl">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-headline text-secondary tracking-widest uppercase text-xs font-bold">The Narrator</span>
+</div>
+<div class="bg-surface-container-low p-6 paper-grain mystical-glow rounded-sm border-l-2 border-secondary/40">
+<p class="font-headline text-lg leading-relaxed text-on-surface italic">
+                        "The Silence of the Spire... a haunting origin. What did you find left behind in the Great Library?"
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Interactive Footer (Voice & Text) -->
+<div class="fixed bottom-20 w-full z-40 px-4 md:px-12 lg:px-24 mb-4">
+<div class="max-w-5xl mx-auto bg-surface-container-highest/80 backdrop-blur-xl p-4 rounded-sm border border-outline-variant/20 flex flex-col gap-4">
+<!-- Voice Visualization -->
+<div class="flex items-center justify-center gap-1.5 h-8">
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.1s; height: 12px;"></div>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.3s; height: 24px;"></div>
+<div class="waveform-bar w-1 bg-primary rounded-full" style="animation-delay: 0.2s; height: 16px;"></div>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.5s; height: 28px;"></div>
+<div class="waveform-bar w-1 bg-primary rounded-full" style="animation-delay: 0.4s; height: 14px;"></div>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.6s; height: 20px;"></div>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.2s; height: 10px;"></div>
+<p class="text-[10px] font-label uppercase tracking-widest text-secondary mx-4">Listening to your chronicle...</p>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.6s; height: 20px;"></div>
+<div class="waveform-bar w-1 bg-primary rounded-full" style="animation-delay: 0.4s; height: 14px;"></div>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.5s; height: 28px;"></div>
+<div class="waveform-bar w-1 bg-primary rounded-full" style="animation-delay: 0.2s; height: 16px;"></div>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.3s; height: 24px;"></div>
+<div class="waveform-bar w-1 bg-secondary rounded-full" style="animation-delay: 0.1s; height: 12px;"></div>
+</div>
+<!-- Input Controls -->
+<div class="flex items-center gap-4">
+<button class="flex-shrink-0 w-12 h-12 bg-primary-container text-on-primary-container flex items-center justify-center rounded-full hover:bg-on-primary transition-all active:scale-95 shadow-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
+</button>
+<div class="flex-grow relative">
+<input class="w-full bg-surface-container-low border-none rounded-sm px-6 py-3 text-on-surface placeholder:text-on-surface-variant/40 focus:ring-1 focus:ring-secondary/40 font-body transition-all" placeholder="Or type the memory here..." type="text"/>
+</div>
+<button class="flex-shrink-0 text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- BottomNavBar (Architect Screen Active) -->
+<nav class="fixed bottom-0 w-full z-50 bg-[#0e1418]/80 backdrop-blur-xl flex justify-around items-center w-full h-20 pb-safe px-2 rounded-t-sm border-t border-[#e9c349]/15 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Sheet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all" href="#">
+<span class="material-symbols-outlined">backpack</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Inventory</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Spells</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#e9c349] border-t-2 border-[#e9c349] pt-1 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Architect</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Campaign</span>
+</a>
+</nav>
+</body></html>

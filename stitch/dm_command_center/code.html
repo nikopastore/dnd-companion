@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Digital Tome | DM Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Serif:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary-container": "#a52a2a",
+                "surface": "#0e1418",
+                "on-secondary-fixed": "#241a00",
+                "on-primary": "#68000a",
+                "surface-bright": "#343a3e",
+                "tertiary-container": "#515a5f",
+                "on-primary-container": "#ffc0bb",
+                "on-background": "#dde3e9",
+                "on-tertiary": "#293236",
+                "primary-fixed": "#ffdad7",
+                "primary": "#ffb3ad",
+                "tertiary": "#bfc8ce",
+                "on-secondary-container": "#342800",
+                "inverse-surface": "#dde3e9",
+                "tertiary-fixed": "#dbe4ea",
+                "secondary-fixed": "#ffe088",
+                "surface-container": "#1a2024",
+                "surface-container-highest": "#2f363a",
+                "surface-container-low": "#161c20",
+                "on-error-container": "#ffdad6",
+                "outline": "#a78a87",
+                "on-tertiary-fixed": "#141d21",
+                "secondary": "#e9c349",
+                "on-secondary": "#3c2f00",
+                "on-tertiary-container": "#c8d1d7",
+                "primary-fixed-dim": "#ffb3ad",
+                "surface-tint": "#ffb3ad",
+                "on-surface-variant": "#e0bfbc",
+                "background": "#0e1418",
+                "surface-variant": "#2f363a",
+                "on-surface": "#dde3e9",
+                "outline-variant": "#58413f",
+                "error": "#ffb4ab",
+                "on-error": "#690005",
+                "inverse-on-surface": "#2b3136",
+                "on-tertiary-fixed-variant": "#3f484d",
+                "on-primary-fixed-variant": "#8c171b",
+                "on-secondary-fixed-variant": "#574500",
+                "on-primary-fixed": "#410004",
+                "inverse-primary": "#ad302f",
+                "error-container": "#93000a",
+                "secondary-container": "#af8d11",
+                "surface-dim": "#0e1418",
+                "surface-container-high": "#252b2f",
+                "secondary-fixed-dim": "#e9c349",
+                "tertiary-fixed-dim": "#bfc8ce",
+                "surface-container-lowest": "#090f13"
+              },
+              fontFamily: {
+                "headline": ["Noto Serif"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCKVKHe2MtX62Q9xLk3oQvzSOW-VFwwNp1yjrGIfc_Oiz7mol94OT6oAlxHYAaYIC7z5X4E7cP3YU1pqUwvyqAkJUuGVkjH4MvgteLcuy7WQZ81GRsM1Hwe253wqMY3MolHe-2ousQgcDEpgMWNAmKsLRMuR1oppamZGousJADKJSmaGikqja64SqfDWSD4Xx5Pl_bQJkmnpJ9WE40ZbbkZuxQBjJUFLpxeZatUF7Y68YiT3NLGpImzZ7FuwCkAsxuR7QmB3wsGU-R4);
+    opacity: 0.05;
+    pointer-events: none
+    }
+body {
+    background-color: #0e1418;
+    color: #dde3e9;
+    font-family: "Inter", sans-serif
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#0e1418] flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-sm overflow-hidden bg-surface-container-high border border-secondary/20">
+<img alt="Grand Archivist" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" data-alt="Dungeon Master portrait, middle aged man with intense eyes and a scholarly beard, warm candle lighting, oil painting style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB42s2Y2qBxbOSDfyK-ee7jODYpPK66krcfwzVDrSFIJhImdiM5jvGEW3j_I0eoESkwgDeqdnJmZnWEqsKi2b1E91vTy8sV6PYzZUWoMqMRY5LeYz4h1gsqdoUtpXSUBU04yX86dx-NG24xPemj6Wt7wyln9DJqOVBA4y8grFnRY8ZmHkIzAwOnU7Pr9HCnRTNjtXgYWpc2vaoF4cXAgeO01ERqFA6eKvIYGeUlBx9stMsgcl8ww5gysuvIpLe1oOYewWei7nTFHLh7"/>
+</div>
+<h1 class="font-['Noto_Serif'] headline-md tracking-tight text-xl font-serif text-[#e9c349] tracking-widest uppercase">The Digital Tome</h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-8">
+<a class="text-[#e9c349] font-label text-sm tracking-widest uppercase font-bold transition-colors" href="#">Tactical</a>
+<a class="text-[#ffb3ad]/70 hover:text-[#ffb3ad] font-label text-sm tracking-widest uppercase font-bold transition-colors" href="#">Narrative</a>
+<a class="text-[#ffb3ad]/70 hover:text-[#ffb3ad] font-label text-sm tracking-widest uppercase font-bold transition-colors" href="#">Codex</a>
+</nav>
+<button class="text-[#ffb3ad] hover:bg-[#252b2f] transition-colors duration-300 p-2 rounded-sm active:scale-95">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<main class="pt-20 pb-24 md:pb-8 px-4 md:px-8 max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Character Grid (Bento Style) -->
+<section class="lg:col-span-8 space-y-6">
+<div class="flex justify-between items-end border-b border-secondary/10 pb-2">
+<h2 class="font-headline text-3xl font-bold text-on-background">Active Party</h2>
+<span class="font-label text-xs uppercase tracking-[0.2em] text-secondary">The Void Singularity Campaign</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- PC Card 1 -->
+<div class="bg-surface-container-low p-5 relative overflow-hidden group">
+<div class="absolute inset-0 paper-texture"></div>
+<div class="flex justify-between items-start relative z-10">
+<div>
+<p class="font-label text-[10px] uppercase tracking-tighter text-secondary mb-1">Human Paladin • Level 12</p>
+<h3 class="font-headline text-2xl font-bold text-on-surface">Sir Kaelen</h3>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-full border-2 border-secondary bg-surface-container-highest flex items-center justify-center shadow-[0_0_15px_rgba(233,195,73,0.3)]">
+<span class="font-headline text-xl font-bold text-secondary">21</span>
+</div>
+<span class="font-label text-[10px] uppercase mt-1">Armor Class</span>
+</div>
+</div>
+<div class="mt-6 space-y-4 relative z-10">
+<div class="w-full h-1.5 bg-surface-container-highest overflow-hidden">
+<div class="h-full w-[85%] bg-gradient-to-r from-primary-container to-primary"></div>
+</div>
+<div class="flex justify-between font-label text-xs">
+<span class="text-on-surface/60">Hit Points</span>
+<span class="text-primary font-bold">104 / 122</span>
+</div>
+</div>
+<div class="mt-6 grid grid-cols-3 gap-2 relative z-10">
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Passive Perc</p>
+<p class="font-headline text-lg text-secondary">14</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Initiative</p>
+<p class="font-headline text-lg text-secondary">+1</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Speed</p>
+<p class="font-headline text-lg text-secondary">30ft</p>
+</div>
+</div>
+</div>
+<!-- PC Card 2 -->
+<div class="bg-surface-container-low p-5 relative overflow-hidden group">
+<div class="absolute inset-0 paper-texture"></div>
+<div class="flex justify-between items-start relative z-10">
+<div>
+<p class="font-label text-[10px] uppercase tracking-tighter text-secondary mb-1">Elf Wizard • Level 12</p>
+<h3 class="font-headline text-2xl font-bold text-on-surface">Xiloscient</h3>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-full border-2 border-secondary/40 bg-surface-container-highest flex items-center justify-center">
+<span class="font-headline text-xl font-bold text-secondary">15</span>
+</div>
+<span class="font-label text-[10px] uppercase mt-1">Armor Class</span>
+</div>
+</div>
+<div class="mt-6 space-y-4 relative z-10">
+<div class="w-full h-1.5 bg-surface-container-highest overflow-hidden">
+<div class="h-full w-[42%] bg-gradient-to-r from-primary-container to-primary"></div>
+</div>
+<div class="flex justify-between font-label text-xs">
+<span class="text-on-surface/60">Hit Points</span>
+<span class="text-error font-bold">32 / 76</span>
+</div>
+</div>
+<div class="mt-6 grid grid-cols-3 gap-2 relative z-10">
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Passive Perc</p>
+<p class="font-headline text-lg text-secondary">18</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Initiative</p>
+<p class="font-headline text-lg text-secondary">+4</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Spell Save</p>
+<p class="font-headline text-lg text-secondary">17</p>
+</div>
+</div>
+</div>
+<!-- PC Card 3 -->
+<div class="bg-surface-container-low p-5 relative overflow-hidden group">
+<div class="absolute inset-0 paper-texture"></div>
+<div class="flex justify-between items-start relative z-10">
+<div>
+<p class="font-label text-[10px] uppercase tracking-tighter text-secondary mb-1">Tiefling Rogue • Level 12</p>
+<h3 class="font-headline text-2xl font-bold text-on-surface">Vesper</h3>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-full border-2 border-secondary/40 bg-surface-container-highest flex items-center justify-center">
+<span class="font-headline text-xl font-bold text-secondary">17</span>
+</div>
+<span class="font-label text-[10px] uppercase mt-1">Armor Class</span>
+</div>
+</div>
+<div class="mt-6 space-y-4 relative z-10">
+<div class="w-full h-1.5 bg-surface-container-highest overflow-hidden">
+<div class="h-full w-[98%] bg-gradient-to-r from-primary-container to-primary"></div>
+</div>
+<div class="flex justify-between font-label text-xs">
+<span class="text-on-surface/60">Hit Points</span>
+<span class="text-primary font-bold">88 / 90</span>
+</div>
+</div>
+<div class="mt-6 grid grid-cols-3 gap-2 relative z-10">
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Passive Perc</p>
+<p class="font-headline text-lg text-secondary">22</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Initiative</p>
+<p class="font-headline text-lg text-secondary">+8</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Stealth</p>
+<p class="font-headline text-lg text-secondary">+12</p>
+</div>
+</div>
+</div>
+<!-- PC Card 4 -->
+<div class="bg-surface-container-low p-5 relative overflow-hidden group">
+<div class="absolute inset-0 paper-texture"></div>
+<div class="flex justify-between items-start relative z-10">
+<div>
+<p class="font-label text-[10px] uppercase tracking-tighter text-secondary mb-1">Dwarf Cleric • Level 11</p>
+<h3 class="font-headline text-2xl font-bold text-on-surface">Thrain</h3>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-full border-2 border-secondary/40 bg-surface-container-highest flex items-center justify-center">
+<span class="font-headline text-xl font-bold text-secondary">20</span>
+</div>
+<span class="font-label text-[10px] uppercase mt-1">Armor Class</span>
+</div>
+</div>
+<div class="mt-6 space-y-4 relative z-10">
+<div class="w-full h-1.5 bg-surface-container-highest overflow-hidden">
+<div class="h-full w-[70%] bg-gradient-to-r from-primary-container to-primary"></div>
+</div>
+<div class="flex justify-between font-label text-xs">
+<span class="text-on-surface/60">Hit Points</span>
+<span class="text-primary font-bold">71 / 102</span>
+</div>
+</div>
+<div class="mt-6 grid grid-cols-3 gap-2 relative z-10">
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Passive Perc</p>
+<p class="font-headline text-lg text-secondary">19</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Initiative</p>
+<p class="font-headline text-lg text-secondary">+0</p>
+</div>
+<div class="bg-surface-container p-2 text-center border-l border-secondary/20">
+<p class="font-label text-[10px] uppercase text-on-surface/40">Insignt</p>
+<p class="font-headline text-lg text-secondary">+9</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Global Controls -->
+<div class="bg-surface-container p-6 border-t border-secondary/20">
+<h3 class="font-headline text-xl mb-6 text-on-background">Environmental Controls</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="space-y-2">
+<label class="font-label text-[10px] uppercase tracking-widest text-on-surface/50">Current Time</label>
+<div class="flex items-center gap-3 text-secondary">
+<span class="material-symbols-outlined text-3xl">schedule</span>
+<span class="font-headline text-2xl">22:45</span>
+</div>
+<p class="text-[10px] text-on-surface/40">Long Rest in 4 hours</p>
+</div>
+<div class="space-y-2">
+<label class="font-label text-[10px] uppercase tracking-widest text-on-surface/50">Weather</label>
+<div class="flex items-center gap-3 text-[#ffb3ad]">
+<span class="material-symbols-outlined text-3xl">thunderstorm</span>
+<span class="font-headline text-lg">Heavy Rain</span>
+</div>
+<p class="text-[10px] text-on-surface/40">Disadv. on Perception</p>
+</div>
+<div class="space-y-2">
+<label class="font-label text-[10px] uppercase tracking-widest text-on-surface/50">Light Level</label>
+<div class="flex items-center gap-3 text-on-surface/70">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
+<span class="font-headline text-lg">Dim Light</span>
+</div>
+<p class="text-[10px] text-on-surface/40">Shadowy Illumination</p>
+</div>
+<div class="space-y-2">
+<label class="font-label text-[10px] uppercase tracking-widest text-on-surface/50">Danger Level</label>
+<div class="px-3 py-1 bg-primary-container text-on-primary-container font-label text-xs inline-block rounded-sm animate-pulse">
+                            HIGH RISK
+                        </div>
+<p class="text-[10px] text-on-surface/40">Random Enc. 1-in-6</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Quick Access Sidebar -->
+<aside class="lg:col-span-4 space-y-6">
+<div class="bg-surface-container-low p-6 h-full border-l border-secondary/5">
+<h2 class="font-headline text-2xl font-bold mb-6 text-secondary">Tactical Archive</h2>
+<div class="space-y-4">
+<!-- Current Location Card -->
+<div class="group cursor-pointer">
+<div class="relative h-40 overflow-hidden rounded-sm mb-3">
+<img alt="Location" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Interior of a massive gothic cathedral ruin at night, moonlight streaming through broken stained glass, mystical blue fog on the floor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnuQ9fRz5129zRGOC-1Hhawn9lfwhk-0yYBSj0X4At1tbXfosJ-aKNWCWBxEEb6-m1ZCsACjZos6nyaaxZ0IdzDkexpYV8K0rDCAEUVPTtPKi1yMx1NaFMUcOdns1H1Awt9VxRzrb2a-D9raGR1pNObzdzEEWgx9-YEIsP-I1RwUizhlWY7JC8KAm0jVzglKnCgcudkv2C_6MQAxy2IiD6NUeQOwkoQSeK0jwuMMUdL-LhEYZIcXtzPjSNR1YbyEGICBIokT1O5R-L"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+<div class="absolute bottom-2 left-3">
+<span class="font-label text-[10px] uppercase text-secondary">Current Location</span>
+<h4 class="font-headline text-lg">Cathedral of Veils</h4>
+</div>
+</div>
+</div>
+<!-- Quick Links Accordion -->
+<nav class="space-y-2">
+<button class="w-full flex justify-between items-center p-4 bg-surface-container hover:bg-surface-container-high transition-all border-l-2 border-transparent hover:border-secondary">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary" data-icon="map">map</span>
+<span class="font-headline">Regional Maps</span>
+</div>
+<span class="material-symbols-outlined text-on-surface/30">chevron_right</span>
+</button>
+<button class="w-full flex justify-between items-center p-4 bg-surface-container hover:bg-surface-container-high transition-all border-l-2 border-transparent hover:border-secondary">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary" data-icon="pets">pets</span>
+<span class="font-headline">NPC Directory</span>
+</div>
+<span class="material-symbols-outlined text-on-surface/30">chevron_right</span>
+</button>
+<button class="w-full flex justify-between items-center p-4 bg-surface-container hover:bg-surface-container-high transition-all border-l-2 border-transparent hover:border-secondary">
+<div class="flex items-center gap-4 text-primary">
+<span class="material-symbols-outlined" data-icon="skull">skull</span>
+<span class="font-headline">Enemy Tracker</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="bg-primary-container text-[10px] px-2 py-0.5 rounded-full text-on-primary-container font-bold">3 ACTIVE</span>
+<span class="material-symbols-outlined text-on-surface/30">chevron_right</span>
+</div>
+</button>
+</nav>
+<!-- Active Combat Tracker Mini -->
+<div class="mt-8 p-4 bg-[#a52a2a]/10 border border-[#a52a2a]/20">
+<div class="flex justify-between items-center mb-4">
+<h4 class="font-label text-xs uppercase tracking-widest text-primary">Next in Initiative</h4>
+<span class="text-[10px] text-on-surface/40 uppercase">Round 4</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-xs">18</div>
+<span class="font-headline text-sm">Sir Kaelen</span>
+<span class="ml-auto material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<div class="flex items-center gap-3 opacity-50">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-xs">15</div>
+<span class="font-headline text-sm">Void Stalker A</span>
+</div>
+<div class="flex items-center gap-3 opacity-50">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-xs">12</div>
+<span class="font-headline text-sm">Void Stalker B</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-[#0e1418]/80 backdrop-blur-xl flex justify-around items-center h-20 pb-safe px-2 rounded-t-sm border-t border-[#e9c349]/15 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-[#e9c349] border-t-2 border-[#e9c349] pt-1" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Sheet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="backpack">backpack</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Inventory</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Spells</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Architect</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Campaign</span>
+</a>
+</nav>
+<!-- FAB (Only on Tactical relevant screens) -->
+<button class="fixed bottom-24 right-6 md:bottom-8 md:right-8 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-2xl rounded-sm flex items-center justify-center border border-secondary/30 active:scale-95 transition-all group z-40">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform" data-icon="casino">casino</span>
+</button>
+</body></html>

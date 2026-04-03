@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@dnd-companion/database";
 import { auth } from "@/lib/auth";
+import { prisma } from "@dnd-companion/database";
+import { getCampaignAccess } from "@/lib/campaign-access";
 
 // PATCH /api/campaigns/:id/status — update campaign status (DM only)
 export async function PATCH(
@@ -19,13 +20,13 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const campaign = await prisma.campaign.findUnique({ where: { id } });
-  if (!campaign) {
+  const access = await getCampaignAccess(id, session.user.id);
+  if (!access.campaign) {
     return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
   }
 
-  if (campaign.dmId !== session.user.id) {
-    return NextResponse.json({ error: "Only the DM can change campaign status" }, { status: 403 });
+  if (!access.canManageCampaign) {
+    return NextResponse.json({ error: "Only a DM or co-DM can change campaign status" }, { status: 403 });
   }
 
   const updated = await prisma.campaign.update({

@@ -1,0 +1,3 @@
+ALTER TABLE "Character"
+ADD COLUMN IF NOT EXISTS "spellSlotsState" JSONB,
+ADD COLUMN IF NOT EXISTS "subclassName" TEXT;

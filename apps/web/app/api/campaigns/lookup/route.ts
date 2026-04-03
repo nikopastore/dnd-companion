@@ -20,6 +20,10 @@ export async function GET(request: Request) {
     where: { inviteCode: code },
     include: {
       dm: { select: { name: true, image: true } },
+      members: {
+        where: { userId: session.user.id },
+        select: { role: true },
+      },
       _count: { select: { members: true } },
     },
   });
@@ -35,5 +39,6 @@ export async function GET(request: Request) {
     status: campaign.status,
     dm: campaign.dm,
     memberCount: campaign._count.members,
+    viewerRole: campaign.members[0]?.role ?? null,
   });
 }

@@ -1,16 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import type { AutomationMode } from "@dnd-companion/shared";
 import { Icon } from "@/components/ui/icon";
 
 interface Props {
   onShortRest: () => void;
   onLongRest: () => void;
+  automationMode?: AutomationMode;
 }
 
-export function RestButtons({ onShortRest, onLongRest }: Props) {
+export function RestButtons({ onShortRest, onLongRest, automationMode = "ASSISTED" }: Props) {
   const [shortRestFeedback, setShortRestFeedback] = useState(false);
   const [longRestFeedback, setLongRestFeedback] = useState(false);
+  const shortRestLabel =
+    automationMode === "MANUAL" ? "Checklist only" : automationMode === "FULL" ? "1 hour · auto" : "1 hour";
+  const longRestLabel =
+    automationMode === "MANUAL" ? "Checklist only" : automationMode === "FULL" ? "8 hours · full reset" : "8 hours";
 
   function handleShortRest() {
     onShortRest();
@@ -52,7 +58,7 @@ export function RestButtons({ onShortRest, onLongRest }: Props) {
             Short Rest
           </span>
           <span className="font-body text-[10px] text-on-surface/30 mt-0.5 block">
-            {shortRestFeedback ? "Resting..." : "1 hour"}
+            {shortRestFeedback ? "Resting..." : shortRestLabel}
           </span>
         </div>
         {shortRestFeedback && (
@@ -89,7 +95,7 @@ export function RestButtons({ onShortRest, onLongRest }: Props) {
             Long Rest
           </span>
           <span className="font-body text-[10px] text-on-surface/30 mt-0.5 block">
-            {longRestFeedback ? "Resting..." : "8 hours"}
+            {longRestFeedback ? "Resting..." : longRestLabel}
           </span>
         </div>
         {longRestFeedback && (

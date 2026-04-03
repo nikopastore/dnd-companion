@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FormStatus } from "@/components/ui/form-status";
 import { Icon } from "@/components/ui/icon";
 import { Chip } from "@/components/ui/chip";
 import { AIAssistButton } from "@/components/ai/ai-assist-button";
 import { AI_PROMPTS } from "@/lib/ai";
+import { OptionGallery } from "@/components/builder/option-gallery";
 
 type QuestStatus = "active" | "on_hold" | "completed" | "failed";
 type QuestPriority = "urgent" | "normal" | "low";
@@ -55,10 +57,21 @@ const PRIORITY_CONFIG: Record<QuestPriority, { label: string; className: string 
 
 const STATUS_ORDER: QuestStatus[] = ["active", "on_hold", "completed", "failed"];
 
+const QUEST_THEME_OPTIONS = [
+  { id: "retrieval", title: "Retrieval", description: "Recover a lost relic, stolen object, or critical resource before someone else does.", subtitle: "Classic hook", entityType: "quest" as const, meta: ["Artifact", "Time pressure"] },
+  { id: "rescue", title: "Rescue", description: "Locate and extract a captive, lost ally, or endangered village figure.", subtitle: "Emotional stakes", entityType: "quest" as const, meta: ["NPC focus", "Urgency"] },
+  { id: "investigation", title: "Investigation", description: "Follow clues, uncover motives, and reveal the truth behind a threat or mystery.", subtitle: "Clue-driven", entityType: "quest" as const, meta: ["Mystery", "Discovery"] },
+  { id: "hunt", title: "Hunt", description: "Track a dangerous creature, faction operative, or supernatural threat through the world.", subtitle: "Pursuit", entityType: "quest" as const, meta: ["Combat", "Tracking"] },
+  { id: "escort", title: "Escort", description: "Protect a fragile convoy, diplomat, or artifact over dangerous ground.", subtitle: "Travel tension", entityType: "quest" as const, meta: ["Road danger", "Defense"] },
+  { id: "heist", title: "Heist", description: "Plan and execute a stealthy break-in, infiltration, or social theft under pressure.", subtitle: "Planning-heavy", entityType: "quest" as const, meta: ["Stealth", "Cunning"] },
+];
+
 export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(false);
+  const [builderStep, setBuilderStep] = useState<0 | 1>(0);
+  const [questTheme, setQuestTheme] = useState("retrieval");
 
   // New quest form state
   const [title, setTitle] = useState("");
@@ -72,6 +85,7 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
   const [editPriority, setEditPriority] = useState<QuestPriority>("normal");
   const [editDescription, setEditDescription] = useState("");
   const [editNotes, setEditNotes] = useState("");
+  const [status, setStatus] = useState<{ kind: "success" | "error"; message: string } | null>(null);
 
   const grouped = useMemo(() => {
     const groups: Record<QuestStatus, Quest[]> = { active: [], on_hold: [], completed: [], failed: [] };
@@ -95,6 +109,8 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
     setPriority("normal");
     setGiverNpcId("");
     setNotes("");
+    setQuestTheme("retrieval");
+    setBuilderStep(0);
   }
 
   function openEdit(quest: Quest) {
@@ -125,6 +141,10 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
       onAdd(quest);
       resetForm();
       setShowForm(false);
+      setStatus({ kind: "success", message: "Quest created." });
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setStatus({ kind: "error", message: String(data.error || "Could not create quest.") });
     }
   }
 
@@ -147,6 +167,10 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
       const updated = await res.json();
       onUpdate(updated);
       setEditingQuest(null);
+      setStatus({ kind: "success", message: "Quest updated." });
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setStatus({ kind: "error", message: String(data.error || "Could not update quest.") });
     }
   }
 
@@ -161,11 +185,16 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
     if (res.ok) {
       const updated = await res.json();
       onUpdate(updated);
+      setStatus({ kind: "success", message: `Quest moved to ${STATUS_CONFIG[newStatus].label}.` });
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setStatus({ kind: "error", message: String(data.error || "Could not update quest status.") });
     }
   }
 
   return (
     <div className="space-y-6">
+      {status && <FormStatus kind={status.kind} message={status.message} />}
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -174,7 +203,21 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
             Quest Board ({quests.length})
           </span>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => { setShowForm(!showForm); setEditingQuest(null); }} className="interactive-glow">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+              setShowForm(false);
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+            setEditingQuest(null);
+          }}
+          className="interactive-glow"
+        >
           <Icon name={showForm ? "close" : "add"} size={14} />
           {showForm ? "Cancel" : "New Quest"}
         </Button>
@@ -185,7 +228,7 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
         <div className="glass rounded-sm p-6 border border-secondary/10 space-y-3 animate-fade-in-up shadow-whisper relative overflow-hidden">
           <div className="decorative-orb absolute -top-10 -right-10 w-32 h-32" />
           <div className="flex items-center gap-2 mb-2 relative z-10">
-            <p className="font-headline text-sm text-secondary uppercase tracking-wider">New Quest</p>
+            <p className="font-headline text-sm text-secondary uppercase tracking-wider">Quest Builder</p>
             <div className="decorative-line flex-1 ml-2" />
             <AIAssistButton
               label="Generate Quest"
@@ -199,50 +242,98 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
                 if (quest.description) setDescription(quest.description as string);
                 if (quest.priority) setPriority((quest.priority as QuestPriority) || "normal");
                 if (quest.notes) setNotes(quest.notes as string);
+                setBuilderStep(1);
               }}
             />
           </div>
-          <Input id="quest-title" label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Retrieve the Lost Amulet..." />
-          <Input id="quest-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A mysterious artifact has been stolen..." />
-
-          <div className="grid grid-cols-2 gap-3">
-            <Select
-              id="quest-priority"
-              label="Priority"
-              icon="priority_high"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as QuestPriority)}
-            >
-              <option value="urgent">Urgent</option>
-              <option value="normal">Normal</option>
-              <option value="low">Low</option>
-            </Select>
-            <Select
-              id="quest-giver"
-              label="Quest Giver"
-              icon="person"
-              value={giverNpcId}
-              onChange={(e) => setGiverNpcId(e.target.value)}
-            >
-              <option value="">None</option>
-              {npcs.filter((n) => !n.isEnemy).map((npc) => (
-                <option key={npc.id} value={npc.id}>{npc.name}</option>
-              ))}
-            </Select>
+          <div className="flex flex-wrap gap-2">
+            {["Choose Arc", "Finalize Quest"].map((label, index) => (
+              <div
+                key={label}
+                className={`rounded-full px-3 py-1 font-label text-[10px] uppercase tracking-[0.18em] ${
+                  builderStep === index
+                    ? "bg-secondary/10 text-secondary"
+                    : builderStep > index
+                      ? "bg-primary/10 text-primary"
+                      : "bg-surface-container-high text-on-surface-variant/45"
+                }`}
+              >
+                {index + 1}. {label}
+              </div>
+            ))}
           </div>
 
-          <Textarea
-            id="quest-notes"
-            label="DM Notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Private notes for the DM..."
-            rows={3}
-          />
+          {builderStep === 0 && (
+            <div className="space-y-4">
+              <OptionGallery
+                options={QUEST_THEME_OPTIONS}
+                selectedId={questTheme}
+                onSelect={(option) => {
+                  setQuestTheme(option.id);
+                  if (!description.trim()) {
+                    setDescription(option.description);
+                  }
+                  setBuilderStep(1);
+                }}
+                featuredIds={["retrieval", "rescue", "investigation"]}
+                featuredLabel="Popular quest starts"
+                allLabel="Quest archetypes"
+                searchPlaceholder="Search quest arcs"
+              />
+            </div>
+          )}
 
-          <Button size="sm" onClick={handleAdd} disabled={loading || !title.trim()} className="glow-gold">
-            {loading ? "Creating..." : "Create Quest"}
-          </Button>
+          {builderStep === 1 && (
+            <div className="space-y-4">
+              <Input id="quest-title" label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Retrieve the Lost Amulet..." />
+              <Input id="quest-desc" label="Description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A mysterious artifact has been stolen..." />
+
+              <div className="grid grid-cols-2 gap-3">
+                <Select
+                  id="quest-priority"
+                  label="Priority"
+                  icon="priority_high"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as QuestPriority)}
+                >
+                  <option value="urgent">Urgent</option>
+                  <option value="normal">Normal</option>
+                  <option value="low">Low</option>
+                </Select>
+                <Select
+                  id="quest-giver"
+                  label="Quest Giver"
+                  icon="person"
+                  value={giverNpcId}
+                  onChange={(e) => setGiverNpcId(e.target.value)}
+                >
+                  <option value="">None</option>
+                  {npcs.filter((n) => !n.isEnemy).map((npc) => (
+                    <option key={npc.id} value={npc.id}>{npc.name}</option>
+                  ))}
+                </Select>
+              </div>
+
+              <Textarea
+                id="quest-notes"
+                label="DM Notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Private notes for the DM..."
+                rows={3}
+              />
+
+              <div className="flex justify-between">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setBuilderStep(0)}>
+                  <Icon name="arrow_back" size={14} />
+                  Back
+                </Button>
+                <Button size="sm" onClick={handleAdd} disabled={loading || !title.trim()} className="glow-gold">
+                  {loading ? "Creating..." : "Create Quest"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Digital Tome - Character Sheet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-container": "#a52a2a",
+              "surface": "#0e1418",
+              "on-secondary-fixed": "#241a00",
+              "on-primary": "#68000a",
+              "surface-bright": "#343a3e",
+              "tertiary-container": "#515a5f",
+              "on-primary-container": "#ffc0bb",
+              "on-background": "#dde3e9",
+              "on-tertiary": "#293236",
+              "primary-fixed": "#ffdad7",
+              "primary": "#ffb3ad",
+              "tertiary": "#bfc8ce",
+              "on-secondary-container": "#342800",
+              "inverse-surface": "#dde3e9",
+              "tertiary-fixed": "#dbe4ea",
+              "secondary-fixed": "#ffe088",
+              "surface-container": "#1a2024",
+              "surface-container-highest": "#2f363a",
+              "surface-container-low": "#161c20",
+              "on-error-container": "#ffdad6",
+              "outline": "#a78a87",
+              "on-tertiary-fixed": "#141d21",
+              "secondary": "#e9c349",
+              "on-secondary": "#3c2f00",
+              "on-tertiary-container": "#c8d1d7",
+              "primary-fixed-dim": "#ffb3ad",
+              "surface-tint": "#ffb3ad",
+              "on-surface-variant": "#e0bfbc",
+              "background": "#0e1418",
+              "surface-variant": "#2f363a",
+              "on-surface": "#dde3e9",
+              "outline-variant": "#58413f",
+              "error": "#ffb4ab",
+              "on-error": "#690005",
+              "inverse-on-surface": "#2b3136",
+              "on-tertiary-fixed-variant": "#3f484d",
+              "on-primary-fixed-variant": "#8c171b",
+              "on-secondary-fixed-variant": "#574500",
+              "on-primary-fixed": "#410004",
+              "inverse-primary": "#ad302f",
+              "error-container": "#93000a",
+              "secondary-container": "#af8d11",
+              "surface-dim": "#0e1418",
+              "surface-container-high": "#252b2f",
+              "secondary-fixed-dim": "#e9c349",
+              "tertiary-fixed-dim": "#bfc8ce",
+              "surface-container-lowest": "#090f13"
+            },
+            fontFamily: {
+              "headline": ["Noto Serif"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.paper-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuB4Q9v07zRLyglnoTF9QiM4fYRcws9Ir14uhdqWG4zMu_JL78TD4p7O8M08ikRDCkOuGgpl4a-hISsMqxml5rZKSX9ReFXkrdgkKmG0g7Xc1sWKShRQl5jQeJ7VyPcljkABHGJxXZCBcThhwtI5bvbaOolpSs96Wi0IeOZZ1MW0vJcevejPNHoGHLO-i7vsyXZ2xB0NkqG3E6-76aMrV7eyGMU1qyZ0Sg2CHy2Gx3i4Ne-bJgBaxqryCb4preZIiz2VThjxDIYBFlfW);
+    background-blend-mode: overlay
+    }
+.gold-glow {
+    box-shadow: 0 0 15px rgba(233, 195, 73, 0.2)
+    }
+.asymmetric-lore {
+    padding-left: 2rem;
+    padding-right: 1rem;
+    border-left: 2px solid rgba(233, 195, 73, 0.1)
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-secondary/30">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 w-full z-50 bg-[#0e1418] flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-sm overflow-hidden border border-secondary/20">
+<img alt="Character Portrait" class="w-full h-full object-cover" data-alt="Close-up of a stoic fantasy character with sharp features, ethereal glowing eyes, and ornate dark leather armor in cinematic moody lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDH_L_CpaYzwEH9qGTMQL2pRlcNOpXnCKoNWOLUDPvRJQlAHgi4WcC0HsbjeXgvPn2qq30InwAydeDZ3DBQB-cyY5JWnNAP6zGItVvPJ3_zqH7sjsLYEVjHdZ71sKPr_Z4cQ4FTzy7dWI20DmuZSegWpzKbHzrEc1okit1IFZQ1hk3iAM8rjtSqiSH2cGAPwMgeZJFqr2qnw0-7KwsghMPMbGn8v0qj7SoisAUpU5_54gY3d-Im02PIuIZ8BxZq093kCpqM5-QAk0UY"/>
+</div>
+<h1 class="text-xl font-serif text-[#e9c349] tracking-widest uppercase">The Digital Tome</h1>
+</div>
+<button class="text-[#ffb3ad] hover:bg-[#252b2f] transition-colors duration-300 p-2 rounded-sm active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<main class="pt-20 pb-28 px-4 max-w-5xl mx-auto space-y-8">
+<!-- Hero Stats Section (Asymmetric Bento) -->
+<section class="grid grid-cols-12 gap-4">
+<!-- Central Vitality -->
+<div class="col-span-12 md:col-span-6 bg-surface-container-low paper-texture p-6 rounded-sm relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<span class="font-headline text-secondary uppercase tracking-widest text-xs">Vitality</span>
+<span class="material-symbols-outlined text-primary/40 text-sm">edit</span>
+</div>
+<div class="flex items-end gap-4">
+<div class="flex flex-col">
+<span class="font-headline text-6xl font-bold text-on-background leading-none">74</span>
+<span class="font-label text-xs text-primary uppercase mt-2">Current HP</span>
+</div>
+<div class="h-12 w-[2px] bg-secondary/10 mb-2"></div>
+<div class="flex flex-col pb-1">
+<span class="font-headline text-2xl text-on-surface/60">85</span>
+<span class="font-label text-[10px] text-on-surface/40 uppercase">Maximum</span>
+</div>
+</div>
+<!-- Textured Health Bar -->
+<div class="mt-6 h-3 w-full bg-surface-container-highest rounded-full overflow-hidden border border-outline-variant/10">
+<div class="h-full w-[87%] bg-gradient-to-r from-primary-container to-primary relative">
+<div class="absolute inset-0 opacity-20 paper-texture"></div>
+</div>
+</div>
+</div>
+<!-- AC & Initiative Cards -->
+<div class="col-span-6 md:col-span-3 bg-surface-container-low p-6 rounded-sm border-l-4 border-secondary flex flex-col justify-center items-center gap-2">
+<span class="font-label text-xs text-on-surface/50 uppercase tracking-tighter">Armor Class</span>
+<div class="w-16 h-16 rounded-full border-2 border-secondary/30 flex items-center justify-center bg-surface-container-highest gold-glow">
+<span class="font-headline text-3xl text-secondary">18</span>
+</div>
+</div>
+<div class="col-span-6 md:col-span-3 bg-surface-container-low p-6 rounded-sm border-l-4 border-primary flex flex-col justify-center items-center gap-2">
+<span class="font-label text-xs text-on-surface/50 uppercase tracking-tighter">Initiative</span>
+<div class="w-16 h-16 rounded-sm rotate-45 border border-primary/30 flex items-center justify-center bg-surface-container-highest">
+<span class="font-headline text-3xl text-primary -rotate-45">+4</span>
+</div>
+</div>
+</section>
+<!-- Attribute Orbs -->
+<section class="grid grid-cols-3 md:grid-cols-6 gap-4">
+<!-- STR -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-20 h-20 rounded-full bg-secondary-container/20 border-2 border-secondary gold-glow flex flex-col items-center justify-center transition-transform group-active:scale-95">
+<span class="font-label text-[10px] text-secondary font-bold uppercase">STR</span>
+<span class="font-headline text-2xl text-on-surface">16</span>
+<span class="font-body text-xs text-secondary/70 font-bold">+3</span>
+</div>
+</div>
+<!-- DEX -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-20 h-20 rounded-full bg-secondary-container/20 border-2 border-secondary gold-glow flex flex-col items-center justify-center transition-transform group-active:scale-95">
+<span class="font-label text-[10px] text-secondary font-bold uppercase">DEX</span>
+<span class="font-headline text-2xl text-on-surface">14</span>
+<span class="font-body text-xs text-secondary/70 font-bold">+2</span>
+</div>
+</div>
+<!-- CON -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-20 h-20 rounded-full bg-secondary-container/20 border-2 border-secondary gold-glow flex flex-col items-center justify-center transition-transform group-active:scale-95">
+<span class="font-label text-[10px] text-secondary font-bold uppercase">CON</span>
+<span class="font-headline text-2xl text-on-surface">15</span>
+<span class="font-body text-xs text-secondary/70 font-bold">+2</span>
+</div>
+</div>
+<!-- INT -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-20 h-20 rounded-full bg-surface-container-highest border border-outline-variant/30 flex flex-col items-center justify-center transition-transform group-active:scale-95">
+<span class="font-label text-[10px] text-on-surface/50 font-bold uppercase">INT</span>
+<span class="font-headline text-2xl text-on-surface">10</span>
+<span class="font-body text-xs text-on-surface/30 font-bold">+0</span>
+</div>
+</div>
+<!-- WIS -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-20 h-20 rounded-full bg-surface-container-highest border border-outline-variant/30 flex flex-col items-center justify-center transition-transform group-active:scale-95">
+<span class="font-label text-[10px] text-on-surface/50 font-bold uppercase">WIS</span>
+<span class="font-headline text-2xl text-on-surface">12</span>
+<span class="font-body text-xs text-on-surface/30 font-bold">+1</span>
+</div>
+</div>
+<!-- CHA -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-20 h-20 rounded-full bg-surface-container-highest border border-outline-variant/30 flex flex-col items-center justify-center transition-transform group-active:scale-95">
+<span class="font-label text-[10px] text-on-surface/50 font-bold uppercase">CHA</span>
+<span class="font-headline text-2xl text-on-surface">12</span>
+<span class="font-body text-xs text-on-surface/30 font-bold">+1</span>
+</div>
+</div>
+</section>
+<!-- Secondary Content Bento -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Active Spells (Modern Editorial Style) -->
+<div class="col-span-12 lg:col-span-8 space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline text-2xl text-on-background">Active Spells</h2>
+<button class="text-xs font-label uppercase tracking-widest text-secondary hover:underline">Manage All</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<!-- Spell Card -->
+<div class="bg-surface-container-low p-4 rounded-sm border-l border-primary/20 hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline text-lg text-primary">Hunter's Mark</h3>
+<p class="text-[10px] font-label text-on-surface/40 uppercase tracking-tighter">1st Level Divination</p>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-[9px] text-primary uppercase font-bold">Concentration</span>
+</div>
+<div class="mt-4 flex gap-4 text-[10px] font-label text-on-surface/60">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> 1 Hour</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">distance</span> 90 Ft</span>
+</div>
+</div>
+<!-- Spell Card -->
+<div class="bg-surface-container-low p-4 rounded-sm border-l border-secondary/20 hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline text-lg text-secondary">Zephyr Strike</h3>
+<p class="text-[10px] font-label text-on-surface/40 uppercase tracking-tighter">1st Level Transmutation</p>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-[9px] text-on-surface/40 uppercase font-bold">Ready</span>
+</div>
+<div class="mt-4 flex gap-4 text-[10px] font-label text-on-surface/60">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> 1 Min</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">person</span> Self</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Inventory Highlights -->
+<div class="col-span-12 lg:col-span-4 space-y-4">
+<h2 class="font-headline text-2xl text-on-background">Inventory</h2>
+<div class="bg-surface-container-low rounded-sm divide-y divide-on-surface/5">
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-surface-container-high">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-highest flex items-center justify-center rounded-sm">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">swords</span>
+</div>
+<div>
+<p class="font-headline text-sm">Moon-Touched Blade</p>
+<p class="text-[10px] font-label text-on-surface/40 uppercase">Longsword • 1d8 Slash</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface/20 text-sm">arrow_forward_ios</span>
+</div>
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-surface-container-high">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-highest flex items-center justify-center rounded-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div>
+<p class="font-headline text-sm">Elven Chainmail</p>
+<p class="text-[10px] font-label text-on-surface/40 uppercase">Medium Armor • 16 AC</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface/20 text-sm">arrow_forward_ios</span>
+</div>
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-surface-container-high">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-highest flex items-center justify-center rounded-sm">
+<span class="material-symbols-outlined text-on-surface/40">backpack</span>
+</div>
+<div>
+<p class="font-headline text-sm">Explorer's Pack</p>
+<p class="text-[10px] font-label text-on-surface/40 uppercase">Utility • 24 lbs</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface/20 text-sm">arrow_forward_ios</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Actions (Lore/Journal Style) -->
+<section class="space-y-4">
+<h2 class="font-headline text-2xl text-on-background">Recent Actions</h2>
+<div class="asymmetric-lore space-y-6">
+<div class="relative pl-6 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-primary before:rounded-full">
+<p class="font-label text-[10px] uppercase text-on-surface/30 mb-1">Session 42 • The Void Singularity</p>
+<p class="font-body text-on-surface/80 italic leading-relaxed">
+                        "Engaged the Shadow-Weaver in the lower sanctum. Used <span class="text-secondary font-bold">Hunter's Mark</span> to track its movements through the ethereal plane. Dealt <span class="text-primary font-bold">24 Damage</span> with a critical strike."
+                    </p>
+</div>
+<div class="relative pl-6 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-secondary/40 before:rounded-full">
+<p class="font-label text-[10px] uppercase text-on-surface/30 mb-1">Session 41 • Into the Abyss</p>
+<p class="font-body text-on-surface/80 italic leading-relaxed">
+                        "Discovered the <span class="text-secondary font-bold">Moon-Touched Blade</span> within the crystal caverns. Successfully navigated the trapped hallway with a DC 18 Acrobatics check."
+                    </p>
+</div>
+</div>
+</section>
+</main>
+<!-- Navigation Shells -->
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-sm border-t border-[#e9c349]/15 bg-[#0e1418]/80 backdrop-blur-xl flex justify-around items-center w-full h-20 pb-safe px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-[#e9c349] border-t-2 border-[#e9c349] pt-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Sheet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined">backpack</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Inventory</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Spells</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Architect</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffb3ad]/40 pt-1 hover:text-[#ffb3ad] transition-all active:translate-y-0.5 duration-150" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-tighter font-bold">Campaign</span>
+</a>
+</nav>
+<!-- SideNav / NavigationDrawer (Web) -->
+<aside class="hidden lg:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-[#0e1418] border-r border-secondary/10 flex-col p-6 gap-4 z-40">
+<div class="flex flex-col gap-1 pb-6 mb-4 border-b border-secondary/10">
+<div class="w-12 h-12 rounded-full overflow-hidden mb-2">
+<img alt="Grand Archivist Avatar" class="w-full h-full object-cover" data-alt="Dungeon Master Portrait with glowing eyes and magical tome" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB9_TElpcTyInfaYy00LrewPsddkOoYeFFkHOTuKepN5Zq5u_WwKOhfjLSSJlugm2oAgdmXKwh3MjI_EiX-vM_luU3yq5UJwqIq7OweN4QhxCdLMeL_6__mzJWyP_Iiau13iLNqVVp0A0aXAi92TZUV5W2F7JvP4BxyFcoNVpg2TyEZ1tWdGRTxWGRmVi-WDSA-NjO6Npx5EOTDwtID7O3LSqoyvZGeAF7OBaLKQPl43VvN1Gc75CmMrYpAHFIWUAUo_G6izxYxHfD"/>
+</div>
+<p class="font-serif text-[#e9c349] font-bold">Grand Archivist</p>
+<p class="text-xs text-[#ffb3ad]/60">Level 12 Game Master</p>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-3 p-3 rounded-sm bg-[#a52a2a] text-[#ffb3ad] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-headline">Character Sheet</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-sm text-[#ffb3ad]/60 hover:bg-[#161c20] hover:pl-4 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-headline">World Map</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-sm text-[#ffb3ad]/60 hover:bg-[#161c20] hover:pl-4 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-headline">Quest Log</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-sm text-[#ffb3ad]/60 hover:bg-[#161c20] hover:pl-4 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">pets</span>
+<span class="font-headline">Bestiary</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-sm text-[#ffb3ad]/60 hover:bg-[#161c20] hover:pl-4 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">casino</span>
+<span class="font-headline">Dice Roller</span>
+</a>
+</nav>
+</aside>
+</body></html>
