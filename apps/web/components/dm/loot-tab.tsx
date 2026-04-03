@@ -11,6 +11,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { AIAssistButton } from "@/components/ai/ai-assist-button";
 import { AI_PROMPTS } from "@/lib/ai";
 import { OptionGallery } from "@/components/builder/option-gallery";
+import { EntityImage } from "@/components/ui/entity-image";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { CURATED_ITEM_TEMPLATES } from "@/lib/curated-compendium";
+import { getEntityPlaceholderImage } from "@/lib/entity-placeholder";
 
 type Rarity = "common" | "uncommon" | "rare" | "very_rare" | "legendary";
 
@@ -267,6 +271,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
   const [rarity, setRarity] = useState<Rarity>("common");
   const [value, setValue] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [itemImageUrl, setItemImageUrl] = useState<string | null>(null);
 
   // Treasure generator
   const [crRange, setCrRange] = useState("0-4");
@@ -290,14 +295,30 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
     if (!selectedCategory) return [];
 
     if (selectedCategory === "treasure") {
-      return [...GEMS, ...ART_OBJECTS].map((entry) => ({
-        id: entry,
-        title: entry.split(" (")[0],
-        description: entry.includes("gp") ? "A valuable treasure find ready to be claimed or split." : "A portable treasure reward.",
-        subtitle: "Treasure",
-        entityType: "item" as const,
-        meta: [entry.match(/\((.+)\)/)?.[1] || "Value varies"],
-      }));
+      return [
+        ...CURATED_ITEM_TEMPLATES.filter((item) => item.category === "treasure").map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          subtitle: item.subtitle,
+          entityType: "item" as const,
+          imageUrl: item.imageUrl,
+          badge: item.featured ? "Featured" : undefined,
+          meta: [item.value || "Value varies", ...(item.meta ?? [])],
+          searchText: item.searchText,
+        })),
+        ...[...GEMS, ...ART_OBJECTS].map((entry) => ({
+          id: entry,
+          title: entry.split(" (")[0],
+          description: entry.includes("gp")
+            ? "A valuable treasure find ready to be claimed or split."
+            : "A portable treasure reward.",
+          subtitle: "Treasure",
+          entityType: "item" as const,
+          imageUrl: getEntityPlaceholderImage("item", entry.split(" (")[0]),
+          meta: [entry.match(/\((.+)\)/)?.[1] || "Value varies"],
+        })),
+      ];
     }
 
     const categoryFilters: Record<Exclude<ItemCategory, "treasure">, (item: SRDItem) => boolean> = {
@@ -307,7 +328,19 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
       gear: (item) => !["weapon", "potion", "armor", "shield", "mail", "plate"].some((keyword) => item.name.toLowerCase().includes(keyword)),
     };
 
-    return srdItems
+    const curated = CURATED_ITEM_TEMPLATES.filter((item) => item.category === selectedCategory).map((item) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      subtitle: item.subtitle,
+      entityType: "item" as const,
+      imageUrl: item.imageUrl,
+      badge: item.featured ? "Featured" : item.rarity ? item.rarity.replace(/_/g, " ") : undefined,
+      meta: [item.value || "Value varies", ...(item.meta ?? [])],
+      searchText: item.searchText,
+    }));
+
+    const srdTemplates = srdItems
       .filter(categoryFilters[selectedCategory as Exclude<ItemCategory, "treasure">])
       .slice(0, 30)
       .map((item) => ({
@@ -316,8 +349,12 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
         description: item.desc?.[0] || "SRD equipment template.",
         subtitle: item.cost ? `${item.cost.quantity} ${item.cost.unit}` : "SRD template",
         entityType: "item" as const,
+        imageUrl: getEntityPlaceholderImage("item", item.name),
         meta: item.cost ? [`${item.cost.quantity} ${item.cost.unit}`] : [],
       }));
+
+    const seen = new Set(curated.map((item) => item.title.toLowerCase()));
+    return [...curated, ...srdTemplates.filter((item) => !seen.has(item.title.toLowerCase()))];
   }, [selectedCategory, srdItems]);
 
   function resetForm() {
@@ -327,6 +364,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
     setRarity("common");
     setValue("");
     setQuantity(1);
+    setItemImageUrl(null);
     setAssignments({});
     setSelectedCategory(null);
     setBuilderStep(0);
@@ -354,6 +392,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
     setLocation(item.location || "");
     setValue(item.value || "");
     setQuantity(item.quantity ?? 1);
+    setItemImageUrl(item.imageUrl || null);
     setRarity(((item.rarity as Rarity) || "common"));
     setShowForm(true);
   }
@@ -374,6 +413,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
           location: location.trim() || null,
           rarity,
           value: value.trim() || null,
+          imageUrl: itemImageUrl,
           category: selectedCategory,
           quantity,
         }),
@@ -419,6 +459,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
         location: null,
         rarity: itemRarity || "common",
         value: null,
+        imageUrl: getEntityPlaceholderImage("item", itemName),
       }),
     });
     setLoading(false);
@@ -579,6 +620,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
                   setName(option.title);
                   setDescription(option.description);
                   setValue(option.meta?.[0] ?? "");
+                  setItemImageUrl(option.imageUrl ?? getEntityPlaceholderImage("item", option.title));
                   setBuilderStep(2);
                 }}
                 featuredIds={builderTemplates.slice(0, 6).map((option) => option.id)}
@@ -607,6 +649,24 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
 
           {builderStep === 2 && (
             <div className="space-y-4">
+              <div className="flex items-center gap-4 rounded-sm border border-outline-variant/10 bg-surface-container-low p-4">
+                <ImageUpload
+                  currentImage={itemImageUrl}
+                  onUpload={(url) => setItemImageUrl(url)}
+                  size="sm"
+                  label="Item Art"
+                />
+                <div className="flex items-center gap-3">
+                  <EntityImage imageUrl={itemImageUrl} entityType="item" name={name || "Item"} size="sm" />
+                  <div>
+                    <p className="font-label text-[10px] uppercase tracking-[0.16em] text-secondary">Item Card Art</p>
+                    <p className="font-body text-xs text-on-surface-variant">
+                      Upload custom art or keep the generated placeholder image.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Input id="loot-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Flame Tongue Greatsword..." />
                 <Input id="loot-loc" label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Dragon's hoard, Room 12..." />
@@ -731,7 +791,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
               </span>
               {hidden.map((item) => (
                 <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-outline-variant/30 interactive-glow shadow-whisper">
-                  <Icon name="visibility_off" size={16} className="text-on-surface/30" />
+                  <EntityImage imageUrl={item.imageUrl} entityType="item" name={item.name} size="sm" className="shrink-0" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-body text-sm text-on-surface">{item.name}</span>
@@ -781,7 +841,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
               </span>
               {revealed.map((item) => (
                 <div key={item.id} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border-l-2 border-secondary/30 interactive-glow glow-gold shadow-whisper">
-                  <Icon name="visibility" size={16} className="text-secondary" />
+                  <EntityImage imageUrl={item.imageUrl} entityType="item" name={item.name} size="sm" className="shrink-0" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-body text-sm text-on-surface">{item.name}</span>
@@ -947,7 +1007,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
             <div className="space-y-2 stagger-children">
               {filteredSrd.map((item) => (
                 <div key={item.index} className="p-3 bg-surface-container-low rounded-sm flex items-center gap-3 border border-outline-variant/8 interactive-glow">
-                  <Icon name="auto_awesome" size={16} className="text-purple-400" />
+                  <EntityImage imageUrl={getEntityPlaceholderImage("item", item.name)} entityType="item" name={item.name} size="sm" className="shrink-0" />
                   <div className="flex-1">
                     <span className="font-body text-sm text-on-surface font-semibold">{item.name}</span>
                     {item.desc && item.desc.length > 0 && (

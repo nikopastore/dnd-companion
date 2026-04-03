@@ -225,6 +225,7 @@ model Character {
   voiceNotes         String? @db.Text
   lastSessionChanges String? @db.Text
   characterTimeline  Json?
+  pendingNotifications Json?
 
   // Currency
   copperPieces   Int @default(0)

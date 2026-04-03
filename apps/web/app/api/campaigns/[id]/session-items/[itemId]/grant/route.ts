@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { Prisma, prisma } from "@dnd-companion/database";
 import { auth } from "@/lib/auth";
 import { getCampaignAccess } from "@/lib/campaign-access";
+import {
+  appendCharacterNotification,
+  createCharacterNotification,
+} from "@/lib/character-notifications";
 import { createItemHistoryEntry } from "@/lib/item-history";
 
 interface GrantAssignmentInput {
@@ -82,34 +86,57 @@ export async function POST(
     const actor = session.user.name || session.user.email || "Unknown";
 
     for (const assignment of normalizedAssignments) {
-      grants.push(
-        tx.characterItem.create({
-          data: {
-            characterId: assignment.characterId,
-            name: sessionItem.name,
-            description: sessionItem.description,
-            imageUrl: sessionItem.imageUrl,
-            category: sessionItem.category,
-            rarity: sessionItem.rarity,
-            value: sessionItem.value,
-            quantity: assignment.quantity,
-            notes: sessionItem.location
-              ? `Granted from campaign loot: ${sessionItem.location}`
-              : "Granted from campaign loot",
-            sourceSessionItemId: sessionItem.id,
-            itemHistory: [
-              createItemHistoryEntry(
-                "grant",
-                "Granted from campaign loot",
-                sessionItem.location
-                  ? `${assignment.quantity} received from ${sessionItem.location}.`
-                  : `${assignment.quantity} granted from the campaign loot pool.`,
-                actor
-              ),
-            ] as unknown as Prisma.InputJsonValue,
-          },
-        })
-      );
+      const targetCharacter = await tx.character.findUnique({ where: { id: assignment.characterId } });
+
+      const createdItem = await tx.characterItem.create({
+        data: {
+          characterId: assignment.characterId,
+          name: sessionItem.name,
+          description: sessionItem.description,
+          imageUrl: sessionItem.imageUrl,
+          category: sessionItem.category,
+          rarity: sessionItem.rarity,
+          value: sessionItem.value,
+          quantity: assignment.quantity,
+          notes: sessionItem.location
+            ? `Granted from campaign loot: ${sessionItem.location}`
+            : "Granted from campaign loot",
+          sourceSessionItemId: sessionItem.id,
+          itemHistory: [
+            createItemHistoryEntry(
+              "grant",
+              "Granted from campaign loot",
+              sessionItem.location
+                ? `${assignment.quantity} received from ${sessionItem.location}.`
+                : `${assignment.quantity} granted from the campaign loot pool.`,
+              actor
+            ),
+          ] as unknown as Prisma.InputJsonValue,
+        },
+      });
+
+      await tx.character.update({
+        where: { id: assignment.characterId },
+        data: {
+          pendingNotifications: appendCharacterNotification(
+            (targetCharacter as { pendingNotifications?: unknown } | null)?.pendingNotifications,
+            createCharacterNotification(
+              "item_received",
+              `Received ${sessionItem.name}`,
+              `${assignment.quantity} ${assignment.quantity === 1 ? "copy" : "copies"} added from campaign loot.`,
+              {
+                imageUrl: sessionItem.imageUrl,
+                metadata: {
+                  quantity: assignment.quantity,
+                  itemName: sessionItem.name,
+                },
+              }
+            )
+          ) as unknown as Prisma.InputJsonValue,
+        } as Prisma.CharacterUpdateInput,
+      });
+
+      grants.push(createdItem);
     }
 
     const remainingQuantity = sessionItem.quantity - totalQuantity;
@@ -125,7 +152,7 @@ export async function POST(
       },
     });
 
-    return Promise.all(grants);
+    return grants;
   });
 
   return NextResponse.json({ granted: createdItems }, { status: 201 });

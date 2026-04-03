@@ -13,10 +13,12 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { AIAssistButton } from "@/components/ai/ai-assist-button";
 import { AI_PROMPTS } from "@/lib/ai";
 import { OptionGallery } from "@/components/builder/option-gallery";
+import { CURATED_NPC_TEMPLATES } from "@/lib/curated-compendium";
 
 interface NPC {
   id: string;
   name: string;
+  imageUrl?: string | null;
   description: string | null;
   statBlock: Record<string, unknown> | null;
   isEnemy: boolean;
@@ -91,6 +93,18 @@ const ALIGNMENT_OPTIONS = alignments.map((alignment) => ({
   subtitle: "Alignment",
   entityType: "npc" as const,
   meta: [alignment.split(" ")[0], alignment.split(" ")[1]],
+}));
+
+const FAMOUS_NPC_OPTIONS = CURATED_NPC_TEMPLATES.map((npc) => ({
+  id: npc.id,
+  title: npc.name,
+  description: npc.description,
+  subtitle: `${npc.race} ${npc.npcClass}`.trim(),
+  entityType: "npc" as const,
+  imageUrl: npc.imageUrl,
+  badge: npc.featured ? "Legendary" : undefined,
+  meta: [npc.alignment, npc.relationship, npc.faction].filter((value): value is string => Boolean(value)),
+  searchText: [npc.personality, npc.voice, npc.notes].join(" "),
 }));
 
 export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
@@ -173,6 +187,27 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
     setBuilderStep(0);
   }
 
+  function applyNpcPreset(templateId: string) {
+    const preset = CURATED_NPC_TEMPLATES.find((entry) => entry.id === templateId);
+    if (!preset) return;
+
+    setFormName(preset.name);
+    setFormRace(preset.race);
+    setFormNpcClass(preset.npcClass);
+    setFormAlignment(preset.alignment);
+    setFormPersonality(preset.personality);
+    setFormAppearance(preset.appearance);
+    setFormVoice(preset.voice);
+    setFormFaction(preset.faction || "");
+    setFormLocationName(preset.locationName || "");
+    setFormRelationship(preset.relationship);
+    setFormIsEnemy(Boolean(preset.isEnemy || preset.relationship === "enemy"));
+    setFormCr(preset.cr || "");
+    setFormDescription(preset.description);
+    setFormNotes(preset.notes);
+    setFormImageUrl(preset.imageUrl);
+  }
+
   async function handleCreate() {
     if (!formName.trim()) return;
     setLoading(true);
@@ -197,6 +232,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
           cr: formCr.trim() || null,
           description: formDescription.trim() || null,
           notes: formNotes.trim() || null,
+          imageUrl: formImageUrl,
         }),
       });
 
@@ -407,6 +443,23 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
 
           {builderStep === 2 && (
             <>
+
+          <div className="space-y-4 rounded-sm border border-outline-variant/10 bg-surface-container-low p-4">
+            <div className="flex items-center gap-2">
+              <Icon name="auto_stories" size={16} className="text-secondary" />
+              <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary">
+                Famous Character Presets
+              </span>
+            </div>
+            <OptionGallery
+              options={FAMOUS_NPC_OPTIONS}
+              onSelect={(option) => applyNpcPreset(option.id)}
+              featuredIds={CURATED_NPC_TEMPLATES.filter((npc) => npc.featured).map((npc) => npc.id)}
+              featuredLabel="Legendary inspirations"
+              allLabel="Preset library"
+              searchPlaceholder="Search famous characters and inspiration presets"
+            />
+          </div>
 
           {/* NPC Portrait Upload */}
           <div className="flex items-center gap-4">
@@ -624,7 +677,7 @@ export function NPCsTab({ npcs, campaignId, onAdd, onUpdate }: NPCsTabProps) {
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
-                      <EntityImage entityType="npc" name={npc.name} size="sm" className="shrink-0" />
+                      <EntityImage imageUrl={npc.imageUrl} entityType="npc" name={npc.name} size="sm" className="shrink-0" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           {/* Alive/Dead indicator */}

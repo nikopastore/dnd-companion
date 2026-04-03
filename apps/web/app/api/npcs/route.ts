@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     relationship,
     isAlive,
     cr,
+    imageUrl,
   } = await request.json();
 
   if (!campaignId || !name) {
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
       relationship,
       isAlive: isAlive ?? true,
       cr,
+      imageUrl: imageUrl || null,
     },
   });
 

@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { HealthBar } from "@/components/ui/health-bar";
 import { Select } from "@/components/ui/select";
 import { CampaignSettingsPanel } from "@/components/dm/campaign-settings-panel";
+import { CampaignAiCommandPanel } from "@/components/dm/campaign-ai-command-panel";
 import { CampaignContinuityPanel } from "@/components/dm/campaign-continuity-panel";
 import { CampaignInsightsPanel } from "@/components/dm/campaign-insights-panel";
 
@@ -399,6 +400,23 @@ export function OverviewTab({ campaign, onStatusChange, onCampaignRefresh }: Ove
         storyThreads={campaign.storyThreads}
         scheduledEvents={campaign.scheduledEvents}
       />
+
+      {canManageContinuity && (
+        <CampaignAiCommandPanel
+          campaignId={campaign.id}
+          members={campaign.members.map((member) => ({
+            id: member.id,
+            role: member.role,
+            character: member.character
+              ? {
+                  id: member.character.id,
+                  name: member.character.name,
+                }
+              : null,
+          }))}
+          onApplied={onCampaignRefresh}
+        />
+      )}
 
       <section className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-sm border border-outline-variant/8 bg-surface-container-low p-5">

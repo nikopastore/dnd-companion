@@ -123,6 +123,7 @@ export async function PATCH(
     "hitDiceRemaining", "classResources", "spellSlotsState", "pactSpellSlotsState", "concentrationSpell", "subclassName",
     "automationMode", "rulesBookmarks",
     "personalityTraits", "ideals", "bonds", "flaws", "personalGoals", "secrets", "voiceNotes", "lastSessionChanges", "characterTimeline",
+    "pendingNotifications",
     "copperPieces", "silverPieces", "electrumPieces", "goldPieces", "platinumPieces",
     "level", "experiencePoints", "proficiencyBonus", "primaryClassLevel",
     "skillProficiencies", "skillExpertise", "saveProficiencies",

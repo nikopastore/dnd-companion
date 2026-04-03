@@ -90,6 +90,7 @@ interface CampaignData {
   npcs: Array<{
     id: string;
     name: string;
+    imageUrl?: string | null;
     description: string | null;
     isEnemy: boolean;
     notes: string | null;

@@ -10,6 +10,7 @@ import { EntityImage } from "@/components/ui/entity-image";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { CombatStats } from "@/components/character/combat-stats";
 import { ConditionManager } from "@/components/character/condition-manager";
+import { CharacterNotificationStack } from "@/components/character/character-notification-stack";
 import { RestButtons } from "@/components/character/rest-buttons";
 import { DiceRoller } from "@/components/character/dice-roller";
 import { InventoryPanel } from "@/components/character/inventory-panel";
@@ -17,6 +18,7 @@ import { ProgressionPanel } from "@/components/character/progression-panel";
 import { RulesReferencePanel } from "@/components/character/rules-reference-panel";
 import { SpellbookPanel } from "@/components/character/spellbook-panel";
 import { StoryPanel } from "@/components/character/story-panel";
+import { normalizeCharacterNotifications } from "@/lib/character-notifications";
 import {
   normalizeAutomationMode,
   resetClassResourcesForLongRest,
@@ -59,6 +61,7 @@ interface CharacterData {
   concentrationSpell: string | null;
   automationMode: string;
   rulesBookmarks: unknown;
+  pendingNotifications: unknown;
   personalityTraits: string | null;
   ideals: string | null;
   bonds: string | null;
@@ -200,6 +203,16 @@ export default function CharacterSheetPage() {
   }, [refreshCharacter]);
 
   useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshCharacter().catch(() => undefined);
+      }
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, [refreshCharacter]);
+
+  useEffect(() => {
     if (char?.imageUrl) {
       setPortraitUrl(char.imageUrl);
     }
@@ -286,6 +299,48 @@ export default function CharacterSheetPage() {
       await refreshCharacter();
     },
     [char, id, refreshCharacter]
+  );
+
+  const dismissNotifications = useCallback(
+    async (notificationIds: string[]) => {
+      setChar((prev) =>
+        prev
+          ? {
+              ...prev,
+              pendingNotifications: normalizeCharacterNotifications(
+                prev.pendingNotifications
+              ).filter((notification) => !notificationIds.includes(notification.id)),
+            }
+          : prev
+      );
+
+      const res = await fetch(`/api/characters/${id}/notifications`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationIds }),
+      });
+
+      if (!res.ok) {
+        await refreshCharacter();
+        return;
+      }
+
+      const data = (await res.json().catch(() => null)) as
+        | { pendingNotifications?: unknown }
+        | null;
+
+      if (data && "pendingNotifications" in data) {
+        setChar((prev) =>
+          prev
+            ? {
+                ...prev,
+                pendingNotifications: data.pendingNotifications,
+              }
+            : prev
+        );
+      }
+    },
+    [id, refreshCharacter]
   );
 
   const handleShortRest = useCallback(() => {
@@ -433,9 +488,16 @@ export default function CharacterSheetPage() {
     })),
   ];
   const classSummary = classTracks.map((track) => `${track.className} ${track.level}`).join(" / ");
+  const pendingNotifications = normalizeCharacterNotifications(char.pendingNotifications);
 
   return (
     <main className="pt-20 pb-28 px-4 max-w-5xl mx-auto space-y-8">
+      <CharacterNotificationStack
+        notifications={pendingNotifications}
+        onDismiss={dismissNotifications}
+        onViewInventory={() => setTab("inventory")}
+      />
+
       {/* Character Header */}
       <div className="animate-fade-in-up">
         <div className="flex items-end gap-4">

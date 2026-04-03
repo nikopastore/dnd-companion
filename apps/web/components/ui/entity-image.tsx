@@ -1,4 +1,5 @@
 import { Icon } from "./icon";
+import { getEntityPlaceholderImage } from "@/lib/entity-placeholder";
 
 interface EntityImageProps {
   imageUrl?: string | null;
@@ -49,29 +50,22 @@ export function EntityImage({
 
   const iconSizes = { xs: 14, sm: 20, md: 28, lg: 40, xl: 56 }[size];
 
-  if (imageUrl) {
-    return (
-      <div className={`${sizeClasses} rounded-sm overflow-hidden border border-outline-variant/10 ${className}`}>
-        <img src={imageUrl} alt={name || entityType} className="w-full h-full object-cover" />
-      </div>
-    );
-  }
+  const resolvedImageUrl = imageUrl || getEntityPlaceholderImage(entityType, name);
 
   return (
-    <div
-      className={`
-        ${sizeClasses} rounded-sm overflow-hidden
-        bg-gradient-to-br ${TYPE_COLORS[entityType] || "from-surface-container-high to-surface-container"}
-        border border-outline-variant/10
-        flex items-center justify-center
-        ${className}
-      `}
-    >
-      <Icon
-        name={TYPE_ICONS[entityType] || "image"}
-        size={iconSizes}
-        className="text-on-surface/15"
-      />
+    <div className={`${sizeClasses} relative rounded-sm overflow-hidden border border-outline-variant/10 ${className}`}>
+      <img src={resolvedImageUrl} alt={name || entityType} className="h-full w-full object-cover" />
+      {!imageUrl && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/10 via-transparent to-black/25"
+        >
+          <Icon
+            name={TYPE_ICONS[entityType] || "image"}
+            size={iconSizes}
+            className="text-on-surface/15"
+          />
+        </div>
+      )}
     </div>
   );
 }
