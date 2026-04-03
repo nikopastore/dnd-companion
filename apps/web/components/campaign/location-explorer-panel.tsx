@@ -38,6 +38,13 @@ interface MapWall {
   y2: number;
 }
 
+interface MapRevealArea {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+}
+
 const MARKER_CONFIG: Record<MarkerKind, { icon: string; className: string }> = {
   poi: { icon: "place", className: "bg-secondary text-background" },
   hazard: { icon: "warning", className: "bg-error text-background" },
@@ -90,6 +97,25 @@ function normalizeWalls(value: unknown) {
     .filter((entry): entry is MapWall => Boolean(entry));
 }
 
+function normalizeRevealAreas(value: unknown) {
+  if (!value || typeof value !== "object") return [] as MapRevealArea[];
+  const mapData = value as Record<string, unknown>;
+  if (!Array.isArray(mapData.revealedAreas)) return [] as MapRevealArea[];
+
+  return mapData.revealedAreas
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return null;
+      const area = entry as Record<string, unknown>;
+      return {
+        id: String(area.id || crypto.randomUUID()),
+        x: Math.max(0, Math.min(100, Number(area.x ?? 50) || 50)),
+        y: Math.max(0, Math.min(100, Number(area.y ?? 50) || 50)),
+        radius: Math.max(4, Math.min(40, Number(area.radius ?? 16) || 16)),
+      } satisfies MapRevealArea;
+    })
+    .filter((entry): entry is MapRevealArea => Boolean(entry));
+}
+
 export function LocationExplorerPanel({ locations }: Props) {
   const explorableLocations = useMemo(
     () => locations.filter((location) => location.imageUrl || normalizeMarkers(location.mapData).length > 0),
@@ -99,6 +125,10 @@ export function LocationExplorerPanel({ locations }: Props) {
   const selectedLocation = explorableLocations.find((location) => location.id === selectedId) ?? explorableLocations[0] ?? null;
   const markers = normalizeMarkers(selectedLocation?.mapData);
   const walls = normalizeWalls(selectedLocation?.mapData);
+  const revealAreas = normalizeRevealAreas(selectedLocation?.mapData);
+  const fogEnabled = Boolean(
+    selectedLocation?.mapData && typeof selectedLocation.mapData === "object" && (selectedLocation.mapData as Record<string, unknown>).fogEnabled
+  );
 
   if (explorableLocations.length === 0) {
     return (
@@ -145,6 +175,22 @@ export function LocationExplorerPanel({ locations }: Props) {
                   No map art uploaded for this location yet.
                 </div>
               )}
+              {fogEnabled && (
+                <div className="pointer-events-none absolute inset-0 bg-background/55">
+                  {revealAreas.map((area) => (
+                    <div
+                      key={area.id}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]"
+                      style={{
+                        left: `${area.x}%`,
+                        top: `${area.y}%`,
+                        width: `${area.radius * 2}%`,
+                        height: `${area.radius * 2}%`,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
               {markers.map((marker) => (
                 <div
                   key={marker.id}
@@ -171,7 +217,7 @@ export function LocationExplorerPanel({ locations }: Props) {
               ))}
             </div>
             <p className="text-xs text-on-surface-variant">
-              Visible markers are either fully public or already discovered by the party. Shared walls now appear on revealed battle maps.
+              Visible markers are either fully public or already discovered by the party. Fog reveals and shared walls now appear on revealed battle maps.
             </p>
           </div>
 

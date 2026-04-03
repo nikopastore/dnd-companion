@@ -52,6 +52,8 @@ interface PartyHubPanelProps {
   sessions: GameSessionLite[];
   canManage: boolean;
   canContributePlans: boolean;
+  socketConnected?: boolean;
+  emitSocketEvent?: (event: string, data: unknown) => void;
   onRefresh: () => void;
 }
 
@@ -403,6 +405,8 @@ export function PartyHubPanel({
   sessions,
   canManage,
   canContributePlans,
+  socketConnected = false,
+  emitSocketEvent,
   onRefresh,
 }: PartyHubPanelProps) {
   const treasury = toTreasury(partyTreasury);
@@ -523,6 +527,49 @@ export function PartyHubPanel({
     return summary;
   }, [members, sessions]);
 
+  function getPartyUpdateSummary(action: string) {
+    switch (action) {
+      case "addTreasuryEntry":
+        return "updated the party treasury";
+      case "addAnnouncement":
+      case "removeAnnouncement":
+        return "updated party announcements";
+      case "addCampaignMessage":
+      case "removeCampaignMessage":
+        return "updated campaign chat";
+      case "addHandout":
+      case "updateHandout":
+      case "removeHandout":
+        return "updated campaign handouts";
+      case "addSchedulePoll":
+      case "voteSchedulePoll":
+      case "closeSchedulePoll":
+      case "removeSchedulePoll":
+        return "updated scheduling";
+      case "addSharedPlan":
+      case "toggleSharedPlan":
+      case "removeSharedPlan":
+        return "updated the shared plan board";
+      case "addCraftingProject":
+      case "updateCraftingProject":
+      case "removeCraftingProject":
+        return "updated crafting projects";
+      case "addMerchant":
+      case "updateMerchant":
+      case "removeMerchant":
+      case "saveMerchantInventoryItem":
+      case "removeMerchantInventoryItem":
+      case "logMerchantTransaction":
+        return "updated party economy";
+      case "addStashItem":
+      case "updateStashItem":
+      case "removeStashItem":
+        return "updated the party stash";
+      default:
+        return "updated the party hub";
+    }
+  }
+
   async function submitPartyAction(action: string, payload: Record<string, unknown>) {
     setLoadingAction(action);
     try {
@@ -533,8 +580,18 @@ export function PartyHubPanel({
       });
 
       if (res.ok) {
+        const data = (await res.json()) as Record<string, unknown>;
         setStatus({ kind: "success", message: "Party hub updated." });
-        onRefresh();
+        if (socketConnected && emitSocketEvent) {
+          emitSocketEvent("campaign:party-update", {
+            campaignId,
+            action,
+            patch: data,
+            summary: getPartyUpdateSummary(action),
+          });
+        } else {
+          onRefresh();
+        }
       } else {
         const data = await res.json().catch(() => ({}));
         setStatus({ kind: "error", message: String(data.error || "Could not update party hub.") });

@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { getEncounterLightingOpacity, parseEncounterLiveState } from "@/lib/encounter-tracker";
-import { computeVisibilityPolygon, parseMapWalls, toSvgPolygon } from "@/lib/map-visibility";
+import { computeVisibilityPolygon, getCoverBetween, parseMapRevealAreas, parseMapWalls, toSvgPolygon } from "@/lib/map-visibility";
 
 interface EncounterSummary {
   id: string;
@@ -71,6 +71,10 @@ export function ActiveEncounterPanel({ encounters, locations }: Props) {
   const location = liveState?.mapLocationId ? locations.find((entry) => entry.id === liveState.mapLocationId) ?? null : null;
   const markers = parseMapMarkers(location?.mapData);
   const walls = parseMapWalls(location?.mapData);
+  const revealAreas = parseMapRevealAreas(location?.mapData);
+  const fogEnabled = Boolean(
+    location?.mapData && typeof location.mapData === "object" && (location.mapData as Record<string, unknown>).fogEnabled
+  );
   const playerVisionCombatants = liveState
     ? liveState.combatants.filter((combatant) => combatant.kind === "player" && !combatant.defeated && combatant.visionRadius > 0)
     : [];
@@ -93,6 +97,7 @@ export function ActiveEncounterPanel({ encounters, locations }: Props) {
   const orderedCombatants = [...liveState.combatants].sort(
     (a, b) => b.initiative - a.initiative || a.name.localeCompare(b.name)
   );
+  const activeCombatant = orderedCombatants.find((combatant) => combatant.id === liveState.activeCombatantId) ?? null;
 
   return (
     <div className="space-y-4 rounded-sm border border-outline-variant/8 bg-surface-container-low p-5">
@@ -143,6 +148,22 @@ export function ActiveEncounterPanel({ encounters, locations }: Props) {
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-on-surface-variant">
                 No shared encounter map selected.
+              </div>
+            )}
+            {fogEnabled && (
+              <div className="pointer-events-none absolute inset-0 bg-background/55">
+                {revealAreas.map((area) => (
+                  <div
+                    key={area.id}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]"
+                    style={{
+                      left: `${area.x}%`,
+                      top: `${area.y}%`,
+                      width: `${area.radius * 2}%`,
+                      height: `${area.radius * 2}%`,
+                    }}
+                  />
+                ))}
               </div>
             )}
 
@@ -260,6 +281,16 @@ export function ActiveEncounterPanel({ encounters, locations }: Props) {
                   {combatant.concentrationSpell && (
                     <p className="mt-1 text-xs text-on-surface-variant">
                       Concentrating: {combatant.concentrationSpell}
+                    </p>
+                  )}
+                  {activeCombatant && activeCombatant.id !== combatant.id && (
+                    <p className="mt-1 text-xs text-on-surface-variant">
+                      Cover from {activeCombatant.name}:{" "}
+                      {getCoverBetween(
+                        { x: activeCombatant.tokenX, y: activeCombatant.tokenY },
+                        { x: combatant.tokenX, y: combatant.tokenY },
+                        walls
+                      )}
                     </p>
                   )}
                 </div>

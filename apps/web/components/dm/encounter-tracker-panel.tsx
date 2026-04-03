@@ -19,7 +19,7 @@ import {
   type EncounterLiveState,
   type EncounterTrackerCharacter,
 } from "@/lib/encounter-tracker";
-import { computeVisibilityPolygon, parseMapWalls, toSvgPolygon } from "@/lib/map-visibility";
+import { computeVisibilityPolygon, getCoverBetween, parseMapRevealAreas, parseMapWalls, toSvgPolygon } from "@/lib/map-visibility";
 
 interface EncounterTrackerPanelProps {
   campaignId: string;
@@ -92,6 +92,12 @@ export function EncounterTrackerPanel({
   >;
   const selectedMapLocation = locations.find((location) => location.id === draft?.mapLocationId) ?? null;
   const selectedWalls = useMemo(() => parseMapWalls(selectedMapLocation?.mapData), [selectedMapLocation?.mapData]);
+  const revealedAreas = useMemo(() => parseMapRevealAreas(selectedMapLocation?.mapData), [selectedMapLocation?.mapData]);
+  const fogEnabled = Boolean(
+    selectedMapLocation?.mapData &&
+      typeof selectedMapLocation.mapData === "object" &&
+      (selectedMapLocation.mapData as Record<string, unknown>).fogEnabled
+  );
 
   useEffect(() => {
     const nextDraft = parseEncounterLiveState(encounter.liveState);
@@ -212,6 +218,7 @@ export function EncounterTrackerPanel({
   }
 
   const activeCombatantId = draft?.activeCombatantId ?? null;
+  const activeCombatant = orderedCombatants.find((combatant) => combatant.id === activeCombatantId) ?? null;
 
   return (
     <div className="space-y-4">
@@ -403,6 +410,22 @@ export function EncounterTrackerPanel({
                     className="relative aspect-[16/10] touch-none overflow-hidden rounded-sm border border-outline-variant/10 bg-surface-container-high"
                   >
                     <img src={selectedMapLocation.imageUrl} alt={selectedMapLocation.name} className="h-full w-full object-cover" />
+                    {fogEnabled && (
+                      <div className="pointer-events-none absolute inset-0 bg-background/55">
+                        {revealedAreas.map((area) => (
+                          <div
+                            key={area.id}
+                            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]"
+                            style={{
+                              left: `${area.x}%`,
+                              top: `${area.y}%`,
+                              width: `${area.radius * 2}%`,
+                              height: `${area.radius * 2}%`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
                     {parseMapMarkers(selectedMapLocation.mapData)
                       .filter((marker) => marker.visibility !== "dm")
                       .map((marker) => (
@@ -505,7 +528,7 @@ export function EncounterTrackerPanel({
                 )}
                 {selectedMapLocation?.imageUrl && (
                   <p className="mt-3 text-xs text-on-surface-variant">
-                    Drag tokens to reposition them. Lighting previews player sightlines based on each token&apos;s vision radius.
+                    Drag tokens to reposition them. Lighting previews player sightlines, while revealed fog areas show what the party has actually uncovered.
                   </p>
                 )}
               </div>
@@ -618,6 +641,16 @@ export function EncounterTrackerPanel({
                   <Input id={`${combatant.id}-vision-radius`} label="Vision Radius" type="number" min={8} max={48} value={combatant.visionRadius} onChange={(event) => patchCombatant(combatant.id, (current) => ({ ...current, visionRadius: Math.max(8, Math.min(48, Number(event.target.value) || 8)) }))} />
                   <Input id={`${combatant.id}-concentration`} label="Concentration" value={combatant.concentrationSpell || ""} onChange={(event) => patchCombatant(combatant.id, (current) => ({ ...current, concentrationSpell: event.target.value.trim() || null }))} placeholder="Bless" />
                 </div>
+                {activeCombatant && activeCombatant.id !== combatant.id && (
+                  <p className="mt-3 text-xs text-on-surface-variant">
+                    Cover from {activeCombatant.name}:{" "}
+                    {getCoverBetween(
+                      { x: activeCombatant.tokenX, y: activeCombatant.tokenY },
+                      { x: combatant.tokenX, y: combatant.tokenY },
+                      selectedWalls
+                    )}
+                  </p>
+                )}
 
                 <div className="mt-4">
                   <p className="font-label text-[10px] uppercase tracking-[0.16em] text-on-surface-variant/60">Conditions</p>

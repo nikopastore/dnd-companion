@@ -161,6 +161,23 @@ interface CampaignData {
   }>;
 }
 
+type PartyRealtimePatch = Partial<
+  Pick<
+    CampaignData,
+    | "partyTreasury"
+    | "treasuryLedger"
+    | "partyStash"
+    | "craftingProjects"
+    | "announcements"
+    | "merchants"
+    | "economyLog"
+    | "schedulePolls"
+    | "campaignMessages"
+    | "handouts"
+    | "sharedPlans"
+  >
+>;
+
 const DM_TABS = [
   { id: "overview", label: "Overview", icon: "dashboard" },
   { id: "world", label: "World", icon: "public" },
@@ -194,6 +211,23 @@ function getMemberSubtitle(member: CampaignData["members"][number]) {
   if (member.role === "CO_DM") return "Co-DM";
   if (member.role === "SPECTATOR") return "Spectator";
   return member.character?.name || "No character";
+}
+
+function sanitizePartyRealtimePatch(patch: PartyRealtimePatch, canManage: boolean): PartyRealtimePatch {
+  if (canManage || !Array.isArray(patch.handouts)) {
+    return patch;
+  }
+
+  return {
+    ...patch,
+    handouts: patch.handouts.filter((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return false;
+      }
+
+      return (entry as { visibility?: string }).visibility !== "dm";
+    }),
+  };
 }
 
 export default function CampaignLobbyPage() {
@@ -281,6 +315,24 @@ export default function CampaignLobbyPage() {
             : current
         );
       }),
+      on("campaign:party-updated", (payload: unknown) => {
+        const data = payload as { campaignId?: string; patch?: PartyRealtimePatch };
+        const patch = data.patch;
+        if (!data.campaignId || data.campaignId !== id || !patch) return;
+        setCampaign((current) =>
+          current
+            ? {
+                ...current,
+                ...sanitizePartyRealtimePatch(patch, Boolean(current.viewerCanManage)),
+              }
+            : current
+        );
+      }),
+      on("campaign:status-update", (payload: unknown) => {
+        const data = payload as { campaignId?: string; status?: string };
+        if (!data.campaignId || data.campaignId !== id || !data.status) return;
+        setCampaign((current) => (current ? { ...current, status: data.status! } : current));
+      }),
     ];
 
     return () => {
@@ -303,6 +355,12 @@ export default function CampaignLobbyPage() {
       body: JSON.stringify({ status: newStatus }),
     });
     setCampaign((prev) => (prev ? { ...prev, status: newStatus } : prev));
+    if (connected) {
+      emit("campaign:status-update", {
+        campaignId: campaign.id,
+        status: newStatus,
+      });
+    }
   }
 
   if (loading) {
@@ -404,6 +462,8 @@ export default function CampaignLobbyPage() {
           sessions={campaign.gameSessions}
           canManage={false}
           canContributePlans={Boolean(canContributePlans)}
+          socketConnected={connected}
+          emitSocketEvent={emit}
           onRefresh={refreshCampaign}
         />
 
@@ -515,6 +575,8 @@ export default function CampaignLobbyPage() {
             sessions={campaign.gameSessions}
             canManage={Boolean(campaign.viewerCanManage)}
             canContributePlans={Boolean(canContributePlans)}
+            socketConnected={connected}
+            emitSocketEvent={emit}
             onRefresh={refreshCampaign}
           />
         )}

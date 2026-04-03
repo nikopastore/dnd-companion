@@ -891,6 +891,44 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
                     )}
                   </div>
 
+                  <div className="rounded-sm border border-outline-variant/8 bg-surface-container p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <p className="font-headline text-base text-on-surface">Reveal Areas</p>
+                      <span className="font-label text-[10px] uppercase tracking-[0.16em] text-on-surface-variant/60">
+                        {mapDraft.revealedAreas.length} total
+                      </span>
+                    </div>
+
+                    {mapDraft.revealedAreas.length === 0 ? (
+                      <p className="text-sm text-on-surface-variant">No revealed areas yet. Switch to reveal tool and click the map to add one.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {mapDraft.revealedAreas.map((area, index) => (
+                          <div key={area.id} className={`rounded-sm border p-3 transition-colors ${selectedRevealId === area.id ? "border-secondary/25 bg-secondary/5" : "border-outline-variant/8 bg-surface-container-low"}`}>
+                            <div className="flex items-start justify-between gap-3">
+                              <button type="button" className="min-w-0 text-left" onClick={() => setSelectedRevealId(area.id)}>
+                                <p className="truncate font-body text-sm font-semibold text-on-surface">Reveal {index + 1}</p>
+                                <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-on-surface-variant/60">
+                                  Center {Math.round(area.x)},{Math.round(area.y)} · radius {Math.round(area.radius)}
+                                </p>
+                              </button>
+                              <button
+                                type="button"
+                                className="text-on-surface-variant/50 hover:text-error"
+                                onClick={() => {
+                                  setMapDraft((prev) => ({ ...prev, revealedAreas: prev.revealedAreas.filter((entry) => entry.id !== area.id) }));
+                                  if (selectedRevealId === area.id) setSelectedRevealId(null);
+                                }}
+                              >
+                                <Icon name="delete" size={18} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {editingMarker && (
                     <div className="rounded-sm border border-outline-variant/8 bg-surface-container p-4">
                       <p className="mb-3 font-headline text-base text-on-surface">Edit Marker</p>
@@ -926,6 +964,17 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
                         <Input id="wall-y1" label="Start Y" type="number" min={0} max={100} value={Math.round(selectedWall.y1)} onChange={(event) => setMapDraft((prev) => ({ ...prev, walls: prev.walls.map((wall) => wall.id === selectedWall.id ? { ...wall, y1: Math.max(0, Math.min(100, Number(event.target.value) || 0)) } : wall) }))} />
                         <Input id="wall-x2" label="End X" type="number" min={0} max={100} value={Math.round(selectedWall.x2)} onChange={(event) => setMapDraft((prev) => ({ ...prev, walls: prev.walls.map((wall) => wall.id === selectedWall.id ? { ...wall, x2: Math.max(0, Math.min(100, Number(event.target.value) || 0)) } : wall) }))} />
                         <Input id="wall-y2" label="End Y" type="number" min={0} max={100} value={Math.round(selectedWall.y2)} onChange={(event) => setMapDraft((prev) => ({ ...prev, walls: prev.walls.map((wall) => wall.id === selectedWall.id ? { ...wall, y2: Math.max(0, Math.min(100, Number(event.target.value) || 0)) } : wall) }))} />
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedRevealArea && (
+                    <div className="rounded-sm border border-outline-variant/8 bg-surface-container p-4">
+                      <p className="mb-3 font-headline text-base text-on-surface">Edit Reveal Area</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        <Input id="reveal-x" label="Center X" type="number" min={0} max={100} value={Math.round(selectedRevealArea.x)} onChange={(event) => setMapDraft((prev) => ({ ...prev, revealedAreas: prev.revealedAreas.map((area) => area.id === selectedRevealArea.id ? { ...area, x: Math.max(0, Math.min(100, Number(event.target.value) || 0)) } : area) }))} />
+                        <Input id="reveal-y" label="Center Y" type="number" min={0} max={100} value={Math.round(selectedRevealArea.y)} onChange={(event) => setMapDraft((prev) => ({ ...prev, revealedAreas: prev.revealedAreas.map((area) => area.id === selectedRevealArea.id ? { ...area, y: Math.max(0, Math.min(100, Number(event.target.value) || 0)) } : area) }))} />
+                        <Input id="reveal-radius" label="Radius" type="number" min={4} max={40} value={Math.round(selectedRevealArea.radius)} onChange={(event) => setMapDraft((prev) => ({ ...prev, revealedAreas: prev.revealedAreas.map((area) => area.id === selectedRevealArea.id ? { ...area, radius: Math.max(4, Math.min(40, Number(event.target.value) || 4)) } : area) }))} />
                       </div>
                     </div>
                   )}

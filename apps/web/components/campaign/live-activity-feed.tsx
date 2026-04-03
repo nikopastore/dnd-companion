@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 
 interface Activity {
   id: string;
-  type: "join" | "leave" | "hp" | "condition" | "dice" | "item" | "encounter" | "map";
+  type: "join" | "leave" | "hp" | "condition" | "dice" | "item" | "encounter" | "map" | "party" | "status";
   message: string;
   timestamp: string;
 }
@@ -17,7 +17,7 @@ interface Props {
 
 const typeIcons: Record<Activity["type"], string> = {
   join: "login", leave: "logout", hp: "favorite",
-  condition: "warning", dice: "casino", item: "inventory_2", encounter: "swords", map: "map",
+  condition: "warning", dice: "casino", item: "inventory_2", encounter: "swords", map: "map", party: "groups_2", status: "flag",
 };
 
 const typeColors: Record<Activity["type"], string> = {
@@ -29,6 +29,8 @@ const typeColors: Record<Activity["type"], string> = {
   item: "text-secondary",
   encounter: "text-error",
   map: "text-blue-400",
+  party: "text-cyan-400",
+  status: "text-primary",
 };
 
 export function LiveActivityFeed({ campaignId }: Props) {
@@ -71,6 +73,14 @@ export function LiveActivityFeed({ campaignId }: Props) {
       on("location:map-updated", (data: unknown) => {
         const d = data as { userName: string; location: { name?: string } | null; timestamp: string };
         addActivity("map", `${d.userName} updated ${d.location?.name || "a map"}`, d.timestamp);
+      }),
+      on("campaign:party-updated", (data: unknown) => {
+        const d = data as { userName: string; summary?: string; timestamp: string };
+        addActivity("party", `${d.userName} ${d.summary || "updated the party hub"}`, d.timestamp);
+      }),
+      on("campaign:status-update", (data: unknown) => {
+        const d = data as { userName?: string; status: string; timestamp: string };
+        addActivity("status", `${d.userName || "The DM team"} changed campaign status to ${d.status.toLowerCase()}`, d.timestamp);
       }),
     ];
 

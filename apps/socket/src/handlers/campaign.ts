@@ -40,8 +40,28 @@ export function registerCampaignHandlers(io: Server, socket: Socket) {
   // Campaign status update (DM starts/pauses session)
   socket.on("campaign:status-update", (data: { campaignId: string; status: string }) => {
     io.to(`campaign:${data.campaignId}`).emit("campaign:status-update", {
+      campaignId: data.campaignId,
       status: data.status,
+      userId,
+      userName,
       timestamp: new Date().toISOString(),
     });
   });
+
+  socket.on(
+    "campaign:party-update",
+    (data: {
+      campaignId: string;
+      action: string;
+      patch: Record<string, unknown>;
+      summary?: string;
+    }) => {
+      io.to(`campaign:${data.campaignId}`).emit("campaign:party-updated", {
+        ...data,
+        userId,
+        userName,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  );
 }
