@@ -15,25 +15,47 @@ export function useSocket() {
 
     let cancelled = false;
 
+    const fetchSocketToken = async () => {
+      const response = await fetch("/api/socket-token", { cache: "no-store" });
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = (await response.json()) as { token?: string };
+      return data.token || null;
+    };
+
     const connectSocket = async () => {
       try {
-        const response = await fetch("/api/socket-token", { cache: "no-store" });
-        if (!response.ok) {
+        const token = await fetchSocketToken();
+        if (!token) {
+          setConnected(false);
+          return;
+        }
+        if (cancelled) {
           setConnected(false);
           return;
         }
 
-        const data = (await response.json()) as { token?: string };
-        if (!data.token || cancelled) {
-          setConnected(false);
-          return;
-        }
-
-        const socket = getSocket(data.token);
+        const socket = getSocket(token);
         socketRef.current = socket;
 
-        socket.on("connect", () => setConnected(true));
-        socket.on("disconnect", () => setConnected(false));
+        const handleConnect = () => setConnected(true);
+        const handleDisconnect = () => setConnected(false);
+        const handleConnectError = async (error: Error) => {
+          if (cancelled || !/expired|invalid/i.test(error.message)) return;
+          const refreshedToken = await fetchSocketToken();
+          if (!refreshedToken || cancelled) return;
+          socket.auth = { token: refreshedToken };
+          socket.connect();
+        };
+
+        socket.off("connect", handleConnect);
+        socket.off("disconnect", handleDisconnect);
+        socket.off("connect_error", handleConnectError);
+        socket.on("connect", handleConnect);
+        socket.on("disconnect", handleDisconnect);
+        socket.on("connect_error", handleConnectError);
 
         socket.connect();
       } catch {

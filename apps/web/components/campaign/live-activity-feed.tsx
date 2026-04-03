@@ -32,13 +32,11 @@ const typeColors: Record<Activity["type"], string> = {
 };
 
 export function LiveActivityFeed({ campaignId }: Props) {
-  const { connected, emit, on } = useSocket();
+  const { connected, on } = useSocket();
   const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
     if (!connected) return;
-
-    emit("campaign:join", campaignId);
 
     const unsubs = [
       on("campaign:member-joined", (data: unknown) => {
@@ -77,10 +75,9 @@ export function LiveActivityFeed({ campaignId }: Props) {
     ];
 
     return () => {
-      emit("campaign:leave", campaignId);
       unsubs.forEach((unsub) => unsub?.());
     };
-  }, [connected, campaignId, emit, on]);
+  }, [connected, campaignId, on]);
 
   function addActivity(type: Activity["type"], message: string, timestamp: string) {
     setActivities((prev) => [

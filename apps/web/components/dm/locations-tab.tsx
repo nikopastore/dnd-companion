@@ -56,6 +56,13 @@ interface MapWall {
   y2: number;
 }
 
+interface MapRevealArea {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+}
+
 interface LocationMapData {
   mapMode: MapMode;
   gridMode: GridMode;
@@ -63,6 +70,7 @@ interface LocationMapData {
   overlays: string[];
   markers: MapMarker[];
   walls: MapWall[];
+  revealedAreas: MapRevealArea[];
 }
 
 interface TreeNode extends Location {
@@ -132,6 +140,7 @@ function normalizeMapData(value: unknown): LocationMapData {
       overlays: [],
       markers: [],
       walls: [],
+      revealedAreas: [],
     };
   }
 
@@ -172,6 +181,20 @@ function normalizeMapData(value: unknown): LocationMapData {
             } satisfies MapWall;
           })
           .filter((entry): entry is MapWall => Boolean(entry))
+      : [],
+    revealedAreas: Array.isArray(source.revealedAreas)
+      ? source.revealedAreas
+          .map((entry) => {
+            if (!entry || typeof entry !== "object") return null;
+            const area = entry as Record<string, unknown>;
+            return {
+              id: String(area.id || crypto.randomUUID()),
+              x: Math.max(0, Math.min(100, Number(area.x ?? 50) || 50)),
+              y: Math.max(0, Math.min(100, Number(area.y ?? 50) || 50)),
+              radius: Math.max(4, Math.min(40, Number(area.radius ?? 16) || 16)),
+            } satisfies MapRevealArea;
+          })
+          .filter((entry): entry is MapRevealArea => Boolean(entry))
       : [],
   };
 }
@@ -259,7 +282,8 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
   const [mapDraft, setMapDraft] = useState<LocationMapData>(normalizeMapData(null));
   const [editingMarkerId, setEditingMarkerId] = useState<string | null>(null);
   const [selectedWallId, setSelectedWallId] = useState<string | null>(null);
-  const [mapTool, setMapTool] = useState<"marker" | "wall">("marker");
+  const [selectedRevealId, setSelectedRevealId] = useState<string | null>(null);
+  const [mapTool, setMapTool] = useState<"marker" | "wall" | "reveal">("marker");
   const [pendingWallPoint, setPendingWallPoint] = useState<{ x: number; y: number } | null>(null);
   const [overlayText, setOverlayText] = useState("");
 
@@ -280,6 +304,7 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
       setMapDraft(normalizeMapData(null));
       setEditingMarkerId(null);
       setSelectedWallId(null);
+      setSelectedRevealId(null);
       setPendingWallPoint(null);
       setOverlayText("");
       return;
@@ -290,12 +315,14 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
     setMapDraft(normalized);
     setEditingMarkerId(normalized.markers[0]?.id ?? null);
     setSelectedWallId(normalized.walls[0]?.id ?? null);
+    setSelectedRevealId(normalized.revealedAreas[0]?.id ?? null);
     setPendingWallPoint(null);
     setOverlayText(normalized.overlays.join(", "));
   }, [selectedLocation]);
 
   const editingMarker = mapDraft.markers.find((marker) => marker.id === editingMarkerId) ?? null;
   const selectedWall = mapDraft.walls.find((wall) => wall.id === selectedWallId) ?? null;
+  const selectedRevealArea = mapDraft.revealedAreas.find((area) => area.id === selectedRevealId) ?? null;
 
   function resetForm() {
     setName("");
@@ -331,6 +358,7 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
           overlays: [scale, occupancy],
           markers: [],
           walls: [],
+          revealedAreas: [],
         },
       }),
     });
@@ -396,6 +424,19 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
     setMapDraft((prev) => ({ ...prev, walls: [...prev.walls, wall] }));
     setSelectedWallId(wall.id);
     setPendingWallPoint(null);
+  }
+
+  function addRevealAreaFromClick(event: MouseEvent<HTMLDivElement>) {
+    if (!mapImageUrl) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const area: MapRevealArea = {
+      id: crypto.randomUUID(),
+      x: Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100)),
+      y: Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100)),
+      radius: 16,
+    };
+    setMapDraft((prev) => ({ ...prev, revealedAreas: [...prev.revealedAreas, area] }));
+    setSelectedRevealId(area.id);
   }
 
   async function saveMapStudio() {
@@ -643,7 +684,13 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
                   {mapImageUrl ? (
                     <div
                       className="relative aspect-[16/10] overflow-hidden rounded-sm border border-outline-variant/10 bg-surface-container-high"
-                      onClick={mapTool === "wall" ? addWallPointFromClick : addMarkerFromClick}
+                      onClick={
+                        mapTool === "wall"
+                          ? addWallPointFromClick
+                          : mapTool === "reveal"
+                            ? addRevealAreaFromClick
+                            : addMarkerFromClick
+                      }
                     >
                       <img src={mapImageUrl} alt={selectedLocation.name} className="h-full w-full object-cover" />
                       {mapDraft.gridMode !== "none" && (
@@ -658,6 +705,28 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
                       {mapDraft.fogEnabled && (
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-background/20 via-transparent to-background/35" />
                       )}
+                      {mapDraft.revealedAreas.map((area) => (
+                        <button
+                          key={area.id}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedRevealId(area.id);
+                          }}
+                          className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 ${
+                            selectedRevealId === area.id
+                              ? "border-secondary bg-secondary/10"
+                              : "border-green-300/70 bg-green-400/10"
+                          }`}
+                          style={{
+                            left: `${area.x}%`,
+                            top: `${area.y}%`,
+                            width: `${area.radius * 2}%`,
+                            height: `${area.radius * 2}%`,
+                          }}
+                          title="Revealed area"
+                        />
+                      ))}
                       {mapDraft.walls.map((wall) => (
                         <button
                           key={wall.id}
@@ -714,6 +783,8 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
                       ? pendingWallPoint
                         ? "Click a second point to finish the wall segment."
                         : "Click one point to start a wall, then click again to finish it."
+                      : mapTool === "reveal"
+                        ? "Click the map to place a revealed area that players can see through fog of war."
                       : "Click anywhere on the map to add a marker. Use visibility to decide whether it is public, discoverable later, or DM-only."}
                   </p>
                 </div>
@@ -721,9 +792,10 @@ export function LocationsTab({ locations, campaignId, onAdd }: Props) {
                 <div className="space-y-4">
                   <div className="rounded-sm border border-outline-variant/8 bg-surface-container p-4">
                     <div className="grid gap-3">
-                      <Select id="map-tool" label="Editing Tool" value={mapTool} onChange={(event) => { setMapTool(event.target.value === "wall" ? "wall" : "marker"); setPendingWallPoint(null); }}>
+                      <Select id="map-tool" label="Editing Tool" value={mapTool} onChange={(event) => { setMapTool(event.target.value === "wall" ? "wall" : event.target.value === "reveal" ? "reveal" : "marker"); setPendingWallPoint(null); }}>
                         <option value="marker">Marker tool</option>
                         <option value="wall">Wall tool</option>
+                        <option value="reveal">Reveal tool</option>
                       </Select>
                       <Select id="map-mode" label="Map Mode" value={mapDraft.mapMode} onChange={(event) => setMapDraft((prev) => ({ ...prev, mapMode: event.target.value as MapMode }))}>
                         <option value="world">World / travel</option>

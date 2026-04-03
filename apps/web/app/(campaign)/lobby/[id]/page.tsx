@@ -198,7 +198,7 @@ function getMemberSubtitle(member: CampaignData["members"][number]) {
 
 export default function CampaignLobbyPage() {
   const { id } = useParams<{ id: string }>();
-  const { on } = useSocket();
+  const { connected, emit, on } = useSocket();
   const [campaign, setCampaign] = useState<CampaignData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -237,6 +237,15 @@ export default function CampaignLobbyPage() {
 
     return () => window.clearInterval(intervalId);
   }, [campaign, canManageCampaign, refreshCampaign]);
+
+  useEffect(() => {
+    if (!connected) return;
+
+    emit("campaign:join", id);
+    return () => {
+      emit("campaign:leave", id);
+    };
+  }, [connected, emit, id]);
 
   useEffect(() => {
     const unsubs = [

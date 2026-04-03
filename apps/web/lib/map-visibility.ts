@@ -11,6 +11,15 @@ interface Point {
   y: number;
 }
 
+export interface MapRevealArea {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+}
+
+export type CoverLevel = "clear" | "half" | "three-quarters" | "blocked";
+
 const EPSILON = 0.0001;
 
 function clampPercent(value: number, min = 0, max = 100) {
@@ -39,6 +48,24 @@ export function parseMapWalls(value: unknown) {
     })
     .filter((entry): entry is MapWall => Boolean(entry))
     .filter((entry) => Math.hypot(entry.x2 - entry.x1, entry.y2 - entry.y1) > 0.2);
+}
+
+export function parseMapRevealAreas(value: unknown) {
+  const source = asRecord(value);
+  if (!source || !Array.isArray(source.revealedAreas)) return [] as MapRevealArea[];
+
+  return source.revealedAreas
+    .map((entry) => {
+      const area = asRecord(entry);
+      if (!area) return null;
+      return {
+        id: String(area.id || crypto.randomUUID()),
+        x: clampPercent(Number(area.x ?? 50) || 50),
+        y: clampPercent(Number(area.y ?? 50) || 50),
+        radius: Math.max(4, Math.min(40, Number(area.radius ?? 16) || 16)),
+      } satisfies MapRevealArea;
+    })
+    .filter((entry): entry is MapRevealArea => Boolean(entry));
 }
 
 function buildBoundaryWalls(): MapWall[] {
@@ -73,6 +100,14 @@ function intersectRayWithSegment(origin: Point, angle: number, wall: MapWall, ma
     y: origin.y + rayDy * t,
     distance: t,
   };
+}
+
+function ccw(a: Point, b: Point, c: Point) {
+  return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+}
+
+function segmentsIntersect(a: Point, b: Point, c: Point, d: Point) {
+  return ccw(a, c, d) !== ccw(b, c, d) && ccw(a, b, c) !== ccw(a, b, d);
 }
 
 export function computeVisibilityPolygon(origin: Point, radius: number, walls: MapWall[]) {
@@ -128,4 +163,15 @@ export function computeVisibilityPolygon(origin: Point, radius: number, walls: M
 
 export function toSvgPolygon(points: Point[]) {
   return points.map((point) => `${point.x},${point.y}`).join(" ");
+}
+
+export function getCoverBetween(origin: Point, target: Point, walls: MapWall[]): CoverLevel {
+  const intersections = walls.filter((wall) =>
+    segmentsIntersect(origin, target, { x: wall.x1, y: wall.y1 }, { x: wall.x2, y: wall.y2 })
+  ).length;
+
+  if (intersections >= 3) return "blocked";
+  if (intersections >= 2) return "three-quarters";
+  if (intersections >= 1) return "half";
+  return "clear";
 }
