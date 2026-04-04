@@ -12,7 +12,9 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "^6.6.0"
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^6.6.0",
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "prisma": "^6.6.0",

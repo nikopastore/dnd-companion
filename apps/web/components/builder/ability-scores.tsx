@@ -83,7 +83,7 @@ export function AbilityScores({ builder }: Props) {
           Forge Your Attributes
         </h2>
         <p className="font-body text-on-surface-variant text-lg max-w-2xl italic animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-          Distribute your ability scores to define your character's strengths and weaknesses.
+          Distribute your ability scores to define your character&apos;s strengths and weaknesses.
         </p>
       </div>
 

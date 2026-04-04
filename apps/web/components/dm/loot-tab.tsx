@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -474,7 +474,7 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
     setGeneratedLoot(treasure);
   }
 
-  async function fetchSrdItems() {
+  const fetchSrdItems = useCallback(async () => {
     setSrdLoading(true);
     try {
       const res = await fetch("/api/srd/equipment");
@@ -486,13 +486,13 @@ export function LootTab({ sessionItems, campaignId, characters, onAddItem }: Pro
       // Silently handle fetch errors
     }
     setSrdLoading(false);
-  }
+  }, []);
 
   useEffect(() => {
     if ((activeSection === "browser" || showForm) && srdItems.length === 0) {
       fetchSrdItems();
     }
-  }, [activeSection, showForm]);
+  }, [activeSection, fetchSrdItems, showForm, srdItems.length]);
 
   return (
     <div className="space-y-6">

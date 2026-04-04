@@ -72,7 +72,7 @@ export function BackgroundSelection({ builder }: Props) {
           Life Before Adventure
         </h2>
         <p className="font-body text-on-surface-variant text-lg max-w-2xl italic animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-          What shaped your character before they took up the adventurer's life?
+          What shaped your character before they took up the adventurer&apos;s life?
         </p>
       </div>
 

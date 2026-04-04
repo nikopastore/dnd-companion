@@ -139,13 +139,17 @@ export function SpellbookPanel({
     return entry.isPrepared && sourceClassId === activeTrack?.classId;
   }).length;
 
-  const knownSpellIds = new Set(
-    knownSpells
-      .filter((entry) => {
-        const sourceClassId = entry.sourceClass?.id ?? classTracks[0]?.classId;
-        return sourceClassId === activeTrack?.classId;
-      })
-      .map((entry) => entry.spell.id)
+  const knownSpellIds = useMemo(
+    () =>
+      new Set(
+        knownSpells
+          .filter((entry) => {
+            const sourceClassId = entry.sourceClass?.id ?? classTracks[0]?.classId;
+            return sourceClassId === activeTrack?.classId;
+          })
+          .map((entry) => entry.spell.id)
+      ),
+    [activeTrack?.classId, classTracks, knownSpells]
   );
 
   const filteredAvailableSpells = useMemo(() => {

@@ -120,8 +120,9 @@ export function ProgressionPanel({
 
   const selectedExistingTrack = classTracks.find((track) => track.classId === selectedClassId) ?? null;
   const selectedNewClass = availableClasses.find((entry) => entry.id === selectedClassId) ?? null;
-  const selectedTrack = selectedExistingTrack
-    ? {
+  const selectedTrack = useMemo(() => {
+    if (selectedExistingTrack) {
+      return {
         classId: selectedExistingTrack.classId,
         className: selectedExistingTrack.className,
         level: selectedExistingTrack.level,
@@ -131,20 +132,25 @@ export function ProgressionPanel({
         imageUrl: selectedExistingTrack.imageUrl,
         levels: selectedExistingTrack.levels,
         isPrimary: selectedExistingTrack.isPrimary,
-      }
-    : selectedNewClass
-      ? {
-          classId: selectedNewClass.id,
-          className: selectedNewClass.name,
-          level: 0,
-          subclassName: null,
-          hitDie: selectedNewClass.hitDie,
-          primaryAbility: selectedNewClass.primaryAbility,
-          imageUrl: selectedNewClass.imageUrl,
-          levels: selectedNewClass.levels,
-          isPrimary: false,
-        }
-      : null;
+      };
+    }
+
+    if (selectedNewClass) {
+      return {
+        classId: selectedNewClass.id,
+        className: selectedNewClass.name,
+        level: 0,
+        subclassName: null,
+        hitDie: selectedNewClass.hitDie,
+        primaryAbility: selectedNewClass.primaryAbility,
+        imageUrl: selectedNewClass.imageUrl,
+        levels: selectedNewClass.levels,
+        isPrimary: false,
+      };
+    }
+
+    return null;
+  }, [selectedExistingTrack, selectedNewClass]);
 
   useEffect(() => {
     if (!selectedTrack) return;
@@ -153,7 +159,7 @@ export function ProgressionPanel({
     setSelectedFeatId(null);
     setSelectedClassChoices({});
     setAbilityScoreIncreases({});
-  }, [constitution, selectedClassId, selectedExistingTrack?.subclassName, selectedTrack?.hitDie]);
+  }, [constitution, selectedExistingTrack?.subclassName, selectedTrack]);
 
   const nextTrackLevel = (selectedTrack?.level ?? 0) + 1;
   const nextCharacterLevel = level + 1;
@@ -177,9 +183,17 @@ export function ProgressionPanel({
   const asiEligible = selectedTrack
     ? getAbilityScoreImprovementLevels(selectedTrack.className).includes(nextTrackLevel)
     : false;
-  const classChoiceGroups = selectedTrack
-    ? getClassChoiceGroups(selectedTrack.className, nextTrackLevel, subclassDraft || selectedTrack.subclassName)
-    : [];
+  const classChoiceGroups = useMemo(
+    () =>
+      selectedTrack
+        ? getClassChoiceGroups(
+            selectedTrack.className,
+            nextTrackLevel,
+            subclassDraft || selectedTrack.subclassName
+          )
+        : [],
+    [nextTrackLevel, selectedTrack, subclassDraft]
+  );
   const totalAsiPoints = sumAsi(abilityScoreIncreases);
 
   const progressionHighlights = useMemo(() => {

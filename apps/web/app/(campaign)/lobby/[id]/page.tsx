@@ -120,8 +120,25 @@ interface CampaignData {
     quantity: number;
     imageUrl: string | null;
   }>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gameSessions: any[];
+  gameSessions: Array<{
+    id: string;
+    number: number;
+    title: string | null;
+    date: string | null;
+    status: string;
+    strongStart: string | null;
+    objectives: Array<{ text: string }> | null;
+    scenes: Array<{ title: string; description: string; type: string }> | null;
+    secretsAndClues: Array<{ secret: string; discovered: boolean }> | null;
+    summary: string | null;
+    notes: string | null;
+    dmRecap: string | null;
+    publicRecap: string | null;
+    pacingNotes: string | null;
+    attendance: Array<{ characterId: string; name: string; status: string }> | null;
+    preparedChecklist: Array<{ text: string; done: boolean }> | null;
+    liveNotes: Array<{ time: string; text: string; visibility: string }> | null;
+  }>;
   locations: Array<{
     id: string;
     name: string;
