@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { type ConditionKey } from "@dnd-companion/shared";
+import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { LiveActivityFeed } from "@/components/campaign/live-activity-feed";
@@ -417,21 +418,39 @@ export default function CampaignLobbyPage() {
 
   if (!canManageCampaign) {
     return (
-      <main className="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-8">
-        <section className="text-center space-y-4 animate-fade-in-up">
-          <div className="flex items-center justify-center gap-3">
-            <h1 className="font-headline text-4xl text-primary">{campaign.name}</h1>
-            <span className={`px-2.5 py-1 rounded-sm font-label text-[10px] uppercase tracking-widest border ${statusColors[campaign.status]}`}>
-              {campaign.status}
-            </span>
-          </div>
-          {campaign.description && (
-            <p className="font-body text-on-surface-variant max-w-lg mx-auto">{campaign.description}</p>
-          )}
-          <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter">
-            DM: {campaign.dm.name} - You are here as {viewerRoleLabel}
-          </p>
-        </section>
+      <main className="pt-24 pb-32 px-6 max-w-7xl mx-auto space-y-8">
+        <AtmosphericHero
+          eyebrow="Shared Campaign"
+          title={campaign.name}
+          description={
+            campaign.description ||
+            "Track the current state of the table, the world, and the active story from a shared campaign view."
+          }
+          entityType="location"
+          imageName={campaign.worldName || campaign.setting || campaign.name}
+          chips={[
+            campaign.system,
+            campaign.edition,
+            viewerRoleLabel,
+            campaign.status,
+          ].filter(Boolean)}
+          highlights={[
+            { icon: "group", label: "Members", value: `${campaign.members.length}` },
+            { icon: "assignment", label: "Quests", value: `${campaign.quests.length}` },
+            { icon: "map", label: "Locations", value: `${campaign.locations.length}` },
+          ]}
+          sideContent={
+            <div className="space-y-3">
+              <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+                Table Access
+              </p>
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-4 text-sm leading-relaxed text-on-surface-variant">
+                DM: {campaign.dm.name || "Unknown"}<br />
+                You are here as {viewerRoleLabel}.
+              </div>
+            </div>
+          }
+        />
 
         <section className="bg-surface-container-low rounded-sm p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-secondary/10">
           <div className="space-y-1 text-center md:text-left">
@@ -538,19 +557,27 @@ export default function CampaignLobbyPage() {
 
   return (
     <main className="pt-24 pb-32 px-4 md:px-8 max-w-7xl mx-auto space-y-6">
-      <section className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="font-headline text-3xl md:text-4xl text-primary">{campaign.name}</h1>
-            <span className={`px-2.5 py-1 rounded-sm font-label text-[10px] uppercase tracking-widest border ${statusColors[campaign.status]}`}>
-              {campaign.status}
-            </span>
-          </div>
-          <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter mt-1">
-            DM: {campaign.dm.name} {campaign.viewerRole === "DM" ? "(You)" : `- ${viewerRoleLabel}`} - {campaign.members.length} members
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+      <AtmosphericHero
+        eyebrow="Campaign Command"
+        title={campaign.name}
+        description={
+          campaign.description ||
+          "Run the world, track the party, and pivot between prep and live play from a campaign command surface."
+        }
+        entityType="location"
+        imageName={campaign.worldName || campaign.setting || campaign.name}
+        chips={[
+          campaign.system,
+          campaign.edition,
+          campaign.status,
+          viewerRoleLabel,
+        ].filter(Boolean)}
+        highlights={[
+          { icon: "group", label: "Members", value: `${campaign.members.length}` },
+          { icon: "assignment", label: "Quests", value: `${campaign.quests.length}` },
+          { icon: "inventory_2", label: "Items", value: `${campaign.sessionItems.length}` },
+        ]}
+        actions={
           <div className="bg-surface-container-low px-4 py-2 rounded-sm border border-secondary/10 flex items-center gap-2">
             <span className="font-label text-[10px] uppercase text-on-surface/40">Code:</span>
             <span className="font-headline text-lg text-secondary tracking-widest tabular-nums">
@@ -560,7 +587,42 @@ export default function CampaignLobbyPage() {
               <Icon name={copied ? "check" : "content_copy"} size={14} className={copied ? "text-secondary" : "text-on-surface/40"} />
             </button>
           </div>
-        </div>
+        }
+        sideContent={
+          <div className="space-y-3">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+              Table Status
+            </p>
+            <div className="grid gap-3">
+              <div className={`rounded-xl border px-4 py-3 font-label text-[10px] uppercase tracking-[0.16em] ${statusColors[campaign.status]}`}>
+                {campaign.status}
+              </div>
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-4 text-sm leading-relaxed text-on-surface-variant">
+                DM: {campaign.dm.name || "Unknown"} {campaign.viewerRole === "DM" ? "(You)" : `- ${viewerRoleLabel}`}
+              </div>
+            </div>
+          </div>
+        }
+      />
+
+      <section className="grid gap-4 md:grid-cols-4 animate-fade-in-up">
+        {[
+          { icon: "event_note", label: "Sessions", value: `${campaign.gameSessions.length}` },
+          { icon: "groups", label: "NPCs", value: `${campaign.npcs.length}` },
+          { icon: "map", label: "Locations", value: `${campaign.locations.length}` },
+          { icon: "swords", label: "Encounters", value: `${campaign.encounters.length}` },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-xl border border-outline-variant/10 bg-surface-container/70 p-4 backdrop-blur-sm"
+          >
+            <div className="flex items-center gap-2 text-secondary">
+              <Icon name={item.icon} size={16} />
+              <p className="font-label text-[10px] uppercase tracking-[0.16em]">{item.label}</p>
+            </div>
+            <p className="mt-2 font-headline text-2xl text-on-surface">{item.value}</p>
+          </div>
+        ))}
       </section>
 
       <div className="decorative-line" />

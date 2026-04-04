@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormStatus } from "@/components/ui/form-status";
 import { Icon } from "@/components/ui/icon";
-import { Chip } from "@/components/ui/chip";
+import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { AIAssistButton } from "@/components/ai/ai-assist-button";
 import { AI_PROMPTS } from "@/lib/ai";
 import { OptionGallery } from "@/components/builder/option-gallery";
@@ -195,33 +195,54 @@ export function QuestsTab({ quests, npcs, campaignId, onAdd, onUpdate }: Props) 
   return (
     <div className="space-y-6">
       {status && <FormStatus kind={status.kind} message={status.message} />}
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <Icon name="assignment" size={24} className="text-secondary" />
-          <span className="font-headline text-secondary uppercase tracking-widest text-xs">
-            Quest Board ({quests.length})
-          </span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            if (showForm) {
-              resetForm();
-              setShowForm(false);
-            } else {
-              resetForm();
-              setShowForm(true);
-            }
-            setEditingQuest(null);
-          }}
-          className="interactive-glow"
-        >
-          <Icon name={showForm ? "close" : "add"} size={14} />
-          {showForm ? "Cancel" : "New Quest"}
-        </Button>
-      </div>
+      <AtmosphericHero
+        eyebrow="Quest Board"
+        title="Stage story arcs as cases, pressures, and promises instead of plain rows."
+        description="The quest view now opens with stronger story framing before you move into status management, arc creation, and DM editing."
+        entityType="quest"
+        imageName="The Lantern Board"
+        chips={["Quest Builder", "Status Columns", "NPC Hooks", "Arc Pressure"]}
+        highlights={[
+          { icon: "assignment", label: "All Quests", value: `${quests.length}` },
+          { icon: "play_arrow", label: "Active", value: `${grouped.active.length}` },
+          { icon: "check_circle", label: "Completed", value: `${grouped.completed.length}` },
+        ]}
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              if (showForm) {
+                resetForm();
+                setShowForm(false);
+              } else {
+                resetForm();
+                setShowForm(true);
+              }
+              setEditingQuest(null);
+            }}
+            className="interactive-glow"
+          >
+            <Icon name={showForm ? "close" : "add"} size={14} />
+            {showForm ? "Cancel" : "New Quest"}
+          </Button>
+        }
+        sideContent={
+          <div className="space-y-3">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+              Board State
+            </p>
+            <div className="grid gap-3 text-sm text-on-surface-variant">
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                NPC quest givers, quest themes, and priority are surfaced before you open a card.
+              </div>
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                This screen now reads more like a narrative operations board than a utility list.
+              </div>
+            </div>
+          </div>
+        }
+      />
 
       {/* New Quest Form */}
       {showForm && (

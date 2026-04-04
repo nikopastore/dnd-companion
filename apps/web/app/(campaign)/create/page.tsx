@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 
 export default function CreateCampaignPage() {
@@ -59,25 +61,104 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <main className="pt-24 pb-32 px-6 max-w-2xl mx-auto space-y-12">
-      <section className="relative p-8 md:p-12 bg-surface-container-low rounded-sm overflow-hidden border border-secondary/5">
-        <div className="absolute inset-0 paper-texture opacity-5 pointer-events-none" />
+    <main className="mx-auto max-w-7xl space-y-12 px-6 pb-32 pt-24">
+      <AtmosphericHero
+        eyebrow="Campaign Creation"
+        title="Forge a campaign with mood, world identity, and table posture from the first screen."
+        description="The creation flow now frames campaign setup like the opening spread of a setting guide, so it feels less like app configuration and more like starting a living world."
+        entityType="location"
+        imageName="The First Lantern of Elaris"
+        chips={["Onboarding", "World Seed", "House Rules", "Table Tone"]}
+        highlights={[
+          { icon: "auto_stories", label: "Flow", value: "Two-step founding pass" },
+          { icon: "public", label: "World", value: worldName.trim() || "Awaiting name" },
+          {
+            icon: "tune",
+            label: "Mode",
+            value: onboardingMode === "advanced" ? "Advanced table" : "Beginner-friendly",
+          },
+        ]}
+        sideContent={
+          <div className="space-y-3">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+              Founding Principles
+            </p>
+            <div className="grid gap-3 text-sm text-on-surface-variant">
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                Establish tone, world framing, and player onboarding before the first
+                invite goes out.
+              </div>
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                This is the origin point for the campaign&apos;s later continuity,
+                worldbuilding, and prep tools.
+              </div>
+            </div>
+          </div>
+        }
+      />
 
-        {/* Decorative orbs */}
-        <div className="decorative-orb absolute -top-20 -right-20 w-56 h-56" />
-        <div className="decorative-orb absolute -bottom-16 -left-16 w-40 h-40" />
+      <section className="grid gap-4 md:grid-cols-3 animate-fade-in-up">
+        {[
+          {
+            icon: "theater_comedy",
+            title: "Set the table mood",
+            text: "Tone, setting, and onboarding mode shape how the rest of the platform behaves.",
+          },
+          {
+            icon: "travel_explore",
+            title: "Name the world early",
+            text: "World framing is promoted so the campaign starts with setting identity, not just metadata.",
+          },
+          {
+            icon: "gavel",
+            title: "Codify table rules",
+            text: "House rules stay part of the founding flow instead of becoming an afterthought.",
+          },
+        ].map((item) => (
+          <div
+            key={item.title}
+            className="rounded-xl border border-outline-variant/10 bg-surface-container/70 p-5 backdrop-blur-sm"
+          >
+            <div className="flex items-center gap-2 text-secondary">
+              <Icon name={item.icon} size={16} />
+              <p className="font-label text-[10px] uppercase tracking-[0.16em]">
+                {item.title}
+              </p>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+              {item.text}
+            </p>
+          </div>
+        ))}
+      </section>
+
+      <section className="relative overflow-hidden rounded-xl border border-secondary/5 bg-surface-container-low p-8 shadow-float md:p-12">
+        <div className="pointer-events-none absolute inset-0 paper-texture opacity-5" />
+        <div className="decorative-orb absolute -right-20 -top-20 h-56 w-56" />
+        <div className="decorative-orb absolute -bottom-16 -left-16 h-40 w-40" />
 
         <div className="relative z-10 space-y-8">
-          <div className="text-center space-y-2 animate-fade-in-up">
-            <h2 className="font-headline text-3xl text-secondary tracking-tight">
+          <div className="space-y-3 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 rounded-full border border-secondary/15 bg-secondary/10 px-3 py-1.5">
+              <Icon name="flare" size={14} className="text-secondary" />
+              <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary">
+                Founding Wizard
+              </span>
+            </div>
+            <h2 className="font-headline text-3xl tracking-tight text-secondary">
               Forge a New Chronicle
             </h2>
-            <p className="font-body text-on-surface-variant text-sm">
-              Set campaign identity, world foundations, and onboarding before inviting the party.
+            <p className="max-w-2xl text-sm leading-relaxed text-on-surface-variant">
+              Set campaign identity, world foundations, and onboarding before inviting
+              the party.
             </p>
           </div>
 
-          <form onSubmit={handleCreate} className="space-y-6 animate-fade-in-up" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
+          <form
+            onSubmit={handleCreate}
+            className="space-y-6 animate-fade-in-up"
+            style={{ animationDelay: "100ms", animationFillMode: "both" }}
+          >
             <div className="flex flex-wrap gap-2">
               {["Campaign Core", "World & Rules"].map((label, index) => (
                 <div
@@ -110,8 +191,20 @@ export default function CreateCampaignPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <Input id="system" label="System" value={system} onChange={(e) => setSystem(e.target.value)} />
                   <Input id="edition" label="Edition" value={edition} onChange={(e) => setEdition(e.target.value)} />
-                  <Input id="setting" label="Setting" value={setting} onChange={(e) => setSetting(e.target.value)} placeholder="Forgotten Realms, custom world..." />
-                  <Input id="tone" label="Tone" value={tone} onChange={(e) => setTone(e.target.value)} placeholder="Heroic, grim, political, surreal..." />
+                  <Input
+                    id="setting"
+                    label="Setting"
+                    value={setting}
+                    onChange={(e) => setSetting(e.target.value)}
+                    placeholder="Forgotten Realms, custom world..."
+                  />
+                  <Input
+                    id="tone"
+                    label="Tone"
+                    value={tone}
+                    onChange={(e) => setTone(e.target.value)}
+                    placeholder="Heroic, grim, political, surreal..."
+                  />
                 </div>
 
                 <div className="space-y-1.5">
@@ -127,7 +220,7 @@ export default function CreateCampaignPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
-                    className="w-full bg-surface-container-highest rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/30 border border-outline-variant/10 outline-none focus:ring-1 focus:ring-secondary/40 focus:border-secondary/30 transition-all duration-300 resize-none shadow-whisper"
+                    className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-on-surface placeholder:text-on-surface/30 shadow-whisper outline-none transition-all duration-300 focus:border-secondary/30 focus:ring-1 focus:ring-secondary/40"
                   />
                 </div>
 
@@ -137,8 +230,16 @@ export default function CreateCampaignPage() {
                   </label>
                   <div className="grid gap-3 md:grid-cols-2">
                     {[
-                      { id: "beginner", title: "Beginner-Friendly", text: "Guide players with simpler defaults, support, and onboarding cues." },
-                      { id: "advanced", title: "Advanced Table", text: "Assume experienced players and expose denser prep and rules structure." },
+                      {
+                        id: "beginner",
+                        title: "Beginner-Friendly",
+                        text: "Guide players with simpler defaults, support, and onboarding cues.",
+                      },
+                      {
+                        id: "advanced",
+                        title: "Advanced Table",
+                        text: "Assume experienced players and expose denser prep and rules structure.",
+                      },
                     ].map((option) => (
                       <button
                         key={option.id}
@@ -150,15 +251,24 @@ export default function CreateCampaignPage() {
                             : "border-outline-variant/10 bg-surface-container-high/40"
                         }`}
                       >
-                        <div className="font-headline text-lg text-on-surface">{option.title}</div>
-                        <div className="mt-1 text-sm text-on-surface-variant">{option.text}</div>
+                        <div className="font-headline text-lg text-on-surface">
+                          {option.title}
+                        </div>
+                        <div className="mt-1 text-sm text-on-surface-variant">
+                          {option.text}
+                        </div>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="button" variant="secondary" onClick={() => setStep(1)} disabled={!name.trim()}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setStep(1)}
+                    disabled={!name.trim()}
+                  >
                     Next
                   </Button>
                 </div>
@@ -168,8 +278,19 @@ export default function CreateCampaignPage() {
             {step === 1 && (
               <>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <Input id="world-name" label="World / Region Name" value={worldName} onChange={(e) => setWorldName(e.target.value)} placeholder="Barovia, Elaris, The Shattered Coast..." />
-                  <Input id="setting-echo" label="Setting Summary" value={`${system} ${edition}${setting ? ` · ${setting}` : ""}`} readOnly />
+                  <Input
+                    id="world-name"
+                    label="World / Region Name"
+                    value={worldName}
+                    onChange={(e) => setWorldName(e.target.value)}
+                    placeholder="Barovia, Elaris, The Shattered Coast..."
+                  />
+                  <Input
+                    id="setting-echo"
+                    label="Setting Summary"
+                    value={`${system} ${edition}${setting ? ` · ${setting}` : ""}`}
+                    readOnly
+                  />
                 </div>
 
                 <div className="space-y-1.5">
@@ -185,7 +306,7 @@ export default function CreateCampaignPage() {
                     value={worldSummary}
                     onChange={(e) => setWorldSummary(e.target.value)}
                     rows={4}
-                    className="w-full bg-surface-container-highest rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/30 border border-outline-variant/10 outline-none focus:ring-1 focus:ring-secondary/40 focus:border-secondary/30 transition-all duration-300 resize-none shadow-whisper"
+                    className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-on-surface placeholder:text-on-surface/30 shadow-whisper outline-none transition-all duration-300 focus:border-secondary/30 focus:ring-1 focus:ring-secondary/40"
                   />
                 </div>
 
@@ -202,7 +323,7 @@ export default function CreateCampaignPage() {
                     value={houseRules}
                     onChange={(e) => setHouseRules(e.target.value)}
                     rows={4}
-                    className="w-full bg-surface-container-highest rounded-sm px-4 py-3 font-body text-on-surface placeholder:text-on-surface/30 border border-outline-variant/10 outline-none focus:ring-1 focus:ring-secondary/40 focus:border-secondary/30 transition-all duration-300 resize-none shadow-whisper"
+                    className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-on-surface placeholder:text-on-surface/30 shadow-whisper outline-none transition-all duration-300 focus:border-secondary/30 focus:ring-1 focus:ring-secondary/40"
                   />
                 </div>
 
@@ -217,9 +338,7 @@ export default function CreateCampaignPage() {
               </>
             )}
 
-            {error && (
-              <p className="text-error text-sm font-body animate-fade-in">{error}</p>
-            )}
+            {error && <p className="text-sm font-body text-error animate-fade-in">{error}</p>}
           </form>
         </div>
       </section>

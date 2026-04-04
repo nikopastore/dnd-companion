@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EntityImage } from "@/components/ui/entity-image";
 import { Icon } from "@/components/ui/icon";
 
 interface CampaignCardProps {
@@ -53,57 +54,83 @@ export function CampaignCard({
   return (
     <Link
       href={`/lobby/${id}`}
-      className="bg-surface-container-low group cursor-pointer border border-transparent hover:border-secondary/20 transition-all duration-300 block interactive-lift relative overflow-hidden"
+      className="group relative block cursor-pointer overflow-hidden rounded-xl border border-transparent bg-surface-container-low transition-all duration-300 interactive-lift hover:border-secondary/20"
     >
-      {/* Decorative orb behind card */}
-      <div className="decorative-orb absolute -top-16 -right-16 w-40 h-40 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      <div className="decorative-orb absolute -right-16 -top-16 h-40 w-40 opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
 
-      {/* Cover gradient with enhanced overlay */}
-      <div className="relative h-32 overflow-hidden bg-gradient-to-br from-primary-container/30 to-surface-container-lowest">
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative h-40 overflow-hidden">
+        <EntityImage
+          entityType="location"
+          name={setting || name}
+          size="xl"
+          className="h-full w-full rounded-none border-none"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-primary/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-3">
+          <span className="rounded-full border border-secondary/15 bg-background/55 px-3 py-1 font-label text-[9px] uppercase tracking-[0.16em] text-secondary/90 backdrop-blur-sm">
+            {status === "ACTIVE" ? "In Play" : status}
+          </span>
+          {roleLabel && (
+            <span
+              className={`rounded-full border px-2 py-1 font-label text-[9px] uppercase tracking-[0.16em] backdrop-blur-sm ${ROLE_BADGES[viewerRole || "PLAYER"]}`}
+            >
+              {roleLabel}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="p-6 -mt-8 relative z-10 space-y-4">
+      <div className="relative z-10 -mt-10 space-y-4 p-6">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <h4 className="font-headline text-xl text-primary">{name}</h4>
             {status === "ACTIVE" && (
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-              </span>
-            )}
-            {roleLabel && (
-              <span
-                className={`rounded-full border px-2 py-1 font-label text-[9px] uppercase tracking-[0.16em] ${ROLE_BADGES[viewerRole || "PLAYER"]}`}
-              >
-                {roleLabel}
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
               </span>
             )}
           </div>
-          <p className="text-xs text-on-surface-variant font-label uppercase tracking-tighter">
+          <p className="font-label text-xs uppercase tracking-tighter text-on-surface-variant">
             Dungeon Master: {dmName}
           </p>
           {(system || setting) && (
-            <p className="text-[10px] text-on-surface-variant/60 font-label uppercase tracking-tighter">
+            <p className="font-label text-[10px] uppercase tracking-tighter text-on-surface-variant/60">
               {[system, edition, setting].filter(Boolean).join(" · ")}
             </p>
           )}
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="rounded-xl border border-outline-variant/10 bg-surface-container-high/70 px-3 py-2">
+            <p className="font-label text-[9px] uppercase tracking-[0.16em] text-secondary/80">
+              Party Size
+            </p>
+            <p className="mt-1 font-headline text-lg text-on-surface">{memberCount}</p>
+          </div>
+          <div className="rounded-xl border border-outline-variant/10 bg-surface-container-high/70 px-3 py-2">
+            <p className="font-label text-[9px] uppercase tracking-[0.16em] text-secondary/80">
+              Featured Setting
+            </p>
+            <p className="mt-1 truncate font-headline text-lg text-on-surface">
+              {setting || "Custom World"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
           <div className="flex -space-x-2">
             {members.slice(0, 4).map((member, i) => (
               <div
                 key={i}
-                className="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant font-bold shadow-whisper group-hover:border-secondary/20 transition-colors duration-300"
+                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface-container-low bg-surface-container-highest text-[10px] font-bold text-on-surface-variant shadow-whisper transition-colors duration-300 group-hover:border-secondary/20"
               >
                 {member.name?.[0]?.toUpperCase() || "?"}
               </div>
             ))}
             {memberCount > 4 && (
-              <div className="w-8 h-8 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] text-on-surface-variant shadow-whisper">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-surface-container-low bg-surface-container-highest text-[10px] text-on-surface-variant shadow-whisper">
                 +{memberCount - 4}
               </div>
             )}
@@ -111,7 +138,7 @@ export function CampaignCard({
           <Icon
             name="arrow_forward"
             size={20}
-            className="text-secondary opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1"
+            className="text-secondary opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100"
           />
         </div>
       </div>

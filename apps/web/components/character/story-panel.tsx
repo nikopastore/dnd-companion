@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormStatus } from "@/components/ui/form-status";
@@ -153,6 +154,34 @@ export function StoryPanel(props: StoryPanelProps) {
   return (
     <div className="space-y-6">
       {status && <FormStatus kind={status.kind} message={status.message} />}
+      <AtmosphericHero
+        eyebrow="Story Archive"
+        title="Treat character identity like an evolving dossier, not a notes field."
+        description="Traits, goals, secrets, voice, and turning points now open under a stronger narrative frame so the story tab feels like part of the worldbook."
+        entityType="character"
+        imageName="The Memory Ledger"
+        chips={["Identity", "Timeline", "Last Session", "Arc Notes"]}
+        highlights={[
+          { icon: "history", label: "Timeline Entries", value: `${timelineEntries.length}` },
+          { icon: "theater_comedy", label: "Traits", value: draft.personalityTraits.trim() ? "Written" : "Empty" },
+          { icon: "flag", label: "Goals", value: draft.personalGoals.trim() ? "Tracked" : "Unset" },
+        ]}
+        sideContent={
+          <div className="space-y-3">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+              Narrative Use
+            </p>
+            <div className="grid gap-3 text-sm text-on-surface-variant">
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                Use this area to preserve voice, motives, relationship pressure, and what changed last session.
+              </div>
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                The timeline becomes more valuable when it reads like a journey log instead of plain notes.
+              </div>
+            </div>
+          </div>
+        }
+      />
       <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-4 rounded-sm border border-outline-variant/8 bg-surface-container-low p-5">
           <div className="flex items-center gap-2">

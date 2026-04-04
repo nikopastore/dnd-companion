@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { ABILITIES, getAbilityModifier, formatModifier, SKILLS } from "@dnd-companion/shared";
 import type { ConditionKey } from "@dnd-companion/shared";
+import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { AttributeOrb } from "@/components/ui/attribute-orb";
 import { Icon } from "@/components/ui/icon";
 import { EntityImage } from "@/components/ui/entity-image";
@@ -498,14 +499,72 @@ export default function CharacterSheetPage() {
         onViewInventory={() => setTab("inventory")}
       />
 
-      {/* Character Header */}
+      <AtmosphericHero
+        eyebrow="Character Sheet"
+        title={char.name}
+        description={
+          char.backstory ||
+          "Track combat readiness, inventory, spellcraft, growth, and identity from a single character command page."
+        }
+        entityType="character"
+        imageName={char.name}
+        imageUrl={portraitUrl}
+        chips={[
+          `Level ${char.level}`,
+          char.race.name,
+          classSummary,
+          char.background.name,
+        ]}
+        highlights={[
+          { icon: "favorite", label: "HP", value: `${char.currentHP} / ${char.maxHP}` },
+          { icon: "shield", label: "AC", value: `${char.armorClass}` },
+          { icon: "bolt", label: "Initiative", value: `${formatModifier(char.initiative)}` },
+        ]}
+        sideContent={
+          <div className="space-y-4">
+            <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-4">
+              <p className="font-label text-[10px] uppercase tracking-[0.16em] text-secondary/80">
+                Class Profile
+              </p>
+              <p className="mt-2 font-headline text-xl text-on-surface">{classSummary}</p>
+              <p className="mt-1 text-sm text-on-surface-variant">
+                Proficiency bonus +{char.proficiencyBonus}
+              </p>
+            </div>
+          </div>
+        }
+      />
+
+      <section className="grid gap-4 md:grid-cols-4 animate-fade-in-up">
+        {[
+          { icon: "military_tech", label: "Proficiency", value: `+${char.proficiencyBonus}` },
+          { icon: "tire_repair", label: "Hit Dice", value: `${char.hitDiceRemaining} / ${char.hitDiceTotal}` },
+          { icon: "psychology", label: "Conditions", value: `${activeConditions.length}` },
+          { icon: "workspace_premium", label: "Subclass", value: char.subclassName || "Unchosen" },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-xl border border-outline-variant/10 bg-surface-container/70 p-4 backdrop-blur-sm"
+          >
+            <div className="flex items-center gap-2 text-secondary">
+              <Icon name={item.icon} size={16} />
+              <p className="font-label text-[10px] uppercase tracking-[0.16em]">{item.label}</p>
+            </div>
+            <p className="mt-2 font-headline text-2xl text-on-surface">{item.value}</p>
+          </div>
+        ))}
+      </section>
+
+      {/*
+      <>
+      Character Header
       <div className="animate-fade-in-up">
         <div className="flex items-end gap-4">
           <div className="relative group shrink-0">
             <EntityImage
               imageUrl={portraitUrl}
               entityType="character"
-              name={char.name}
+              name={char!.name}
               size="lg"
             />
             <div className="absolute -bottom-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -521,7 +580,7 @@ export default function CharacterSheetPage() {
             </div>
           </div>
           <div>
-            <h1 className="font-headline text-4xl text-on-background tracking-tight">{char.name}</h1>
+            <h1 className="font-headline text-4xl text-on-background tracking-tight">{char!.name}</h1>
             <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mt-1">
               Level {char.level} {char.race.name} · {classSummary} · {char.background.name}
             </p>
@@ -529,12 +588,14 @@ export default function CharacterSheetPage() {
           <div className="ml-auto flex items-center gap-2">
             <div className="px-3 py-1.5 bg-secondary-container/15 border border-secondary/20 rounded-sm">
               <span className="font-label text-[10px] text-secondary/70 uppercase tracking-wider">Prof</span>
-              <span className="font-headline text-sm text-secondary ml-1.5">+{char.proficiencyBonus}</span>
+              <span className="font-headline text-sm text-secondary ml-1.5">+{char!.proficiencyBonus}</span>
             </div>
           </div>
         </div>
         <div className="decorative-line mt-4" />
       </div>
+      </>
+      */}
 
       {/* Tab Navigation */}
       <div className="flex gap-2 animate-fade-in">

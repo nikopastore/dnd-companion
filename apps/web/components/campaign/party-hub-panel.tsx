@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
@@ -626,6 +627,60 @@ export function PartyHubPanel({
   return (
     <div className="space-y-6">
       {status && <FormStatus kind={status.kind} message={status.message} />}
+      <AtmosphericHero
+        eyebrow="Party Hub"
+        title={canManage ? "Run the shared party space like a living camp ledger." : "Follow the party’s shared trail, stash, and table plans."}
+        description="Treasury, stash, crafting, merchants, scheduling, handouts, and table communication now sit under a more visual party command surface."
+        entityType="item"
+        imageName="The Company Ledger"
+        chips={[
+          canManage ? "Manager View" : "Player View",
+          `${members.filter((member) => member.character).length} characters`,
+          `${stash.length} stash items`,
+          `${merchantRecords.length} merchants`,
+        ]}
+        highlights={[
+          { icon: "payments", label: "Treasury", value: `${treasury.gp} gp` },
+          { icon: "inventory_2", label: "Stash", value: `${stash.length}` },
+          { icon: "event_upcoming", label: "Polls", value: `${polls.length}` },
+        ]}
+        sideContent={
+          <div className="space-y-3">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+              Shared State
+            </p>
+            <div className="grid gap-3 text-sm text-on-surface-variant">
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                {notices.length} announcements and {messages.length} recent campaign messages keep party communication in one place.
+              </div>
+              <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
+                Attendance, plans, crafting, and merchant activity now read more like a campaign ledger than a utility panel.
+              </div>
+            </div>
+          </div>
+        }
+      />
+
+      <section className="grid gap-4 md:grid-cols-4 animate-fade-in-up">
+        {[
+          { icon: "receipt_long", label: "Economy Entries", value: `${economyEntries.length}` },
+          { icon: "construction", label: "Crafting", value: `${crafting.length}` },
+          { icon: "campaign", label: "Handouts", value: `${handoutEntries.length}` },
+          { icon: "checklist", label: "Shared Plans", value: `${plans.length}` },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-xl border border-outline-variant/10 bg-surface-container/70 p-4 backdrop-blur-sm"
+          >
+            <div className="flex items-center gap-2 text-secondary">
+              <Icon name={item.icon} size={16} />
+              <p className="font-label text-[10px] uppercase tracking-[0.16em]">{item.label}</p>
+            </div>
+            <p className="mt-2 font-headline text-2xl text-on-surface">{item.value}</p>
+          </div>
+        ))}
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="rounded-sm border border-outline-variant/8 bg-surface-container-low p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
