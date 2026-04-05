@@ -39,7 +39,7 @@ export function AtmosphericHero({
       <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.04),transparent_28%,transparent_72%,rgba(255,255,255,0.05))]" />
       <div className="absolute inset-y-0 right-0 w-[42%] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_62%)] opacity-80" />
 
-      <div className="relative z-10 grid gap-8 p-6 md:p-8 xl:grid-cols-[minmax(0,1.2fr)_360px]">
+      <div className="relative z-10 grid gap-6 p-4 sm:p-6 md:p-8 xl:grid-cols-[minmax(0,1.2fr)_360px]">
         <div className="space-y-6">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-secondary/15 bg-secondary/10 px-3 py-1.5">
@@ -50,10 +50,10 @@ export function AtmosphericHero({
             </div>
 
             <div className="space-y-3">
-              <h1 className="max-w-3xl font-headline text-4xl leading-[1.04] text-on-background md:text-5xl xl:text-6xl">
+              <h1 className="max-w-3xl font-headline text-3xl leading-[1.04] text-on-background sm:text-4xl md:text-5xl xl:text-6xl">
                 {title}
               </h1>
-              <p className="max-w-2xl text-base leading-relaxed text-on-surface-variant md:text-lg">
+              <p className="max-w-2xl text-sm leading-relaxed text-on-surface-variant sm:text-base md:text-lg">
                 {description}
               </p>
             </div>
@@ -104,13 +104,13 @@ export function AtmosphericHero({
               entityType={entityType}
               name={imageName}
               size="xl"
-              className="h-[320px] w-full rounded-[1rem] border-none"
+              className="h-[220px] w-full rounded-[1rem] border-none sm:h-[280px] md:h-[320px]"
             />
             <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-xl border border-secondary/15 bg-background/55 px-4 py-3 backdrop-blur-md">
               <p className="font-label text-[10px] uppercase tracking-[0.16em] text-secondary/85">
                 Featured Scene
               </p>
-              <p className="mt-1 font-headline text-xl text-on-surface">{imageName}</p>
+              <p className="mt-1 font-headline text-lg text-on-surface sm:text-xl">{imageName}</p>
             </div>
           </div>
 

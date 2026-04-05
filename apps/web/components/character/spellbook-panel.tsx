@@ -278,7 +278,7 @@ export function SpellbookPanel({
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {casterTracks.map((track) => (
             <button
               key={track.classId}
@@ -478,7 +478,7 @@ export function SpellbookPanel({
                             </p>
                             <p className="mt-2 text-sm text-on-surface-variant">{entry.spell.description}</p>
                           </div>
-                          <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row sm:items-center">
                             {entryPreparedCaster ? (
                               <Button
                                 variant={entry.isPrepared ? "secondary" : "ghost"}

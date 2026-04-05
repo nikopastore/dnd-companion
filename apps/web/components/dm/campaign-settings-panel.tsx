@@ -294,7 +294,7 @@ export function CampaignSettingsPanel({ campaign, onSaved }: Props) {
 
       <div className="space-y-3">
         <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary">Party Treasury</span>
-        <div className="grid gap-3 grid-cols-5">
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-5">
           {(["cp", "sp", "ep", "gp", "pp"] as const).map((coin) => (
             <Input
               key={coin}

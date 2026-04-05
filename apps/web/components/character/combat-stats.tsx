@@ -64,7 +64,7 @@ export function CombatStats({ currentHP, maxHP, tempHP, armorClass, initiative, 
   return (
     <section className="grid grid-cols-12 gap-4 animate-fade-in-up">
       {/* Vitality */}
-      <div className="col-span-12 md:col-span-6 bg-surface-container-low paper-texture p-6 rounded-sm relative overflow-hidden shadow-whisper">
+      <div className="col-span-12 md:col-span-6 bg-surface-container-low paper-texture p-4 sm:p-6 rounded-sm relative overflow-hidden shadow-whisper">
         {/* Decorative orb behind vitality section */}
         <div
           className="decorative-orb w-48 h-48 -top-12 -right-12"
@@ -79,11 +79,11 @@ export function CombatStats({ currentHP, maxHP, tempHP, armorClass, initiative, 
           </div>
         </div>
 
-        <div className="flex items-end gap-4 relative z-10">
+        <div className="flex flex-wrap items-end gap-4 relative z-10">
           <div className="flex flex-col">
             <span
               key={hpAnimKey}
-              className={`font-headline text-6xl font-bold leading-none animate-count-up ${
+              className={`font-headline text-5xl sm:text-6xl font-bold leading-none animate-count-up ${
                 isCritical
                   ? "text-error animate-pulse-danger"
                   : isLow
@@ -114,7 +114,7 @@ export function CombatStats({ currentHP, maxHP, tempHP, armorClass, initiative, 
         <HealthBar current={currentHP} max={maxHP} temp={tempHP} showLabel className="mt-6 relative z-10" />
 
         {/* HP Controls */}
-        <div className="mt-4 flex items-center gap-2 relative z-10">
+        <div className="mt-4 flex flex-wrap items-center gap-2 relative z-10">
           <input
             type="number"
             value={hpDelta}
@@ -122,7 +122,7 @@ export function CombatStats({ currentHP, maxHP, tempHP, armorClass, initiative, 
             placeholder="0"
             min="0"
             aria-label="Hit point adjustment amount"
-            className="w-20 bg-surface-container-highest rounded-sm px-3 py-2 text-center font-headline text-lg text-on-surface border border-outline-variant/10 outline-none focus:ring-1 focus:ring-secondary/40 focus:border-secondary/30 transition-all"
+            className="w-16 sm:w-20 bg-surface-container-highest rounded-sm px-3 py-2 text-center font-headline text-lg text-on-surface border border-outline-variant/10 outline-none focus:ring-1 focus:ring-secondary/40 focus:border-secondary/30 transition-all"
           />
           <button
             onClick={applyDamage}
@@ -152,12 +152,12 @@ export function CombatStats({ currentHP, maxHP, tempHP, armorClass, initiative, 
       </div>
 
       {/* AC */}
-      <div className="col-span-6 md:col-span-3 bg-surface-container-low p-6 rounded-sm flex flex-col justify-center items-center gap-3 relative overflow-hidden shadow-whisper">
+      <div className="col-span-6 md:col-span-3 bg-surface-container-low p-4 sm:p-6 rounded-sm flex flex-col justify-center items-center gap-3 relative overflow-hidden shadow-whisper">
         <div className="decorative-orb w-32 h-32 top-0 left-1/2 -translate-x-1/2" style={{ background: "#e9c349" }} />
         <span className="font-label text-xs text-on-surface/50 uppercase tracking-widest relative z-10">Armor Class</span>
-        <div className="w-20 h-20 rounded-full border-2 border-secondary/40 flex items-center justify-center bg-surface-container-highest/80 animate-pulse-glow relative z-10">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-secondary/40 flex items-center justify-center bg-surface-container-highest/80 animate-pulse-glow relative z-10">
           <div className="absolute inset-0 rounded-full bg-secondary/5" />
-          <span className="font-headline text-4xl text-secondary relative z-10">{armorClass}</span>
+          <span className="font-headline text-3xl sm:text-4xl text-secondary relative z-10">{armorClass}</span>
         </div>
         <div className="flex items-center gap-1 text-on-surface/30 relative z-10">
           <Icon name="shield" size={12} />
@@ -166,13 +166,13 @@ export function CombatStats({ currentHP, maxHP, tempHP, armorClass, initiative, 
       </div>
 
       {/* Initiative */}
-      <div className="col-span-6 md:col-span-3 bg-surface-container-low p-6 rounded-sm flex flex-col justify-center items-center gap-3 relative overflow-hidden shadow-whisper">
+      <div className="col-span-6 md:col-span-3 bg-surface-container-low p-4 sm:p-6 rounded-sm flex flex-col justify-center items-center gap-3 relative overflow-hidden shadow-whisper">
         <div className="decorative-orb w-32 h-32 top-0 left-1/2 -translate-x-1/2" style={{ background: "#a52a2a" }} />
         <span className="font-label text-xs text-on-surface/50 uppercase tracking-widest relative z-10">Initiative</span>
         <div className="relative z-10">
-          <div className="w-20 h-20 rounded-sm rotate-45 border-2 border-primary/40 flex items-center justify-center bg-surface-container-highest/80 animate-border-glow">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-sm rotate-45 border-2 border-primary/40 flex items-center justify-center bg-surface-container-highest/80 animate-border-glow">
             <div className="absolute inset-0 rounded-sm bg-primary/5" />
-            <span className="font-headline text-4xl text-primary -rotate-45 relative z-10">
+            <span className="font-headline text-3xl sm:text-4xl text-primary -rotate-45 relative z-10">
               {initiative >= 0 ? "+" : ""}{initiative}
             </span>
           </div>

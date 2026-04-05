@@ -12,6 +12,7 @@ interface Race {
   name: string;
   speed: number;
   size: string;
+  imageUrl?: string | null;
   abilityBonuses: Record<string, number>;
   traits: Array<{ name: string; description: string }>;
   languages: string[];
@@ -48,7 +49,7 @@ export function RaceSelection({ builder }: Props) {
           race.traits[0]?.description ??
           `Languages: ${race.languages.join(", ")}`,
         entityType: "race" as const,
-        imageUrl: null,
+        imageUrl: race.imageUrl ?? null,
         meta: [
           ...Object.entries(race.abilityBonuses).map(
             ([ability, bonus]) => `+${bonus} ${ability.slice(0, 3)}`
@@ -70,7 +71,117 @@ export function RaceSelection({ builder }: Props) {
   }, []);
 
   function selectRace(race: Race) {
-    update({ raceId: race.id, raceName: race.name, subraceId: null });
+    const hasSubraces = race.subraces.length > 0;
+    update({
+      raceId: race.id,
+      raceName: race.name,
+      subraceId: null,
+      subraceRequired: hasSubraces,
+      racialBonuses: race.abilityBonuses,
+    });
+  }
+
+  function renderRaceDetails(optionId: string) {
+    const race = races.find((entry) => entry.id === optionId);
+    if (!race) return null;
+
+    return (
+      <div className="space-y-5">
+        <div>
+          <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary/80">
+            Lineage details
+          </p>
+          <h4 className="mt-2 font-headline text-3xl text-on-surface">{race.name}</h4>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Core stats
+            </p>
+            <div className="mt-3 space-y-2 text-sm text-on-surface-variant">
+              <p>Size: {race.size}</p>
+              <p>Speed: {race.speed} ft</p>
+              <p>Languages: {race.languages.join(", ")}</p>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Ability bonuses
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {Object.entries(race.abilityBonuses).map(([ability, bonus]) => (
+                <span
+                  key={ability}
+                  className="rounded-full border border-secondary/15 bg-secondary/10 px-3 py-1 font-label text-[10px] uppercase tracking-[0.16em] text-secondary"
+                >
+                  +{bonus} {ability}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+            Unique racial traits
+          </p>
+          <div className="space-y-3">
+            {race.traits.map((trait) => (
+              <div
+                key={trait.name}
+                className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4"
+              >
+                <h5 className="font-headline text-lg text-on-surface">{trait.name}</h5>
+                <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+                  {trait.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {race.subraces.length > 0 && (
+          <div className="space-y-3">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Subrace paths
+            </p>
+            <div className="grid gap-3">
+              {race.subraces.map((subrace) => (
+                <div
+                  key={subrace.id}
+                  className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h5 className="font-headline text-lg text-on-surface">{subrace.name}</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(subrace.abilityBonuses).map(([ability, bonus]) => (
+                        <span
+                          key={`${subrace.id}-${ability}`}
+                          className="rounded-full bg-secondary/10 px-2.5 py-1 font-label text-[10px] uppercase tracking-[0.16em] text-secondary"
+                        >
+                          +{bonus} {ability}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  {subrace.traits.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {subrace.traits.map((trait) => (
+                        <div key={`${subrace.id}-${trait.name}`}>
+                          <p className="text-sm font-medium text-on-surface">{trait.name}</p>
+                          <p className="text-sm text-on-surface-variant">{trait.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -91,6 +202,8 @@ export function RaceSelection({ builder }: Props) {
           <OptionGallery
             options={raceOptions}
             selectedId={state.raceId}
+            detailRenderer={(option) => renderRaceDetails(option.id)}
+            confirmLabel="Select lineage"
             onSelect={(option) => {
               const race = races.find((entry) => entry.id === option.id);
               if (race) selectRace(race);
@@ -128,7 +241,10 @@ export function RaceSelection({ builder }: Props) {
                 {selectedRace.subraces.map((sub) => (
                   <button
                     key={sub.id}
-                    onClick={() => update({ subraceId: sub.id })}
+                    onClick={() => {
+                      const combinedBonuses = { ...selectedRace.abilityBonuses, ...sub.abilityBonuses };
+                      update({ subraceId: sub.id, racialBonuses: combinedBonuses });
+                    }}
                     className={`w-full p-4 rounded-sm text-left transition-all duration-500 interactive-glow ${
                       state.subraceId === sub.id
                         ? "bg-surface-container border border-secondary/40 shadow-whisper"
@@ -190,7 +306,7 @@ export function RaceSelection({ builder }: Props) {
 
       {/* Navigation */}
       <div className="flex justify-end mt-12">
-        <Button onClick={nextStep} disabled={!state.raceId}>
+        <Button onClick={nextStep} disabled={!state.raceId || (state.subraceRequired && !state.subraceId)}>
           Continue to Class
           <Icon name="arrow_forward" size={16} />
         </Button>

@@ -424,7 +424,7 @@ export function OverviewTab({ campaign, onStatusChange, onCampaignRefresh }: Ove
             <Icon name="payments" size={16} className="text-secondary" />
             <h3 className="font-headline text-base text-on-surface">Party Treasury</h3>
           </div>
-          <div className="grid grid-cols-5 gap-2 text-center">
+          <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
             {(["cp", "sp", "ep", "gp", "pp"] as const).map((coin) => (
               <div key={coin} className="rounded-sm bg-surface-container px-2 py-3">
                 <div className="font-headline text-lg text-on-surface">{treasury[coin] ?? 0}</div>

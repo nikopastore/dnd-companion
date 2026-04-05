@@ -131,7 +131,7 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
         <span className="font-headline text-secondary uppercase tracking-widest text-xs block mb-5 relative z-10">
           Currency
         </span>
-        <div className="grid grid-cols-5 gap-3 relative z-10">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 relative z-10">
           {(["cp", "sp", "ep", "gp", "pp"] as const).map((coin) => {
             const style = COIN_STYLES[coin];
             return (
@@ -157,7 +157,7 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
       </div>
 
       {/* Inventory Stats */}
-      <div className="flex gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {/* Weight */}
         <div className={`flex-1 bg-surface-container-low p-4 rounded-sm text-center shadow-whisper border transition-all ${
           isHeavy ? "border-error/20 glow-danger" : "border-transparent"
@@ -228,7 +228,7 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
                   const history = normalizeItemHistory(item.itemHistory);
                   return (
                     <>
-                <div className="flex items-start gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                   <EntityImage
                     imageUrl={item.imageUrl}
                     entityType="item"
@@ -304,7 +304,7 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
                       </div>
                     )}
                   </div>
-                  <div className="shrink-0">
+                  <div className="shrink-0 self-start sm:self-auto">
                     <Button
                       type="button"
                       variant="ghost"
@@ -321,8 +321,8 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
                 })()}
 
                 {partyMembers.length > 0 && (
-                  <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-outline-variant/10 pt-3">
-                    <div className="min-w-[180px] flex-1">
+                  <div className="mt-3 grid gap-3 border-t border-outline-variant/10 pt-3 sm:grid-cols-[minmax(0,1fr)_96px_auto] sm:items-end">
+                    <div className="min-w-0">
                       <label className="mb-1.5 block font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/60">
                         Share With
                       </label>
@@ -339,7 +339,7 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
                         ))}
                       </select>
                     </div>
-                    <div className="w-24">
+                    <div className="w-full sm:w-24">
                       <label className="mb-1.5 block font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/60">
                         Qty
                       </label>
@@ -357,7 +357,7 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
                         className="w-full rounded-sm border border-outline-variant/10 bg-surface-container-high px-3 py-2 text-sm text-on-surface"
                       />
                     </div>
-                    <Button type="button" variant="secondary" size="sm" onClick={() => shareItem(item)} disabled={!shareTargetId}>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => shareItem(item)} disabled={!shareTargetId} className="w-full sm:w-auto">
                       <Icon name="outbox" size={14} />
                       Trade
                     </Button>
@@ -476,7 +476,7 @@ export function InventoryPanel({ items, currency, onUpdateCurrency, onUpdateItem
               Share Currency
             </span>
           </div>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
             <div className="md:col-span-2">
               <label className="mb-1.5 block font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant/60">
                 Recipient

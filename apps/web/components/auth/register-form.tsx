@@ -59,7 +59,7 @@ export function RegisterForm() {
       setError("Account created, but sign-in failed. Please log in.");
       router.push("/login");
     } else {
-      router.push("/");
+      router.push("/start");
       router.refresh();
     }
   }
@@ -157,7 +157,7 @@ export function RegisterForm() {
       </div>
 
       <button
-        onClick={() => signIn("google", { callbackUrl: "/" })}
+        onClick={() => signIn("google", { callbackUrl: "/start" })}
         className="w-full flex items-center justify-center gap-3 bg-surface-container-highest/60 hover:bg-surface-container-highest rounded-sm px-6 py-3 font-body text-sm text-on-surface border border-outline-variant/15 hover:border-outline-variant/30 transition-all duration-300 active:scale-[0.97]"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24">

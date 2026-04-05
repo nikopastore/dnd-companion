@@ -3,12 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Icon } from "@/components/ui/icon";
 import { AttributeOrb } from "@/components/ui/attribute-orb";
-import { AIAssistButton } from "@/components/ai/ai-assist-button";
-import { AI_PROMPTS } from "@/lib/ai";
-import { ImageUpload } from "@/components/ui/image-upload";
+import { EntityImage } from "@/components/ui/entity-image";
 import { ABILITIES, getAbilityModifier } from "@dnd-companion/shared";
 import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 
@@ -17,12 +14,10 @@ interface Props {
 }
 
 export function ReviewAndCreate({ builder }: Props) {
-  const { state, update, prevStep } = builder;
+  const { state, prevStep } = builder;
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [backstory, setBackstory] = useState("");
-  const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
 
   async function handleCreate() {
     if (!state.name.trim()) {
@@ -31,6 +26,13 @@ export function ReviewAndCreate({ builder }: Props) {
     }
     setError("");
     setLoading(true);
+
+    const finalScores = { ...state.abilityScores };
+    for (const [ability, bonus] of Object.entries(state.racialBonuses)) {
+      if (ability in finalScores) {
+        (finalScores as Record<string, number>)[ability] += bonus;
+      }
+    }
 
     const res = await fetch("/api/characters", {
       method: "POST",
@@ -41,10 +43,15 @@ export function ReviewAndCreate({ builder }: Props) {
         subraceId: state.subraceId,
         classId: state.classId,
         backgroundId: state.backgroundId,
-        abilityScores: state.abilityScores,
+        abilityScores: finalScores,
+        skillProficiencies: state.skillProficiencies,
         campaignId: state.campaignId,
-        imageUrl: portraitUrl,
-        backstory,
+        imageUrl: state.portraitUrl,
+        backstory: state.backstory,
+        personalityTraits: state.personalityTraits,
+        ideals: state.ideals,
+        bonds: state.bonds,
+        flaws: state.flaws,
       }),
     });
 
@@ -75,40 +82,35 @@ export function ReviewAndCreate({ builder }: Props) {
         {/* Left: Name and Summary */}
         <div className="lg:col-span-5 space-y-6 animate-fade-in-up" style={{ animationDelay: "120ms" }}>
           <div className="bg-surface-container-low p-8 rounded-sm space-y-6 border border-outline-variant/8 shadow-whisper">
-            <div className="flex items-start gap-6">
-              <ImageUpload
-                currentImage={portraitUrl}
-                onUpload={(url) => setPortraitUrl(url)}
-                size="sm"
-                label="Portrait"
+            <div className="flex items-start gap-5">
+              <EntityImage
+                imageUrl={state.portraitUrl}
+                entityType="character"
+                name={state.name || "Unnamed Hero"}
+                size="lg"
               />
               <div className="flex-1 space-y-3">
-                <Input
-                  id="name"
-                  label="Character Name"
-                  placeholder="What shall they be called?"
-                  value={state.name}
-                  onChange={(e) => update({ name: e.target.value })}
-                  className="font-headline text-2xl"
-                />
-                <AIAssistButton
-                  label="Generate Backstory"
-                  systemPrompt={AI_PROMPTS.backstoryGenerator}
-                  userPrompt={`Write a backstory for a character named "${state.name || "this character"}".`}
-                  context={`Race: ${state.raceName || "Unknown"}\nClass: ${state.className || "Unknown"}\nBackground: ${state.backgroundName || "Unknown"}`}
-                  onApply={(text) => setBackstory(text)}
-                  size="sm"
-                />
+                <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+                  Character profile
+                </span>
+                <h3 className="font-headline text-3xl text-on-surface">
+                  {state.name || "Unnamed adventurer"}
+                </h3>
+                {state.campaignName && (
+                  <p className="text-sm text-on-surface-variant">
+                    Bound to {state.campaignName}
+                  </p>
+                )}
               </div>
             </div>
 
-            {backstory && (
+            {state.backstory && (
               <div className="bg-surface-container p-4 rounded-sm border-l-2 border-secondary/40 animate-fade-in">
                 <span className="font-label text-[10px] uppercase tracking-widest text-secondary font-bold block mb-2">
                   Backstory
                 </span>
                 <p className="font-body text-sm text-on-surface-variant leading-relaxed whitespace-pre-wrap">
-                  {backstory}
+                  {state.backstory}
                 </p>
               </div>
             )}
@@ -142,6 +144,49 @@ export function ReviewAndCreate({ builder }: Props) {
               </div>
             </div>
           </div>
+
+          {state.skillProficiencies.length > 0 && (
+            <div className="rounded-sm border border-outline-variant/8 bg-surface-container-low p-4 shadow-whisper animate-fade-in-up">
+              <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+                Skill Proficiencies
+              </span>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {state.skillProficiencies.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-full border border-secondary/15 bg-secondary/10 px-3 py-1 font-label text-[10px] uppercase tracking-[0.16em] text-secondary"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(state.personalityTraits || state.ideals || state.bonds || state.flaws) && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {[
+                ["Traits", state.personalityTraits],
+                ["Ideals", state.ideals],
+                ["Bonds", state.bonds],
+                ["Flaws", state.flaws],
+              ]
+                .filter(([, value]) => Boolean(value.trim()))
+                .map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="rounded-sm border border-outline-variant/8 bg-surface-container-low p-4 shadow-whisper"
+                  >
+                    <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
+                      {label}
+                    </span>
+                    <p className="mt-2 text-sm leading-relaxed text-on-surface-variant whitespace-pre-wrap">
+                      {value}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         {/* Right: Ability Scores */}
@@ -151,14 +196,21 @@ export function ReviewAndCreate({ builder }: Props) {
           </span>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4 stagger-children">
             {ABILITIES.map((ability) => {
-              const score = state.abilityScores[ability.key];
+              const baseScore = state.abilityScores[ability.key];
+              const racialBonus = state.racialBonuses[ability.key] ?? 0;
+              const totalScore = baseScore + racialBonus;
               return (
                 <div key={ability.key} className="animate-fade-in-up">
                   <AttributeOrb
                     abbreviation={ability.abbreviation}
-                    score={score}
-                    isPrimary={score >= 14}
+                    score={totalScore}
+                    isPrimary={totalScore >= 14}
                   />
+                  {racialBonus > 0 && (
+                    <p className="mt-1 text-center font-label text-[9px] uppercase tracking-widest text-secondary/70">
+                      {baseScore} + {racialBonus}
+                    </p>
+                  )}
                 </div>
               );
             })}
@@ -176,8 +228,8 @@ export function ReviewAndCreate({ builder }: Props) {
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Initiative</span>
                 <span className="text-on-surface font-bold">
-                  {getAbilityModifier(state.abilityScores.dexterity) >= 0 ? "+" : ""}
-                  {getAbilityModifier(state.abilityScores.dexterity)}
+                  {getAbilityModifier(state.abilityScores.dexterity + (state.racialBonuses.dexterity ?? 0)) >= 0 ? "+" : ""}
+                  {getAbilityModifier(state.abilityScores.dexterity + (state.racialBonuses.dexterity ?? 0))}
                 </span>
               </div>
             </div>

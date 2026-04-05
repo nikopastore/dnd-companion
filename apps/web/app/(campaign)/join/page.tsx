@@ -82,6 +82,15 @@ export default function JoinCampaignPage() {
       return;
     }
 
+    if (joinRole === "PLAYER") {
+      const params = new URLSearchParams({
+        campaignId: campaign.id,
+        campaignName: campaign.name,
+      });
+      router.push(`/builder?${params.toString()}`);
+      return;
+    }
+
     router.push(`/lobby/${campaign.id}`);
   }
 

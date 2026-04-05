@@ -9,9 +9,11 @@ import type { useCharacterBuilder } from "@/hooks/use-character-builder";
 interface Background {
   id: string;
   name: string;
+  imageUrl?: string | null;
   skillProficiencies: string[];
   toolProficiencies: string[];
   languages: number;
+  equipment?: { items?: string[] };
   feature: { name: string; description: string };
 }
 
@@ -45,8 +47,8 @@ export function BackgroundSelection({ builder }: Props) {
             ? `${background.languages} bonus language${background.languages > 1 ? "s" : ""}`
             : "No bonus languages",
         description: background.feature.description,
-        entityType: "quest" as const,
-        imageUrl: null,
+        entityType: "character" as const,
+        imageUrl: background.imageUrl ?? null,
         meta: [
           ...background.skillProficiencies,
           ...(background.toolProficiencies.length > 0
@@ -64,6 +66,62 @@ export function BackgroundSelection({ builder }: Props) {
       .then((data) => { setBackgrounds(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  function renderBackgroundDetails(optionId: string) {
+    const background = backgrounds.find((entry) => entry.id === optionId);
+    if (!background) return null;
+
+    return (
+      <div className="space-y-5">
+        <div>
+          <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary/80">
+            Origin details
+          </p>
+          <h4 className="mt-2 font-headline text-3xl text-on-surface">{background.name}</h4>
+        </div>
+
+        <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+          <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+            Background feature
+          </p>
+          <h5 className="mt-2 font-headline text-xl text-on-surface">{background.feature.name}</h5>
+          <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+            {background.feature.description}
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Proficiencies
+            </p>
+            <div className="mt-3 space-y-2 text-sm text-on-surface-variant">
+              <p>Skills: {background.skillProficiencies.join(", ")}</p>
+              <p>
+                Tools: {background.toolProficiencies.length > 0 ? background.toolProficiencies.join(", ") : "None"}
+              </p>
+              <p>Bonus languages: {background.languages}</p>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Starting gear
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(background.equipment?.items ?? []).map((item) => (
+                <span
+                  key={`${background.id}-${item}`}
+                  className="rounded-full border border-secondary/15 bg-secondary/10 px-3 py-1 font-label text-[10px] uppercase tracking-[0.16em] text-secondary"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
@@ -83,6 +141,8 @@ export function BackgroundSelection({ builder }: Props) {
           <OptionGallery
             options={backgroundOptions}
             selectedId={state.backgroundId}
+            detailRenderer={(option) => renderBackgroundDetails(option.id)}
+            confirmLabel="Choose background"
             onSelect={(option) => {
               const background = backgrounds.find((entry) => entry.id === option.id);
               if (background) {

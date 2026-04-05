@@ -598,12 +598,12 @@ export default function CharacterSheetPage() {
       */}
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 animate-fade-in">
+      <div className="flex gap-2 overflow-x-auto pb-1 animate-fade-in scrollbar-hide">
         {(["sheet", "inventory", "progression", "spellbook", "rules", "story", "dice"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`relative px-5 py-2.5 rounded-sm font-label text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2 ${
+            className={`relative shrink-0 px-4 py-2.5 rounded-sm font-label text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2 sm:px-5 ${
               tab === t
                 ? "bg-primary-container text-on-primary-container shadow-whisper"
                 : "bg-surface-container-high text-on-surface-variant hover:bg-surface-bright hover:text-on-surface"

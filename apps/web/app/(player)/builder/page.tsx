@@ -1,113 +1,20 @@
-"use client";
+import { CharacterBuilderScreen } from "@/components/builder/character-builder-screen";
 
-import { AbilityScores } from "@/components/builder/ability-scores";
-import { BackgroundSelection } from "@/components/builder/background-selection";
-import { ClassSelection } from "@/components/builder/class-selection";
-import { RaceSelection } from "@/components/builder/race-selection";
-import { ReviewAndCreate } from "@/components/builder/review-and-create";
-import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
-import { Icon } from "@/components/ui/icon";
-import { BUILDER_STEPS, useCharacterBuilder } from "@/hooks/use-character-builder";
+interface BuilderPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
 
-export default function CharacterBuilderPage() {
-  const builder = useCharacterBuilder();
-  const { state } = builder;
-
-  const steps = [
-    <RaceSelection key="race" builder={builder} />,
-    <ClassSelection key="class" builder={builder} />,
-    <BackgroundSelection key="background" builder={builder} />,
-    <AbilityScores key="abilities" builder={builder} />,
-    <ReviewAndCreate key="review" builder={builder} />,
-  ];
+export default async function CharacterBuilderPage({ searchParams }: BuilderPageProps) {
+  const params = (await searchParams) ?? {};
+  const campaignId =
+    typeof params.campaignId === "string" ? params.campaignId : undefined;
+  const campaignName =
+    typeof params.campaignName === "string" ? params.campaignName : undefined;
 
   return (
-    <main className="relative mx-auto min-h-screen max-w-7xl overflow-hidden px-6 pb-32 pt-24">
-      <div className="decorative-orb fixed -right-48 -top-48 h-[600px] w-[600px] bg-primary-container opacity-40" />
-      <div className="decorative-orb fixed -bottom-32 -left-32 h-[400px] w-[400px] bg-secondary opacity-30" />
-      <div className="decorative-orb fixed left-1/2 top-1/2 h-[300px] w-[300px] bg-tertiary opacity-20" />
-
-      <div className="relative z-10 space-y-8">
-        <AtmosphericHero
-          eyebrow="Character Builder"
-          title="Build heroes through an illustrated lineage path, not a raw setup wizard."
-          description="The character flow now opens like a premium dossier: ancestry, class, background, and final review sit inside a stronger world-facing frame before players commit a new hero to the campaign."
-          entityType="character"
-          imageName="The Ashen Wanderer"
-          chips={["Guided Creation", "Visual Choices", "Race", "Class", "Background"]}
-          highlights={[
-            { icon: "diversity_3", label: "Current Step", value: BUILDER_STEPS[state.step] },
-            {
-              icon: "checklist",
-              label: "Completed",
-              value: `${state.step} / ${BUILDER_STEPS.length - 1}`,
-            },
-            { icon: "shield", label: "Mode", value: "Guided builder" },
-          ]}
-          sideContent={
-            <div className="space-y-3">
-              <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
-                Builder Intent
-              </p>
-              <div className="grid gap-3 text-sm text-on-surface-variant">
-                <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
-                  Each step should feel like choosing from a fantasy codex, not filling
-                  a sterile form.
-                </div>
-                <div className="rounded-xl border border-outline-variant/10 bg-background/40 p-3">
-                  This screen now gives the entire flow atmosphere before the user
-                  enters the current builder step.
-                </div>
-              </div>
-            </div>
-          }
-        />
-
-        <section className="rounded-xl border border-outline-variant/10 bg-surface-container/70 p-5 backdrop-blur-sm">
-          <div className="mb-5 flex items-center gap-2">
-            <Icon name="route" size={16} className="text-secondary" />
-            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/85">
-              Creation Path
-            </p>
-          </div>
-          <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-            {BUILDER_STEPS.map((label, i) => (
-              <div key={label} className="flex items-center gap-2">
-                <button
-                  onClick={() => i <= state.step && builder.goToStep(i)}
-                  disabled={i > state.step}
-                  className={`flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs font-label uppercase tracking-widest transition-all ${
-                    i === state.step
-                      ? "bg-primary-container text-on-primary-container"
-                      : i < state.step
-                        ? "cursor-pointer bg-surface-container-high text-secondary hover:bg-surface-bright"
-                        : "bg-surface-container text-on-surface/30"
-                  }`}
-                >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-container-lowest text-[10px] font-bold">
-                    {i < state.step ? <Icon name="done" size={12} /> : i + 1}
-                  </span>
-                  <span className="hidden md:inline">{label}</span>
-                </button>
-                {i < BUILDER_STEPS.length - 1 && (
-                  <div
-                    className={`h-[1px] w-8 ${
-                      i < state.step ? "bg-secondary/40" : "bg-outline-variant/20"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-sm text-on-surface-variant">
-            Move step by step or return to any completed section before final review.
-          </p>
-        </section>
-      </div>
-
-      <div key={state.step} className="relative z-10 animate-fade-in-up">
-        {steps[state.step]}
-      </div>
-    </main>
+    <CharacterBuilderScreen
+      initialCampaignId={campaignId}
+      initialCampaignName={campaignName}
+    />
   );
 }

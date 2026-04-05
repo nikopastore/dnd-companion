@@ -693,7 +693,7 @@ export function PartyHubPanel({
             </span>
           </div>
 
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
             {COIN_KEYS.map((coin) => (
               <div key={coin} className="rounded-sm border border-outline-variant/8 bg-surface-container p-3 text-center">
                 <p className="font-headline text-xl text-secondary">{treasury[coin]}</p>
@@ -725,7 +725,7 @@ export function PartyHubPanel({
                 />
               </div>
 
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                 {COIN_KEYS.map((coin) => (
                   <Input
                     key={coin}

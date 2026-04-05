@@ -37,6 +37,30 @@ export function AppHeader() {
         <div className="relative z-10 flex items-center gap-2">
           {session?.user && (
             <>
+              <nav className="flex items-center gap-1 md:hidden">
+                {links.map((link) => {
+                  const active =
+                    pathname === link.href ||
+                    (link.href !== "/" && pathname?.startsWith(link.href));
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
+                        active
+                          ? "bg-secondary/15 text-secondary shadow-whisper"
+                          : "text-on-surface/55 hover:bg-surface-container-high/70 hover:text-on-surface"
+                      }`}
+                      aria-label={link.label}
+                      title={link.label}
+                    >
+                      <Icon name={link.icon} size={16} />
+                    </Link>
+                  );
+                })}
+              </nav>
+
               <nav className="hidden items-center gap-1 rounded-full border border-outline-variant/10 bg-surface-container/70 px-2 py-1 md:flex">
                 {links.map((link) => {
                   const active =

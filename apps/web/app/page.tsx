@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,10 @@ import { Icon } from "@/components/ui/icon";
 
 export default async function Home() {
   const session = await auth();
+
+  if (session?.user) {
+    redirect("/start");
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden px-6 pb-24 pt-28 md:px-8">

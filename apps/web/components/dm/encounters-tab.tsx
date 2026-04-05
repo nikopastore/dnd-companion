@@ -194,15 +194,15 @@ function EncounterCard({
           {monsters.length > 0 && (
             <div>
               <span className="font-label text-[10px] uppercase tracking-widest text-on-surface/40 block mb-2">Monsters</span>
-              <div className="bg-surface-container-lowest rounded-sm overflow-hidden border border-outline-variant/5">
-                <div className="grid grid-cols-5 gap-2 px-3 py-1.5 bg-surface-container-high/30 font-label text-[9px] uppercase tracking-wider text-on-surface/40">
+              <div className="bg-surface-container-lowest rounded-sm overflow-x-auto border border-outline-variant/5">
+                <div className="grid min-w-[420px] grid-cols-5 gap-2 px-3 py-1.5 bg-surface-container-high/30 font-label text-[9px] uppercase tracking-wider text-on-surface/40">
                   <span className="col-span-2">Name</span>
                   <span>CR</span>
                   <span>HP</span>
                   <span>AC</span>
                 </div>
                 {monsters.map((m, i) => (
-                  <div key={i} className="grid grid-cols-5 gap-2 px-3 py-2 border-t border-outline-variant/5 font-body text-sm text-on-surface">
+                  <div key={i} className="grid min-w-[420px] grid-cols-5 gap-2 px-3 py-2 border-t border-outline-variant/5 font-body text-sm text-on-surface">
                     <span className="col-span-2 flex items-center gap-1">
                       <span className="text-error font-bold text-xs">{m.count}x</span> {m.name}
                     </span>
@@ -521,8 +521,8 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
               </Button>
             </div>
             {monsters.map((monster, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-end animate-fade-in-up">
-                <div className="col-span-4">
+              <div key={i} className="grid grid-cols-1 gap-2 items-end animate-fade-in-up sm:grid-cols-12">
+                <div className="sm:col-span-4">
                   <Input
                     id={`monster-name-${i}`}
                     label={i === 0 ? "Name" : undefined}
@@ -532,7 +532,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     placeholder="Goblin..."
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <Select
                     id={`monster-cr-${i}`}
                     label={i === 0 ? "CR" : undefined}
@@ -544,7 +544,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     ))}
                   </Select>
                 </div>
-                <div className="col-span-1">
+                <div className="sm:col-span-1">
                   <Input
                     id={`monster-qty-${i}`}
                     label={i === 0 ? "Qty" : undefined}
@@ -555,7 +555,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     className="text-center"
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <Input
                     id={`monster-hp-${i}`}
                     label={i === 0 ? "HP" : undefined}
@@ -566,7 +566,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     className="text-center"
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <Input
                     id={`monster-ac-${i}`}
                     label={i === 0 ? "AC" : undefined}
@@ -577,7 +577,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     className="text-center"
                   />
                 </div>
-                <div className="col-span-1 flex justify-center">
+                <div className="sm:col-span-1 flex justify-center">
                   {monsters.length > 1 && (
                     <button onClick={() => removeMonster(i)} className="text-on-surface/30 hover:text-error transition-colors p-1">
                       <Icon name="delete" size={16} />
@@ -599,8 +599,8 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
               </Button>
             </div>
             {loot.map((item, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-end animate-fade-in-up">
-                <div className="col-span-4">
+              <div key={i} className="grid grid-cols-1 gap-2 items-end animate-fade-in-up sm:grid-cols-12">
+                <div className="sm:col-span-4">
                   <Input
                     id={`loot-name-${i}`}
                     label={i === 0 ? "Name" : undefined}
@@ -610,7 +610,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     placeholder="Gold coins..."
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <Input
                     id={`loot-qty-${i}`}
                     label={i === 0 ? "Qty" : undefined}
@@ -621,7 +621,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     className="text-center"
                   />
                 </div>
-                <div className="col-span-5">
+                <div className="sm:col-span-5">
                   <Input
                     id={`loot-desc-${i}`}
                     label={i === 0 ? "Description" : undefined}
@@ -630,7 +630,7 @@ export function EncountersTab({ encounters, campaignId, characters, locations, o
                     placeholder="A pouch of gold..."
                   />
                 </div>
-                <div className="col-span-1 flex justify-center">
+                <div className="sm:col-span-1 flex justify-center">
                   <button onClick={() => removeLootItem(i)} className="text-on-surface/30 hover:text-error transition-colors p-1">
                     <Icon name="delete" size={16} />
                   </button>

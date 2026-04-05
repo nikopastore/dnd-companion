@@ -15,7 +15,9 @@ interface CharClass {
   savingThrows: string[];
   skillChoices: string[];
   numSkillChoices: number;
+  imageUrl?: string | null;
   proficiencies: { armor: string; weapons: string; tools: string };
+  startingEquipment?: { description?: string };
 }
 
 const FEATURED_CLASSES = ["Fighter", "Wizard", "Rogue", "Cleric", "Barbarian", "Bard"];
@@ -46,7 +48,7 @@ export function ClassSelection({ builder }: Props) {
         subtitle: `Hit die d${cls.hitDie} · ${cls.primaryAbility} focus`,
         description: `Saving throws: ${cls.savingThrows.join(", ")}. Choose ${cls.numSkillChoices} skills from ${cls.skillChoices.join(", ")}.`,
         entityType: "class" as const,
-        imageUrl: null,
+        imageUrl: cls.imageUrl ?? null,
         meta: [
           `d${cls.hitDie} HP`,
           `${cls.numSkillChoices} skills`,
@@ -63,6 +65,65 @@ export function ClassSelection({ builder }: Props) {
       .then((data) => { setClasses(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  function renderClassDetails(optionId: string) {
+    const selected = classes.find((entry) => entry.id === optionId);
+    if (!selected) return null;
+
+    return (
+      <div className="space-y-5">
+        <div>
+          <p className="font-label text-[10px] uppercase tracking-[0.2em] text-secondary/80">
+            Class details
+          </p>
+          <h4 className="mt-2 font-headline text-3xl text-on-surface">{selected.name}</h4>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Core play pattern
+            </p>
+            <div className="mt-3 space-y-2 text-sm text-on-surface-variant">
+              <p>Primary ability: {selected.primaryAbility}</p>
+              <p>Hit die: d{selected.hitDie}</p>
+              <p>Saving throws: {selected.savingThrows.join(", ")}</p>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Starting proficiencies
+            </p>
+            <div className="mt-3 space-y-2 text-sm text-on-surface-variant">
+              <p>Armor: {selected.proficiencies.armor}</p>
+              <p>Weapons: {selected.proficiencies.weapons}</p>
+              <p>Tools: {selected.proficiencies.tools}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+          <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+            Skill training
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+            Choose {selected.numSkillChoices} from: {selected.skillChoices.join(", ")}.
+          </p>
+        </div>
+
+        {selected.startingEquipment?.description && (
+          <div className="rounded-2xl border border-outline-variant/10 bg-background/40 p-4">
+            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/75">
+              Starting equipment
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-on-surface-variant">
+              {selected.startingEquipment.description}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
@@ -82,9 +143,17 @@ export function ClassSelection({ builder }: Props) {
           <OptionGallery
             options={classOptions}
             selectedId={state.classId}
+            detailRenderer={(option) => renderClassDetails(option.id)}
+            confirmLabel="Choose class"
             onSelect={(option) => {
               const cls = classes.find((entry) => entry.id === option.id);
-              if (cls) update({ classId: cls.id, className: cls.name });
+              if (cls) update({
+                classId: cls.id,
+                className: cls.name,
+                skillProficiencies: [],
+                availableSkills: cls.skillChoices,
+                numSkillChoices: cls.numSkillChoices,
+              });
             }}
             featuredIds={featuredClassIds}
             featuredLabel="Popular callings"
@@ -100,7 +169,7 @@ export function ClassSelection({ builder }: Props) {
           <div className="space-y-4">
             <div className="bg-surface-container-low p-6 rounded-sm space-y-3 border border-outline-variant/8 shadow-whisper">
               <div className="flex items-center gap-4">
-                <EntityImage entityType="class" name={selectedClass.name} size="md" />
+                <EntityImage entityType="class" name={selectedClass.name} imageUrl={selectedClass.imageUrl} size="md" />
                 <h3 className="font-headline text-2xl text-on-surface">{selectedClass.name}</h3>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -146,13 +215,39 @@ export function ClassSelection({ builder }: Props) {
             <div className="bg-surface-container-low p-6 rounded-sm space-y-2 border border-outline-variant/8 shadow-whisper animate-fade-in-up" style={{ animationDelay: "200ms" }}>
               <h4 className="font-label text-xs uppercase tracking-widest text-secondary font-bold">
                 Choose {selectedClass.numSkillChoices} Skills
+                <span className="ml-2 font-body text-[10px] normal-case tracking-normal text-on-surface-variant/60">
+                  ({state.skillProficiencies.length} / {selectedClass.numSkillChoices} selected)
+                </span>
               </h4>
               <div className="flex flex-wrap gap-2">
-                {selectedClass.skillChoices.map((skill) => (
-                  <span key={skill} className="px-3 py-1.5 rounded-xl bg-surface-container-high text-on-surface font-label text-[10px] uppercase border border-outline-variant/10 interactive-lift">
-                    {skill}
-                  </span>
-                ))}
+                {selectedClass.skillChoices.map((skill) => {
+                  const isChosen = state.skillProficiencies.includes(skill);
+                  const atLimit = state.skillProficiencies.length >= selectedClass.numSkillChoices;
+                  return (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => {
+                        if (isChosen) {
+                          update({ skillProficiencies: state.skillProficiencies.filter((s) => s !== skill) });
+                        } else if (!atLimit) {
+                          update({ skillProficiencies: [...state.skillProficiencies, skill] });
+                        }
+                      }}
+                      disabled={!isChosen && atLimit}
+                      className={`px-3 py-1.5 rounded-xl font-label text-[10px] uppercase border transition-all duration-300 ${
+                        isChosen
+                          ? "bg-secondary text-on-secondary border-secondary/40 glow-gold shadow-whisper"
+                          : atLimit
+                            ? "bg-surface-container text-on-surface/20 border-outline-variant/10 cursor-not-allowed"
+                            : "bg-surface-container-high text-on-surface border-outline-variant/10 interactive-lift hover:border-secondary/30 hover:text-secondary"
+                      }`}
+                    >
+                      {isChosen && <Icon name="check" size={10} className="mr-1 inline" />}
+                      {skill}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -165,7 +260,7 @@ export function ClassSelection({ builder }: Props) {
           <Icon name="arrow_back" size={16} />
           Back
         </Button>
-        <Button onClick={nextStep} disabled={!state.classId}>
+        <Button onClick={nextStep} disabled={!state.classId || state.skillProficiencies.length < state.numSkillChoices}>
           Continue to Background
           <Icon name="arrow_forward" size={16} />
         </Button>

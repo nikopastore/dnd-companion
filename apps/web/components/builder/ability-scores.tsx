@@ -19,11 +19,20 @@ interface Props {
 }
 
 type Method = "pointbuy" | "standard";
+type AssignmentState = Record<string, number | null>;
+
+function rollAbilityScore() {
+  const rolls = Array.from({ length: 4 }, () => Math.floor(Math.random() * 6) + 1);
+  const kept = [...rolls].sort((a, b) => b - a).slice(0, 3);
+  return kept.reduce((sum, value) => sum + value, 0);
+}
 
 export function AbilityScores({ builder }: Props) {
   const { state, update, nextStep, prevStep } = builder;
-  const [method, setMethod] = useState<Method>("pointbuy");
-  const [standardAssignment, setStandardAssignment] = useState<Record<string, number | null>>({});
+  const [method, setMethod] = useState<Method | "rolled">("pointbuy");
+  const [standardAssignment, setStandardAssignment] = useState<AssignmentState>({});
+  const [rolledPool, setRolledPool] = useState<number[]>([]);
+  const [rolledAssignment, setRolledAssignment] = useState<AssignmentState>({});
 
   const scores = state.abilityScores;
   const pointsSpent = Object.values(scores).reduce(
@@ -47,6 +56,14 @@ export function AbilityScores({ builder }: Props) {
     update({ abilityScores: newScores });
   }
 
+  function applyAssignment(assignment: AssignmentState) {
+    const newScores = { ...scores };
+    for (const [key, val] of Object.entries(assignment)) {
+      if (val !== null) (newScores as Record<string, number>)[key] = val;
+    }
+    update({ abilityScores: newScores as typeof scores });
+  }
+
   function applyStandardArray() {
     const sorted = [...STANDARD_ARRAY];
     const assignment: Record<string, number> = {};
@@ -57,7 +74,10 @@ export function AbilityScores({ builder }: Props) {
     update({ abilityScores: assignment as typeof scores });
   }
 
-  function assignStandardValue(ability: string, value: number) {
+  function assignStandardValue(
+    ability: string,
+    value: number
+  ) {
     // Remove this value from any other ability
     const newAssignment = { ...standardAssignment };
     for (const key of Object.keys(newAssignment)) {
@@ -65,16 +85,67 @@ export function AbilityScores({ builder }: Props) {
     }
     newAssignment[ability] = value;
     setStandardAssignment(newAssignment);
-
-    // Apply all assigned values
-    const newScores = { ...scores };
-    for (const [key, val] of Object.entries(newAssignment)) {
-      if (val !== null) (newScores as Record<string, number>)[key] = val;
-    }
-    update({ abilityScores: newScores as typeof scores });
+    applyAssignment(newAssignment);
   }
 
+  function assignRolledValue(ability: string, value: number) {
+    const availableCount = rolledPool.filter((entry) => entry === value).length;
+    const currentValue = rolledAssignment[ability];
+    const usedCount = Object.entries(rolledAssignment).reduce((count, [key, entry]) => {
+      if (key === ability) {
+        return count;
+      }
+      return entry === value ? count + 1 : count;
+    }, 0);
+
+    if (usedCount >= availableCount) {
+      return;
+    }
+
+    const nextAssignment = { ...rolledAssignment, [ability]: value };
+    setRolledAssignment(nextAssignment);
+    applyAssignment(nextAssignment);
+  }
+
+  function generateRolledPool() {
+    const nextPool = Array.from({ length: 6 }, () => rollAbilityScore()).sort((a, b) => b - a);
+    setRolledPool(nextPool);
+    setRolledAssignment({});
+    update({
+      abilityScores: {
+        strength: 10,
+        dexterity: 10,
+        constitution: 10,
+        intelligence: 10,
+        wisdom: 10,
+        charisma: 10,
+      },
+    });
+  }
+
+  const scoresValid =
+    method === "pointbuy"
+      ? pointsRemaining >= 0 && Object.values(scores).some((v) => v !== 10)
+      : method === "standard"
+        ? Object.values(standardAssignment).filter((v) => v !== null).length === 6
+        : method === "rolled"
+          ? Object.values(rolledAssignment).filter((v) => v !== null).length === 6
+          : false;
+
   const usedStandardValues = new Set(Object.values(standardAssignment).filter((v) => v !== null));
+  const rolledValueUsage = rolledPool.reduce<Record<number, number>>((counts, value) => {
+    counts[value] = (counts[value] ?? 0) + 1;
+    return counts;
+  }, {});
+  const rolledAssignedUsage = Object.values(rolledAssignment).reduce<Record<number, number>>(
+    (counts, value) => {
+      if (value !== null) {
+        counts[value] = (counts[value] ?? 0) + 1;
+      }
+      return counts;
+    },
+    {}
+  );
 
   return (
     <div className="animate-fade-in">
@@ -108,6 +179,21 @@ export function AbilityScores({ builder }: Props) {
           }`}
         >
           Standard Array
+        </button>
+        <button
+          onClick={() => {
+            setMethod("rolled");
+            if (rolledPool.length === 0) {
+              generateRolledPool();
+            }
+          }}
+          className={`px-5 py-2.5 rounded-sm font-label text-xs uppercase tracking-widest transition-all duration-500 ${
+            method === "rolled"
+              ? "bg-primary-container text-on-primary-container shadow-elevated glow-gold"
+              : "bg-surface-container-high text-on-surface-variant hover:bg-surface-bright border border-outline-variant/10"
+          }`}
+        >
+          Roll Scores
         </button>
       </div>
 
@@ -227,12 +313,113 @@ export function AbilityScores({ builder }: Props) {
         </div>
       )}
 
+      {method === "rolled" && (
+        <div className="space-y-6 animate-fade-in-up">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+            <Button variant="secondary" onClick={generateRolledPool}>
+              <Icon name="casino" size={16} />
+              Roll a New Set
+            </Button>
+            <p className="text-sm text-on-surface-variant">
+              Roll 4d6, drop the lowest die, and assign the six totals where you want them.
+            </p>
+          </div>
+
+          <div className="flex gap-3 justify-center flex-wrap mb-4 stagger-children">
+            {rolledPool.map((val, index) => (
+              <span
+                key={`${val}-${index}`}
+                className={`px-3 py-1 rounded-sm font-headline text-lg transition-all duration-500 animate-fade-in-up ${
+                  (rolledAssignedUsage[val] ?? 0) >= (rolledValueUsage[val] ?? 0)
+                    ? "bg-secondary-container/20 text-secondary/50 opacity-60"
+                    : "bg-surface-container-high text-secondary glow-gold"
+                }`}
+              >
+                {val}
+              </span>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 stagger-children">
+            {ABILITIES.map((ability) => {
+              const assigned = rolledAssignment[ability.key];
+              const mod = assigned ? getAbilityModifier(assigned) : 0;
+              return (
+                <div
+                  key={ability.key}
+                  className="bg-surface-container-low p-5 rounded-sm text-center space-y-3 interactive-lift border border-outline-variant/8 animate-fade-in-up"
+                >
+                  <span className="font-label text-[10px] uppercase tracking-widest text-secondary font-bold">
+                    {ability.abbreviation}
+                  </span>
+                  <div
+                    className="font-headline text-3xl text-on-surface animate-count-up"
+                    key={`${ability.key}-${assigned}`}
+                  >
+                    {assigned ?? "\u2014"}
+                  </div>
+                  {assigned && (
+                    <div className="font-body text-xs text-secondary/70 font-bold animate-fade-in">
+                      {formatModifier(mod)}
+                    </div>
+                  )}
+                  <div className="flex gap-1 flex-wrap justify-center">
+                    {rolledPool.map((val, index) => (
+                      <button
+                        key={`${ability.key}-${val}-${index}`}
+                        onClick={() => assignRolledValue(ability.key, val)}
+                        disabled={
+                          rolledAssignment[ability.key] !== val &&
+                          (rolledAssignedUsage[val] ?? 0) >= (rolledValueUsage[val] ?? 0)
+                        }
+                        className={`w-8 h-8 rounded-sm text-xs font-bold transition-all duration-300 ${
+                          assigned === val
+                            ? "bg-secondary text-on-secondary glow-gold"
+                            : (rolledAssignedUsage[val] ?? 0) >= (rolledValueUsage[val] ?? 0)
+                              ? "bg-surface-container text-on-surface/20"
+                              : "bg-surface-container-high text-on-surface hover:bg-surface-bright hover:scale-110"
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Racial Bonuses Display */}
+      {Object.keys(state.racialBonuses).length > 0 && (
+        <div className="mt-8 rounded-sm border border-secondary/15 bg-secondary/5 p-5 animate-fade-in-up">
+          <div className="flex items-center gap-2 mb-3">
+            <Icon name="diversity_3" size={16} className="text-secondary" />
+            <span className="font-label text-xs uppercase tracking-widest text-secondary font-bold">
+              Racial Ability Bonuses ({state.raceName})
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {Object.entries(state.racialBonuses).map(([ability, bonus]) => (
+              <div key={ability} className="flex items-center gap-2 rounded-xl bg-secondary/10 border border-secondary/20 px-3 py-1.5">
+                <span className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">{ability.slice(0, 3)}</span>
+                <span className="font-headline text-lg text-secondary">+{bonus}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-on-surface-variant/60">
+            These bonuses are added on top of your base scores when your character is created.
+          </p>
+        </div>
+      )}
+
       <div className="flex justify-between mt-12">
         <Button variant="ghost" onClick={prevStep}>
           <Icon name="arrow_back" size={16} /> Back
         </Button>
-        <Button onClick={nextStep}>
-          Review Character <Icon name="arrow_forward" size={16} />
+        <Button onClick={nextStep} disabled={!scoresValid}>
+          Continue to Identity <Icon name="arrow_forward" size={16} />
         </Button>
       </div>
     </div>
