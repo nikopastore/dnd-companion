@@ -6,7 +6,6 @@ import {
   getDefaultEntryRoute,
   getOnboardingState,
 } from "@/lib/onboarding";
-import { AtmosphericHero } from "@/components/ui/atmospheric-hero";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 
@@ -28,23 +27,27 @@ export default async function StartPage() {
   const pendingCampaigns = state.incompletePlayerMemberships;
 
   return (
-    <main className="mx-auto max-w-7xl space-y-10 px-6 pb-32 pt-24">
-      <AtmosphericHero
-        eyebrow="First Entry"
-        title="Every first login should open a path, not a blank dashboard."
-        description="New DMs should be taken into campaign founding. New players should be taken into character creation for the campaign they joined. This portal resolves that first decision and keeps the table moving."
-        entityType="character"
-        imageName="The Gate of First Light"
-        chips={["Guided Entry", "Campaign Setup", "Character Builder", "No Dead Ends"]}
-        highlights={[
-          { icon: "groups", label: "Campaigns", value: `${state.memberships.length}` },
-          { icon: "shield", label: "Managed Tables", value: `${state.manageableMemberships.length}` },
-          { icon: "person", label: "Characters", value: `${state.characters.length}` },
-        ]}
-      />
+    <main className="mx-auto max-w-5xl space-y-10 px-6 pb-32 pt-24">
+      {/* Welcome header */}
+      <section className="space-y-4 text-center animate-fade-in-up">
+        <div className="inline-flex items-center gap-2 rounded-full border border-secondary/15 bg-secondary/10 px-4 py-1.5">
+          <Icon name="flare" size={14} className="text-secondary" />
+          <span className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary">
+            Welcome, {session.user.name?.split(" ")[0] || "Adventurer"}
+          </span>
+        </div>
+
+        <h1 className="font-headline text-4xl tracking-tight text-on-background sm:text-5xl">
+          Choose Your Path
+        </h1>
+
+        <p className="mx-auto max-w-xl text-base leading-relaxed text-on-surface-variant">
+          Are you here to run a campaign or join one? Pick a role to get started.
+        </p>
+      </section>
 
       {showCampaignChoice && (
-        <section className="grid gap-6 lg:grid-cols-2">
+        <section className="grid gap-6 lg:grid-cols-2 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <article className="relative overflow-hidden rounded-2xl border border-secondary/15 bg-surface-container-low p-7 shadow-float">
             <div className="decorative-orb absolute -right-12 -top-10 h-44 w-44 bg-secondary/20" />
             <div className="relative space-y-4">
@@ -54,23 +57,9 @@ export default async function StartPage() {
               <div>
                 <h2 className="font-headline text-3xl text-on-surface">Start as a DM</h2>
                 <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-                  Found a campaign first: name the world, define tone, house rules,
-                  and onboarding style, then invite the party.
+                  Create a campaign, define the world, set house rules, then invite
+                  your players.
                 </p>
-              </div>
-              <div className="grid gap-2 text-sm text-on-surface-variant">
-                {[
-                  "Campaign name, system, edition, setting, and tone",
-                  "Beginner or advanced onboarding posture",
-                  "World seed, summary, and house rules",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-xl border border-outline-variant/10 bg-background/40 px-4 py-3"
-                  >
-                    {item}
-                  </div>
-                ))}
               </div>
               <Link href="/create">
                 <Button size="lg" className="glow-gold-strong">
@@ -90,23 +79,9 @@ export default async function StartPage() {
               <div>
                 <h2 className="font-headline text-3xl text-on-surface">Start as a Player</h2>
                 <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-                  Join with an invite code, then the platform can route you directly
-                  into a campaign-aware character builder instead of an empty shell.
+                  Join a campaign with an invite code, then build your character with
+                  the guided creation wizard.
                 </p>
-              </div>
-              <div className="grid gap-2 text-sm text-on-surface-variant">
-                {[
-                  "Join as a player or spectator",
-                  "Bind a new hero to the joined campaign",
-                  "Move straight into the race, class, and origin builder",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-xl border border-outline-variant/10 bg-background/40 px-4 py-3"
-                  >
-                    {item}
-                  </div>
-                ))}
               </div>
               <Link href="/join">
                 <Button variant="secondary" size="lg">
@@ -122,15 +97,12 @@ export default async function StartPage() {
       {pendingCampaigns.length > 1 && (
         <section className="space-y-5 rounded-2xl border border-outline-variant/10 bg-surface-container-low p-7 shadow-elevated">
           <div>
-            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
-              Character Creation Queue
-            </p>
-            <h2 className="mt-2 font-headline text-3xl text-on-surface">
+            <h2 className="font-headline text-3xl text-on-surface">
               Choose which campaign needs a hero first
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-on-surface-variant">
-              You have player memberships without linked characters. Pick a campaign
-              below and the builder will open already attached to that table.
+              You&apos;ve joined multiple campaigns. Pick one below to start building
+              your character.
             </p>
           </div>
 

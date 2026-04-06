@@ -85,65 +85,35 @@ export function IdentityDetails({ builder }: Props) {
 
         <div className="space-y-5 rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 shadow-whisper">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
-                Personality Traits
-              </label>
-              <textarea
-                rows={4}
-                value={state.personalityTraits}
-                onChange={(event) => update({ personalityTraits: event.target.value })}
-                placeholder="How do they speak, react, or carry themselves?"
-                className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-sm text-on-surface outline-none transition-all duration-300 placeholder:text-on-surface/25 focus:border-secondary/35 focus:ring-1 focus:ring-secondary/35"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
-                Ideals
-              </label>
-              <textarea
-                rows={4}
-                value={state.ideals}
-                onChange={(event) => update({ ideals: event.target.value })}
-                placeholder="What principle do they refuse to betray?"
-                className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-sm text-on-surface outline-none transition-all duration-300 placeholder:text-on-surface/25 focus:border-secondary/35 focus:ring-1 focus:ring-secondary/35"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
-                Bonds
-              </label>
-              <textarea
-                rows={4}
-                value={state.bonds}
-                onChange={(event) => update({ bonds: event.target.value })}
-                placeholder="Who or what matters enough to change their choices?"
-                className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-sm text-on-surface outline-none transition-all duration-300 placeholder:text-on-surface/25 focus:border-secondary/35 focus:ring-1 focus:ring-secondary/35"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
-                Flaws
-              </label>
-              <textarea
-                rows={4}
-                value={state.flaws}
-                onChange={(event) => update({ flaws: event.target.value })}
-                placeholder="What weakness or habit will create trouble at the table?"
-                className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-sm text-on-surface outline-none transition-all duration-300 placeholder:text-on-surface/25 focus:border-secondary/35 focus:ring-1 focus:ring-secondary/35"
-              />
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-secondary/10 bg-secondary/5 p-5">
-            <p className="font-label text-[10px] uppercase tracking-[0.18em] text-secondary/80">
-              Builder guidance
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-              A good character creation flow should give players enough identity
-              framing that later notes, relationships, and quest hooks have something
-              concrete to attach to.
-            </p>
+            {[
+              { key: "personalityTraits" as const, label: "Personality Traits", placeholder: "How do they speak, react, or carry themselves?", prompt: "Write 2 personality traits" },
+              { key: "ideals" as const, label: "Ideals", placeholder: "What principle do they refuse to betray?", prompt: "Write an ideal or guiding principle" },
+              { key: "bonds" as const, label: "Bonds", placeholder: "Who or what matters enough to change their choices?", prompt: "Write a bond connecting them to the world" },
+              { key: "flaws" as const, label: "Flaws", placeholder: "What weakness or habit will create trouble at the table?", prompt: "Write a character flaw or weakness" },
+            ].map((field) => (
+              <div key={field.key} className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">
+                    {field.label}
+                  </label>
+                  <AIAssistButton
+                    label="Suggest"
+                    systemPrompt={AI_PROMPTS.backstoryGenerator}
+                    userPrompt={`${field.prompt} for ${state.name || "this character"}.`}
+                    context={`Race: ${state.raceName || "Unknown"}\nClass: ${state.className || "Unknown"}\nBackground: ${state.backgroundName || "Unknown"}\nBackstory: ${state.backstory || "None yet"}`}
+                    onApply={(text) => update({ [field.key]: text })}
+                    size="sm"
+                  />
+                </div>
+                <textarea
+                  rows={4}
+                  value={state[field.key]}
+                  onChange={(event) => update({ [field.key]: event.target.value })}
+                  placeholder={field.placeholder}
+                  className="w-full resize-none rounded-sm border border-outline-variant/10 bg-surface-container-highest px-4 py-3 font-body text-sm text-on-surface outline-none transition-all duration-300 placeholder:text-on-surface/25 focus:border-secondary/35 focus:ring-1 focus:ring-secondary/35"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>

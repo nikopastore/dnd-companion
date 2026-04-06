@@ -139,7 +139,7 @@ export function ReviewAndCreate({ builder }: Props) {
               <div className="flex justify-between items-center py-2 animate-fade-in-up">
                 <span className="font-label text-xs uppercase tracking-widest text-on-surface/40">HP</span>
                 <span className="font-headline text-lg text-primary">
-                  Calculated on save
+                  Set at level 1
                 </span>
               </div>
             </div>
