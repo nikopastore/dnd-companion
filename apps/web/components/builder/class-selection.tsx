@@ -127,19 +127,15 @@ export function ClassSelection({ builder }: Props) {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-12 text-center md:text-left">
-        <h2 className="font-headline text-4xl md:text-5xl text-primary mb-2 tracking-tight animate-fade-in-up">
-          Path & Calling
-        </h2>
-        <p className="font-body text-on-surface-variant text-lg max-w-2xl italic animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-          Choose the discipline that will shape your combat style, abilities, and role within the party.
-        </p>
+      <div className="mb-8">
+        <h2 className="font-headline text-3xl text-on-background mb-1">Choose a Class</h2>
+        <p className="text-sm text-on-surface-variant">Your class determines your combat style, abilities, and role in the party.</p>
       </div>
 
       {loading ? (
         <p className="text-on-surface-variant animate-pulse">Loading classes...</p>
       ) : (
-        <div className="mb-12">
+        <div className="mb-8">
           <OptionGallery
             options={classOptions}
             selectedId={state.classId}
@@ -156,112 +152,62 @@ export function ClassSelection({ builder }: Props) {
               });
             }}
             featuredIds={featuredClassIds}
-            featuredLabel="Popular callings"
-            allLabel="Every class"
-            searchPlaceholder="Search classes, proficiencies, or skills"
+            featuredLabel="Popular"
+            allLabel="All classes"
+            searchPlaceholder="Search classes..."
           />
         </div>
       )}
 
-      {/* Selected Class Details */}
+      {/* Skill picker — shown after class is selected */}
       {selectedClass && (
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-scale-in">
-          <div className="space-y-4">
-            <div className="bg-surface-container-low p-6 rounded-sm space-y-3 border border-outline-variant/8 shadow-whisper">
-              <div className="flex items-center gap-4">
-                <EntityImage entityType="class" name={selectedClass.name} imageUrl={selectedClass.imageUrl} size="md" />
-                <h3 className="font-headline text-2xl text-on-surface">{selectedClass.name}</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-surface-container-high p-3 rounded-sm text-center relative overflow-hidden glow-gold border border-outline-variant/8">
-                  <div className="decorative-orb w-12 h-12 bg-secondary -right-1 -top-1" />
-                  <div className="relative z-10">
-                    <div className="text-secondary font-headline text-xl">d{selectedClass.hitDie}</div>
-                    <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Hit Die</div>
-                  </div>
-                </div>
-                <div className="bg-surface-container-high p-3 rounded-sm text-center relative overflow-hidden glow-gold border border-outline-variant/8">
-                  <div className="decorative-orb w-12 h-12 bg-secondary -left-1 -top-1" />
-                  <div className="relative z-10">
-                    <div className="text-secondary font-headline text-xl capitalize">{selectedClass.primaryAbility.slice(0, 3)}</div>
-                    <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Primary</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-surface-container-low p-6 rounded-sm space-y-2 border border-outline-variant/8 shadow-whisper animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-              <h4 className="font-label text-xs uppercase tracking-widest text-secondary font-bold">Saving Throws</h4>
-              <div className="flex flex-wrap gap-2">
-                {selectedClass.savingThrows.map((st) => (
-                  <span key={st} className="px-3 py-1.5 rounded-xl bg-secondary-container/20 text-secondary font-label text-[10px] uppercase font-bold border border-secondary/20 shadow-whisper">
-                    {st}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-surface-container-low p-6 rounded-sm space-y-2 border border-outline-variant/8 shadow-whisper animate-fade-in-up" style={{ animationDelay: "150ms" }}>
-              <h4 className="font-label text-xs uppercase tracking-widest text-secondary font-bold">Proficiencies</h4>
-              <div className="space-y-2 font-body text-sm text-on-surface-variant">
-                <p><span className="text-on-surface font-medium">Armor:</span> {selectedClass.proficiencies.armor}</p>
-                <p><span className="text-on-surface font-medium">Weapons:</span> {selectedClass.proficiencies.weapons}</p>
-                <p><span className="text-on-surface font-medium">Tools:</span> {selectedClass.proficiencies.tools}</p>
-              </div>
-            </div>
-
-            <div className="bg-surface-container-low p-6 rounded-sm space-y-2 border border-outline-variant/8 shadow-whisper animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-              <h4 className="font-label text-xs uppercase tracking-widest text-secondary font-bold">
-                Choose {selectedClass.numSkillChoices} Skills
-                <span className="ml-2 font-body text-[10px] normal-case tracking-normal text-on-surface-variant/60">
-                  ({state.skillProficiencies.length} / {selectedClass.numSkillChoices} selected)
-                </span>
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {selectedClass.skillChoices.map((skill) => {
-                  const isChosen = state.skillProficiencies.includes(skill);
-                  const atLimit = state.skillProficiencies.length >= selectedClass.numSkillChoices;
-                  return (
-                    <button
-                      key={skill}
-                      type="button"
-                      onClick={() => {
-                        if (isChosen) {
-                          update({ skillProficiencies: state.skillProficiencies.filter((s) => s !== skill) });
-                        } else if (!atLimit) {
-                          update({ skillProficiencies: [...state.skillProficiencies, skill] });
-                        }
-                      }}
-                      disabled={!isChosen && atLimit}
-                      className={`px-3 py-1.5 rounded-xl font-label text-[10px] uppercase border transition-all duration-300 ${
-                        isChosen
-                          ? "bg-secondary text-on-secondary border-secondary/40 glow-gold shadow-whisper"
-                          : atLimit
-                            ? "bg-surface-container text-on-surface/20 border-outline-variant/10 cursor-not-allowed"
-                            : "bg-surface-container-high text-on-surface border-outline-variant/10 interactive-lift hover:border-secondary/30 hover:text-secondary"
-                      }`}
-                    >
-                      {isChosen && <Icon name="check" size={10} className="mr-1 inline" />}
-                      {skill}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+        <section className="mb-8 space-y-3 animate-fade-in-up">
+          <h3 className="font-headline text-xl text-on-background">
+            Choose {selectedClass.numSkillChoices} skills
+            <span className="ml-2 text-sm font-normal text-on-surface-variant">
+              ({state.skillProficiencies.length} / {selectedClass.numSkillChoices})
+            </span>
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {selectedClass.skillChoices.map((skill) => {
+              const isChosen = state.skillProficiencies.includes(skill);
+              const atLimit = state.skillProficiencies.length >= selectedClass.numSkillChoices;
+              return (
+                <button
+                  key={skill}
+                  type="button"
+                  onClick={() => {
+                    if (isChosen) {
+                      update({ skillProficiencies: state.skillProficiencies.filter((s) => s !== skill) });
+                    } else if (!atLimit) {
+                      update({ skillProficiencies: [...state.skillProficiencies, skill] });
+                    }
+                  }}
+                  disabled={!isChosen && atLimit}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                    isChosen
+                      ? "border-secondary/30 bg-secondary/10 text-secondary font-bold"
+                      : atLimit
+                        ? "border-outline-variant/10 bg-surface-container text-on-surface/20 cursor-not-allowed"
+                        : "border-outline-variant/10 bg-surface-container-high text-on-surface-variant hover:border-secondary/20"
+                  }`}
+                >
+                  {isChosen && <Icon name="check" size={10} className="mr-1 inline" />}
+                  {skill}
+                </button>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-between mt-12">
+      <div className="flex justify-between">
         <Button variant="ghost" onClick={prevStep}>
           <Icon name="arrow_back" size={16} />
           Back
         </Button>
         <Button onClick={nextStep} disabled={!state.classId || state.skillProficiencies.length < state.numSkillChoices}>
-          Continue to Background
+          Continue
           <Icon name="arrow_forward" size={16} />
         </Button>
       </div>

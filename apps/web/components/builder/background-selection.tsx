@@ -125,19 +125,15 @@ export function BackgroundSelection({ builder }: Props) {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-12 text-center md:text-left">
-        <h2 className="font-headline text-4xl md:text-5xl text-primary mb-2 tracking-tight animate-fade-in-up">
-          Life Before Adventure
-        </h2>
-        <p className="font-body text-on-surface-variant text-lg max-w-2xl italic animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-          What shaped your character before they took up the adventurer&apos;s life?
-        </p>
+      <div className="mb-8">
+        <h2 className="font-headline text-3xl text-on-background mb-1">Choose a Background</h2>
+        <p className="text-sm text-on-surface-variant">What did your character do before becoming an adventurer?</p>
       </div>
 
       {loading ? (
         <p className="text-on-surface-variant animate-pulse">Loading backgrounds...</p>
       ) : (
-        <div className="mb-12">
+        <div className="mb-8">
           <OptionGallery
             options={backgroundOptions}
             selectedId={state.backgroundId}
@@ -150,38 +146,19 @@ export function BackgroundSelection({ builder }: Props) {
               }
             }}
             featuredIds={featuredBackgroundIds}
-            featuredLabel="Popular origins"
-            allLabel="Every background"
-            searchPlaceholder="Search backgrounds, features, or proficiencies"
+            featuredLabel="Popular"
+            allLabel="All backgrounds"
+            searchPlaceholder="Search backgrounds..."
           />
         </div>
       )}
 
-      {/* Selected Background Detail */}
-      {selected && (
-        <section className="bg-surface-container-low p-8 rounded-sm mb-12 border-l-2 border-secondary lore-margins animate-fade-in shadow-whisper">
-          <h3 className="font-headline text-2xl text-secondary mb-4">{selected.feature.name}</h3>
-          <div className="decorative-line w-full mb-4" />
-          <p className="font-body text-on-surface-variant leading-relaxed animate-fade-in" style={{ animationDelay: "100ms" }}>
-            {selected.feature.description}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-4 font-label text-xs uppercase tracking-widest text-on-surface/60">
-            {selected.toolProficiencies.length > 0 && (
-              <span className="animate-fade-in-up" style={{ animationDelay: "150ms" }}>Tools: {selected.toolProficiencies.join(", ")}</span>
-            )}
-            {selected.languages > 0 && (
-              <span className="animate-fade-in-up" style={{ animationDelay: "200ms" }}>+{selected.languages} language{selected.languages > 1 ? "s" : ""}</span>
-            )}
-          </div>
-        </section>
-      )}
-
-      <div className="flex justify-between mt-12">
+      <div className="flex justify-between">
         <Button variant="ghost" onClick={prevStep}>
           <Icon name="arrow_back" size={16} /> Back
         </Button>
         <Button onClick={nextStep} disabled={!state.backgroundId}>
-          Continue to Abilities <Icon name="arrow_forward" size={16} />
+          Continue <Icon name="arrow_forward" size={16} />
         </Button>
       </div>
     </div>

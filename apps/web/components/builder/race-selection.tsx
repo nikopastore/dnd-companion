@@ -186,16 +186,12 @@ export function RaceSelection({ builder }: Props) {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-12 text-center md:text-left">
-        <h2 className="font-headline text-4xl md:text-5xl text-primary mb-2 tracking-tight animate-fade-in-up">
-          Origin & Heritage
-        </h2>
-        <p className="font-body text-on-surface-variant text-lg max-w-2xl italic animate-fade-in-up" style={{ animationDelay: "80ms" }}>
-          Select the foundational bloodline that defines your physical form and innate magical affinity.
-        </p>
+      <div className="mb-8">
+        <h2 className="font-headline text-3xl text-on-background mb-1">Choose a Race</h2>
+        <p className="text-sm text-on-surface-variant">Your race determines your physical traits and innate abilities.</p>
       </div>
 
-      <section className="mb-12">
+      <section className="mb-8">
         {loading ? (
           <p className="text-on-surface-variant animate-pulse">Loading races...</p>
         ) : (
@@ -203,111 +199,54 @@ export function RaceSelection({ builder }: Props) {
             options={raceOptions}
             selectedId={state.raceId}
             detailRenderer={(option) => renderRaceDetails(option.id)}
-            confirmLabel="Select lineage"
+            confirmLabel="Select race"
             onSelect={(option) => {
               const race = races.find((entry) => entry.id === option.id);
               if (race) selectRace(race);
             }}
             featuredIds={featuredRaceIds}
-            featuredLabel="Popular lineages"
-            allLabel="Every ancestry"
-            searchPlaceholder="Search races, languages, or traits"
+            featuredLabel="Popular"
+            allLabel="All races"
+            searchPlaceholder="Search races..."
           />
         )}
       </section>
 
-      {/* Selected Race Details */}
-      {selectedRace && (
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in-up">
-          <div className="lg:col-span-5 space-y-6">
-            <div className="p-6 bg-surface-container-low rounded-sm relative border-l-2 border-primary animate-slide-in-left shadow-whisper">
-              <div className="flex items-center gap-4 mb-3">
-                <EntityImage entityType="race" name={selectedRace.name} size="md" />
-                <h3 className="font-headline text-2xl text-on-surface">{selectedRace.name}</h3>
-              </div>
-              <div className="space-y-1 font-body text-sm text-on-surface-variant">
-                <p>Size: {selectedRace.size}</p>
-                <p>Speed: {selectedRace.speed} ft</p>
-                <p>Languages: {selectedRace.languages.join(", ")}</p>
-              </div>
-            </div>
-
-            {/* Subraces */}
-            {selectedRace.subraces.length > 0 && (
-              <div className="space-y-3 animate-fade-in" style={{ animationDelay: "150ms" }}>
-                <span className="font-label text-xs uppercase tracking-widest text-secondary font-bold">
-                  Subraces
-                </span>
-                {selectedRace.subraces.map((sub) => (
-                  <button
-                    key={sub.id}
-                    onClick={() => {
-                      const combinedBonuses = { ...selectedRace.abilityBonuses, ...sub.abilityBonuses };
-                      update({ subraceId: sub.id, racialBonuses: combinedBonuses });
-                    }}
-                    className={`w-full p-4 rounded-sm text-left transition-all duration-500 interactive-glow ${
-                      state.subraceId === sub.id
-                        ? "bg-surface-container border border-secondary/40 shadow-whisper"
-                        : "bg-surface-container-low border border-outline-variant/10 hover:border-secondary/20"
-                    }`}
-                  >
-                    <span className="font-headline text-lg text-on-surface">{sub.name}</span>
-                    <div className="flex gap-2 mt-2">
-                      {Object.entries(sub.abilityBonuses).map(([ability, bonus]) => (
-                        <span key={ability} className="text-xs font-label text-secondary uppercase">
-                          +{bonus} {ability.slice(0, 3)}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="lg:col-span-7 space-y-8">
-            {/* Ability Bonuses */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 stagger-children">
-              {Object.entries(selectedRace.abilityBonuses).map(([ability, bonus]) => (
-                <div
-                  key={ability}
-                  className="bg-surface-container-high p-4 rounded-sm border border-outline-variant/8 text-center relative overflow-hidden interactive-lift animate-fade-in-up"
-                >
-                  <div className="decorative-orb w-16 h-16 bg-secondary -right-2 -top-2" />
-                  <div className="relative z-10">
-                    <div className="text-secondary font-headline text-2xl mb-1">+{bonus as number}</div>
-                    <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-                      {ability}
-                    </div>
-                  </div>
+      {/* Subrace picker — only shown when needed */}
+      {selectedRace && selectedRace.subraces.length > 0 && (
+        <section className="mb-8 space-y-3 animate-fade-in-up">
+          <h3 className="font-headline text-xl text-on-background">
+            Choose a subrace for {selectedRace.name}
+          </h3>
+          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+            {selectedRace.subraces.map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => {
+                  const combinedBonuses = { ...selectedRace.abilityBonuses, ...sub.abilityBonuses };
+                  update({ subraceId: sub.id, racialBonuses: combinedBonuses });
+                }}
+                className={`rounded-xl border p-4 text-left transition-all ${
+                  state.subraceId === sub.id
+                    ? "border-secondary/40 bg-secondary/10"
+                    : "border-outline-variant/10 bg-surface-container-low hover:border-secondary/20"
+                }`}
+              >
+                <span className="font-headline text-lg text-on-surface">{sub.name}</span>
+                <div className="flex gap-2 mt-1">
+                  {Object.entries(sub.abilityBonuses).map(([ability, bonus]) => (
+                    <span key={ability} className="text-xs text-secondary uppercase">+{bonus} {ability.slice(0, 3)}</span>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            {/* Traits */}
-            <div className="space-y-4">
-              <span className="font-label text-xs uppercase tracking-widest text-secondary font-bold">
-                Racial Traits
-              </span>
-              <div className="stagger-children space-y-4">
-                {(selectedRace.traits as Array<{ name: string; description: string }>).map((trait, i) => (
-                  <div key={i} className="bg-surface-container-low p-4 rounded-sm border-l-2 border-primary/20 animate-fade-in-up interactive-lift shadow-whisper">
-                    <h4 className="font-headline text-lg text-primary mb-1">{trait.name}</h4>
-                    <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-                      {trait.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
+              </button>
+            ))}
           </div>
         </section>
       )}
 
-      {/* Navigation */}
-      <div className="flex justify-end mt-12">
+      <div className="flex justify-end">
         <Button onClick={nextStep} disabled={!state.raceId || (state.subraceRequired && !state.subraceId)}>
-          Continue to Class
+          Continue
           <Icon name="arrow_forward" size={16} />
         </Button>
       </div>
