@@ -20,6 +20,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Protect app routes, not auth/api/static/landing
-    "/((?!api|_next/static|_next/image|favicon.ico|textures|login|register|$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|textures|login|register|$).*)",
   ],
 };
