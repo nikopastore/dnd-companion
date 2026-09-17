@@ -1,0 +1,20 @@
+# robots.txt — The Digital Tome (dnd-companion-taupe.vercel.app)
+# Public SEO/AI discovery surface only.
+# Authenticated app routes are intentionally not crawled.
+
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Disallow: /api/
+Disallow: /start
+Disallow: /dashboard
+Disallow: /create
+Disallow: /join
+Disallow: /lobby/
+Disallow: /campaign/
+Disallow: /character/
+Disallow: /campaigns
+Disallow: /builder
+
+Sitemap: https://dnd-companion-taupe.vercel.app/sitemap.xml
