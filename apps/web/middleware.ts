@@ -19,7 +19,11 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Protect app routes, not auth/api/static/landing
-    "/((?!api|_next/static|_next/image|favicon.ico|textures|login|register|$).*)",
+    // Protect app routes, not auth/api/static/landing/seo-discovery files.
+    // robots.txt, sitemap.xml, llms.txt MUST stay reachable for crawlers and
+    // AI discovery agents to index the public marketing surface anonymously.
+    // The trailing $ in the original lookahead kept only "/" public; we now
+    // also explicitly exclude the three well-known crawler files at the root.
+    "/((?!api|_next/static|_next/image|favicon.ico|textures|login|register|robots\\.txt|sitemap\\.xml|llms\\.txt|$).*)",
   ],
 };

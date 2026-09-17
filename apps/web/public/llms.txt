@@ -1,0 +1,48 @@
+# The Digital Tome
+
+> A companion app for running D&D campaigns. Build characters, manage your
+> world, and keep your table in sync.
+
+## Overview
+
+The Digital Tome is a web application that helps Dungeon Masters and players
+run tabletop D&D campaigns together. It centralizes character building, world
+management, and real-time table coordination in one place.
+
+The current public deployment lives at:
+https://dnd-companion-taupe.vercel.app
+
+## What it does
+
+- Character builder: create and manage D&D characters.
+- Campaign management: spin up, join, and run campaigns with persistent state.
+- Real-time table sync: live lobby/session coordination (WebSocket-backed).
+- DM dashboard: campaign control surface for the Dungeon Master.
+- Account system: per-user login and registration.
+
+## Public surface (anonymous, crawlable)
+
+- `/` — landing page (product description, sign-in / get-started CTAs).
+- `/login` — sign-in form.
+- `/register` — account creation form.
+- `/robots.txt`, `/sitemap.xml`, `/llms.txt` — this file.
+
+## Authenticated surface (gated)
+
+Everything else — `/start`, `/dashboard`, `/create`, `/join`, `/lobby/*`,
+`/campaign/*`, `/character/*`, `/campaigns`, `/builder`, and the internal
+`/api/*` endpoints — requires an authenticated session and returns
+`307 → /login?callbackUrl=...` for anonymous requests.
+
+## Tech
+
+- Next.js 15 (App Router) + React 19
+- NextAuth v5 (auth.js) session cookies
+- Prisma + Postgres for persistence
+- Socket.IO for live campaign session sync
+
+## Crawler guidance
+
+Crawlers and AI agents should treat only the public surface above as
+indexable. All other routes require authentication and are explicitly
+disallowed in `robots.txt`.
